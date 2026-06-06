@@ -1,0 +1,454 @@
+{
+  "registeredUsers": [
+    {
+      "name": "admin",
+      "password": "123456",
+      "id": "28401",
+      "isSalesman": false
+    },
+    {
+      "name": "oopqwe001@gmail.com",
+      "password": "888888",
+      "id": "88888",
+      "isSalesman": false,
+      "isAdmin": false,
+      "promotedBy": null
+    },
+    {
+      "name": "ches002",
+      "password": "123321",
+      "id": "25051",
+      "isSalesman": true,
+      "isAdmin": false
+    },
+    {
+      "name": "ches003",
+      "password": "123321",
+      "id": "58807",
+      "isSalesman": true,
+      "isAdmin": false
+    },
+    {
+      "name": "ches222",
+      "password": "123321",
+      "id": "17408",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false
+    },
+    {
+      "name": "ches223",
+      "password": "123321",
+      "id": "27499",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false
+    },
+    {
+      "name": "cs05",
+      "password": "123321",
+      "id": "48702",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false
+    },
+    {
+      "name": "cs06",
+      "password": "123321",
+      "id": "33116",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false
+    },
+    {
+      "name": "363636",
+      "password": "123321",
+      "id": "71835",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false
+    },
+    {
+      "name": "kk3633",
+      "password": "123321",
+      "id": "11264",
+      "promotedBy": "ches002",
+      "isSalesman": false,
+      "isAdmin": false
+    },
+    {
+      "name": "sk333",
+      "password": "123321",
+      "id": "83758",
+      "promotedBy": "ches002",
+      "isSalesman": false,
+      "isAdmin": false
+    },
+    {
+      "name": "ches336",
+      "password": "123321",
+      "id": "70210",
+      "promotedBy": null,
+      "isSalesman": false,
+      "isAdmin": false
+    }
+  ],
+  "merchantsDb": {
+    "363636": {
+      "name": "363636",
+      "password": "123321",
+      "id": "71835",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "71835",
+        "name": "363636",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "admin": {
+      "name": "admin",
+      "password": "123456",
+      "id": "28401",
+      "balance": 4800000,
+      "shop": {
+        "id": "master-shop-888",
+        "name": "雅颂高奢美学馆",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": [
+          "LP-0001",
+          "LP-0002",
+          "LP-0003",
+          "LP-0004",
+          "LP-0005",
+          "LP-0006",
+          "LP-0007",
+          "LP-0009",
+          "LP-0010"
+        ]
+      },
+      "orders": [
+        {
+          "id": "ORD-20260528-001",
+          "shopId": "master-shop-888",
+          "customerName": "宋晓阳",
+          "customerPhone": "13812345678",
+          "shippingAddress": "上海市徐汇区龙腾大道 2555号 滨江艺术大厦 A座 22楼",
+          "orderDate": "2026-05-28 08:30",
+          "items": [
+            {
+              "productId": "LP-0001",
+              "productName": "Cartier Bordeaux Classic 卡地亚经典勃艮第红机械表",
+              "quantity": 1,
+              "retailPrice": 920000,
+              "costPrice": 850000,
+              "image": "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600&auto=format&fit=crop&q=80"
+            }
+          ],
+          "totalPrice": 920000,
+          "totalProfit": 70000,
+          "status": "pending"
+        },
+        {
+          "id": "ORD-20260528-002",
+          "shopId": "master-shop-888",
+          "customerName": "季雨桐",
+          "customerPhone": "15988889911",
+          "shippingAddress": "北京市朝阳区三里屯路 19号院 三里屯太古里北区 N4-30号",
+          "orderDate": "2026-05-28 07:15",
+          "items": [
+            {
+              "productId": "LP-0002",
+              "productName": "Gilded Amber Niche Perfume 鎏金琥珀沙龙高定香水",
+              "quantity": 2,
+              "retailPrice": 19800,
+              "costPrice": 17805,
+              "image": "https://images.unsplash.com/photo-1541643600914-78b084683601?w=600&auto=format&fit=crop&q=80"
+            }
+          ],
+          "totalPrice": 39600,
+          "totalProfit": 3990,
+          "status": "shipped"
+        }
+      ],
+      "financialLogs": [
+        {
+          "id": "TX-20260529-1025",
+          "type": "settlement",
+          "typeLabel": "订单交割分润",
+          "amount": 140000,
+          "status": "已到账",
+          "description": "卡地亚经典勃艮第红机械表 [LP-0001] 交割出货秒级分佣入账",
+          "createdAt": "2026-05-29 11:15:32"
+        },
+        {
+          "id": "TX-20260528-0955",
+          "type": "withdraw",
+          "typeLabel": "三井住友提现",
+          "amount": -30000,
+          "status": "成功",
+          "description": "提现至三井住友银行 (渋谷支店 尾号8899)",
+          "createdAt": "2026-05-28 14:24:12"
+        }
+      ],
+      "withdrawHistory": [
+        {
+          "id": "WD-20260528-085",
+          "amount": 30000,
+          "bankName": "三井住友银行",
+          "branchName": "渋谷支店",
+          "branchNo": "232",
+          "fullName": "雅领高奢美学",
+          "bankCard": "622202******8899",
+          "status": "已到账",
+          "createdAt": "2026-05-28 14:24:12"
+        }
+      ],
+      "isSalesman": false,
+      "isAdmin": false
+    },
+    "oopqwe001@gmail.com": {
+      "name": "oopqwe001@gmail.com",
+      "password": "888888",
+      "id": "88888",
+      "balance": 4680000,
+      "shop": {
+        "id": "88888",
+        "name": "总控旗舰奢优店",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": [
+          "LP-0001",
+          "LP-0002"
+        ]
+      },
+      "orders": [
+        {
+          "id": "ORD-20260605-8930",
+          "shopId": "shop-oopqwe001@gmail.com",
+          "customerName": "James Smith",
+          "customerPhone": "+1 (212) 555-0199",
+          "shippingAddress": "1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA",
+          "orderDate": "2026-06-05",
+          "items": [
+            {
+              "productId": "LP-0004",
+              "productName": "Vintage Master leather Tote 复古意式大容量马鞍皮托特包",
+              "quantity": 1,
+              "retailPrice": 360000,
+              "costPrice": 320000,
+              "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop&q=80"
+            }
+          ],
+          "totalPrice": 360000,
+          "totalProfit": 40000,
+          "status": "shipped",
+          "shippedAt": "2026-06-05 23:26:42"
+        }
+      ],
+      "financialLogs": [
+        {
+          "id": "TX-20260605-7916",
+          "type": "withdraw",
+          "typeLabel": "代发成本扣除",
+          "amount": -320000,
+          "status": "已扣除",
+          "description": "店家发货垫付境外高奢一件代发货源采购成本，包囊运单 [订单号: ORD-20260605-8930]",
+          "createdAt": "2026-06-05 23:26:42"
+        },
+        {
+          "id": "TX-20260601-3653",
+          "type": "recharge",
+          "typeLabel": "店铺账户充值",
+          "amount": 10000,
+          "status": "已拒绝",
+          "description": "通过外部结算账户注资 ¥10,000的申请，由于财务复核不通过已被驳回拒绝",
+          "createdAt": "2026-06-01 21:32:03"
+        }
+      ],
+      "withdrawHistory": [],
+      "isSalesman": false,
+      "isAdmin": false,
+      "promotedBy": null
+    },
+    "ches222": {
+      "name": "ches222",
+      "password": "123321",
+      "id": "17408",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "17408",
+        "name": "ches222",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "ches223": {
+      "name": "ches223",
+      "password": "123321",
+      "id": "27499",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "27499",
+        "name": "ches223",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "cs05": {
+      "name": "cs05",
+      "password": "123321",
+      "id": "48702",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "48702",
+        "name": "cs05",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "cs06": {
+      "name": "cs06",
+      "password": "123321",
+      "id": "33116",
+      "promotedBy": "ches003",
+      "isSalesman": false,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "33116",
+        "name": "cs06",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "kk3633": {
+      "name": "kk3633",
+      "password": "123321",
+      "id": "11264",
+      "promotedBy": "ches002",
+      "isSalesman": false,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "11264",
+        "name": "kk3633",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "sk333": {
+      "name": "sk333",
+      "password": "123321",
+      "id": "83758",
+      "promotedBy": "ches002",
+      "isSalesman": false,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "83758",
+        "name": "sk333",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "ches002": {
+      "name": "ches002",
+      "password": "123321",
+      "id": "25051",
+      "promotedBy": null,
+      "isSalesman": true,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "25051",
+        "name": "ches002",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "ches003": {
+      "name": "ches003",
+      "password": "123321",
+      "id": "58807",
+      "promotedBy": null,
+      "isSalesman": true,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "58807",
+        "name": "ches003",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    },
+    "ches336": {
+      "name": "ches336",
+      "password": "123321",
+      "id": "70210",
+      "promotedBy": null,
+      "isSalesman": false,
+      "isAdmin": false,
+      "balance": 0,
+      "shop": {
+        "id": "70210",
+        "name": "ches336",
+        "avatar": "/src/assets/images/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&auto=format&fit=crop&q=80",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [],
+      "withdrawHistory": []
+    }
+  }
+}

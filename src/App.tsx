@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { db } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { 
   Home, ShoppingBag, User, Sparkles, Wifi, Battery, Radio, 
   Clock, Share2, Compass, AlertCircle, HelpCircle, ShoppingCart,
@@ -136,96 +138,112 @@ export default function App() {
 
   // Load initial remote database data if available for real-time full-stack multi-user sync
   useEffect(() => {
-    const fetchDb = () => {
-      // If we recently performed a local mutation, wait for it to settle on the server to prevent race conditions
+    let active = true;
+    const fetchDb = async () => {
+      // If we recently performed a local mutation, wait to prevent race conditions
       if (Date.now() - lastMutationTimeRef.current < 8000) {
         return;
       }
-      fetch('/api/db')
-        .then(res => res.json())
-        .then(data => {
-          hasFetchedRef.current = true; // Complete the initial fetch
-          if (Date.now() - lastMutationTimeRef.current < 8000) {
-            return;
-          }
-          
-          isPollingUpdateRef.current = true;
-          
-          // Store fetched copy to compare and prevent echo POST loops
-          lastFetchedDataRef.current = {
-            registeredUsers: data.registeredUsers || [],
-            merchantsDb: data.merchantsDb || {}
-          };
+      try {
+        const docRef = doc(db, 'system_data', 'aliexpress_database');
+        const docSnap = await getDoc(docRef);
+        if (!active) return;
+        
+        hasFetchedRef.current = true; // Complete the initial fetch
+        if (Date.now() - lastMutationTimeRef.current < 8000) {
+          return;
+        }
 
-          const incomingUsers = data.registeredUsers || [];
-          const incomingMerchants = { ...(data.merchantsDb || {}) };
+        let data: any = { registeredUsers: [], merchantsDb: {} };
+        if (docSnap.exists()) {
+          data = docSnap.data();
+        } else {
+          console.log("No document in Firestore yet. Default initialized values will be seeded upon write.");
+        }
 
-          // Pre-populate missing profile structures for registered users in merchantsDb
-          incomingUsers.forEach((u: any) => {
-            if (u && u.name) {
-              const k = u.name.toLowerCase();
-              if (!incomingMerchants[k]) {
-                const fId = u.id || '53' + Math.floor(100 + Math.random() * 900);
-                incomingMerchants[k] = {
+        isPollingUpdateRef.current = true;
+
+        lastFetchedDataRef.current = {
+          registeredUsers: data.registeredUsers || [],
+          merchantsDb: data.merchantsDb || {}
+        };
+
+        const incomingUsers = data.registeredUsers || [];
+        const incomingMerchants = { ...(data.merchantsDb || {}) };
+
+        // Pre-populate missing profile structures for registered users in merchantsDb
+        incomingUsers.forEach((u: any) => {
+          if (u && u.name) {
+            const k = u.name.toLowerCase();
+            if (!incomingMerchants[k]) {
+              const fId = u.id || '53' + Math.floor(100 + Math.random() * 900);
+              incomingMerchants[k] = {
+                name: u.name,
+                password: u.password || '123456',
+                id: fId,
+                promotedBy: u.promotedBy || null,
+                isSalesman: u.isSalesman || false,
+                isAdmin: u.isAdmin || false,
+                balance: 0,
+                shop: { 
+                  ...DEFAULT_SHOP, 
+                  id: fId, 
                   name: u.name,
-                  password: u.password || '123456',
-                  id: fId,
-                  promotedBy: u.promotedBy || null,
-                  isSalesman: u.isSalesman || false,
-                  isAdmin: u.isAdmin || false,
-                  balance: 0,
-                  shop: { 
-                    ...DEFAULT_SHOP, 
-                    id: fId, 
-                    name: u.name,
-                    addedProductIds: []
-                  },
-                  orders: [],
-                  financialLogs: [],
-                  withdrawHistory: []
-                };
-              } else {
-                // Ensure flags and parameters exist on merchant profile
-                incomingMerchants[k].isSalesman = u.isSalesman || false;
-                incomingMerchants[k].isAdmin = u.isAdmin || false;
-                if (u.promotedBy !== undefined) {
-                  incomingMerchants[k].promotedBy = u.promotedBy;
-                }
+                  addedProductIds: []
+                },
+                orders: [],
+                financialLogs: [],
+                withdrawHistory: []
+              };
+            } else {
+              // Ensure flags and parameters exist on merchant profile
+              incomingMerchants[k].isSalesman = u.isSalesman || false;
+              incomingMerchants[k].isAdmin = u.isAdmin || false;
+              if (u.promotedBy !== undefined) {
+                incomingMerchants[k].promotedBy = u.promotedBy;
               }
             }
-          });
-
-          if (incomingUsers.length > 0) {
-            setRegisteredUsers(prev => {
-              if (JSON.stringify(prev) !== JSON.stringify(incomingUsers)) {
-                return incomingUsers;
-              }
-              return prev;
-            });
           }
+        });
 
-          setMerchantsDb(prev => {
-            const merged = { ...prev, ...incomingMerchants };
-            if (JSON.stringify(prev) !== JSON.stringify(merged)) {
-              return merged;
+        if (incomingUsers.length > 0) {
+          setRegisteredUsers(prev => {
+            if (JSON.stringify(prev) !== JSON.stringify(incomingUsers)) {
+              return incomingUsers;
             }
             return prev;
           });
+        }
 
-          // Reset polling flag after state updates settle
-          setTimeout(() => {
-            isPollingUpdateRef.current = false;
-          }, 100);
-        })
-        .catch(err => {
-          console.warn('Remote db syncing is offline. Using client localStorage fallback.', err);
-          hasFetchedRef.current = true; // Mark as initialized anyway so that local modifications can run
+        setMerchantsDb(prev => {
+          // If Firestore is completely fresh and empty, keep current local state (e.g. seeded with admin/oopqwe001)
+          if (Object.keys(incomingMerchants).length === 0) {
+            return prev;
+          }
+          const merged = { ...prev, ...incomingMerchants };
+          if (JSON.stringify(prev) !== JSON.stringify(merged)) {
+            return merged;
+          }
+          return prev;
         });
+
+        // Reset polling flag after state updates settle
+        setTimeout(() => {
+          isPollingUpdateRef.current = false;
+        }, 100);
+
+      } catch (err) {
+        console.warn('Firebase document load offline. Using local cache/localStorage fallback.', err);
+        hasFetchedRef.current = true;
+      }
     };
 
     fetchDb();
     const interval = setInterval(fetchDb, 5000); // sync every 5s
-    return () => clearInterval(interval);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Master multi-merchant database state
@@ -329,11 +347,15 @@ export default function App() {
     localStorage.setItem('aliexpress_registered_users_list', JSON.stringify(registeredUsers));
     localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(merchantsDb));
 
-    fetch('/api/db', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ registeredUsers, merchantsDb })
-    }).catch(err => console.warn('Server sync offline for combined database saving', err));
+    // Save directly to cloud Firestore system_data collection
+    const docRef = doc(db, 'system_data', 'aliexpress_database');
+    setDoc(docRef, { registeredUsers, merchantsDb })
+      .then(() => {
+        console.log("Successfully back-propagated state updates to cloud Firebase Firestore.");
+      })
+      .catch(err => {
+        console.error('Failed to sync to cloud Firebase Firestore:', err);
+      });
   }, [registeredUsers, merchantsDb]);
 
   // Passwords Support State
