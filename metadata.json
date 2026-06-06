@@ -1,0 +1,6 @@
+{
+  "name": "H5多商户内容电商",
+  "description": "面向移动端的高端红黑金配色H5多商户内容电商单页应用，支持店主一键选品、顾客专属链接下单、名片或微信收款码转账、订单管理以及每日订单一键导出等全套闭环功能。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

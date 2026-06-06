@@ -1,0 +1,26 @@
+{
+  "entities": {
+    "ApplicationState": {
+      "title": "Application State",
+      "description": "The complete backing store for registered users and merchants",
+      "type": "object",
+      "properties": {
+        "registeredUsers": {
+          "type": "array",
+          "description": "List of system registered users with IDs, roles, and hashes"
+        },
+        "merchantsDb": {
+          "type": "object",
+          "description": "Map of lowercase account IDs to merchant properties"
+        }
+      },
+      "required": ["registeredUsers", "merchantsDb"]
+    }
+  },
+  "firestore": {
+    "/system_data/aliexpress_database": {
+      "schema": "ApplicationState",
+      "description": "Core unified persistent document storing the multi-user sandbox state"
+    }
+  }
+}
