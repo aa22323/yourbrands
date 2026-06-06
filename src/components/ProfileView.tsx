@@ -5,6 +5,7 @@ import {
   Settings, Image as ImageIcon, Copy, FileText, Check, ArrowRight, UserPlus, Upload, RefreshCw, AlertCircle, Shield
 } from 'lucide-react';
 import { Shop, Order, FinancialTransaction } from '../types';
+import { resolveAvatar } from '../data';
 
 import { AppLanguage, translateProduct, TRANSLATIONS } from '../utils/translations';
 
@@ -379,7 +380,13 @@ export default function ProfileView({
   const [tempShopName, setTempShopName] = useState(shop.name);
   const [isEditingQr, setIsEditingQr] = useState(false);
   const [tempQr, setTempQr] = useState(shop.qrCode);
-  const [tempAvatar, setTempAvatar] = useState(shop.avatar);
+  const [tempAvatar, setTempAvatar] = useState(resolveAvatar(shop.avatar));
+
+  useEffect(() => {
+    setTempShopName(shop.name);
+    setTempQr(shop.qrCode);
+    setTempAvatar(resolveAvatar(shop.avatar));
+  }, [shop]);
 
   // Sub tab for the gear configuration menu (Settings dialog)
   const [settingsSubTab, setSettingsSubTab] = useState<'shop' | 'lang' | 'password' | 'logout' | 'admin'>('shop');
@@ -527,10 +534,14 @@ export default function ProfileView({
                 }} 
               />
               <img 
-                src={shop.avatar} 
+                src={resolveAvatar(shop.avatar)} 
                 alt={shop.name} 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="50" fill="%23fff5f5"/><circle cx="50" cy="40" r="18" fill="%23e51923" fill-opacity="0.85"/><path d="M22 78C22 62.536 34.536 50 50 50C65.464 50 78 62.536 78 78" stroke="%23e51923" stroke-width="8" stroke-linecap="round"/></svg>`;
+                }}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 md:group-hover:opacity-100 flex items-center justify-center transition-all">
                 <Upload className="w-4 h-4 text-white hover:scale-110 transition-transform" />
@@ -695,6 +706,10 @@ export default function ProfileView({
                             alt="预览" 
                             className="w-10 h-10 object-cover rounded-full border border-zinc-205 shrink-0"
                             referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="50" fill="%23fff5f5"/><circle cx="50" cy="40" r="18" fill="%23e51923" fill-opacity="0.85"/><path d="M22 78C22 62.536 34.536 50 50 50C65.464 50 78 62.536 78 78" stroke="%23e51923" stroke-width="8" stroke-linecap="round"/></svg>`;
+                            }}
                           />
                         )}
                         <input 

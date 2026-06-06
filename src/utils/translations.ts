@@ -151,6 +151,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     orderTotal: "最终商户应付总额",
     submitOrderBtn: "确认付款并提交订单",
     insufficientFunds: "余额不足！本次订单需要支付: ¥",
+    errInsufficientBalance: "❌ 账户部分或全额可用余额不足以抵扣该订单成本！请前往“店铺钱包”充值后再操作。",
     submissionSuccess: "🎉 订单创建成功！请等待总后台一键管理发货。",
 
     // MyShopModal
@@ -651,6 +652,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     orderTotal: "Final Merchant Due Payable",
     submitOrderBtn: "Confirm Payment & Submit Order",
     insufficientFunds: "Insufficient funds! Payment required: ¥",
+    errInsufficientBalance: "❌ Insufficient store balance to cover the cost of this order! Please recharge in your Shop Wallet.",
     submissionSuccess: "🎉 Order initialized successfully! Waiting for master panel fulfillment.",
 
     myStoreConfig: "My Outlet Settings",
@@ -1149,6 +1151,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     orderTotal: "Responsable final a pagar por tienda",
     submitOrderBtn: "Confirmar Pago y Enviar Pedido",
     insufficientFunds: "¡Saldo insuficiente! Pago requerido: ¥",
+    errInsufficientBalance: "❌ ¡Saldo de la tienda insuficiente para cubrir el costo del pedido! Realice una recarga en su cartera.",
     submissionSuccess: "🎉 ¡Pedido creado con éxito! Esperando instrucciones de envío del panel.",
 
     myStoreConfig: "Ajustes del Escaparate",
@@ -1657,7 +1660,8 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     orderTotal: "最終差引お支払額",
     submitOrderBtn: "仕入れ料金を支払って注文を確定",
     insufficientFunds: "残高が不足しています！今回のお支払額: ¥",
-    submissionSuccess: "🎉 注文が無事作成されました！マスター本部の発送処理をお待ちください。",
+    errInsufficientBalance: "❌ 店舗残高が不足しています！ショップウォレットにてチャージしてください。",
+    submissionSuccess: "🎉 注文が無事作成されました！マスター本部の発送处理をお待ちください。",
 
     myStoreConfig: "マイフラッグシップブティック",
     promoteBtn: "プロモーション用追加集客 (¥1000 = +150PV)",
@@ -2165,6 +2169,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     orderTotal: "스토어 최종 정산 차감 예정액",
     submitOrderBtn: "도매 정산 비용 지불 및 주문 접수",
     insufficientFunds: "잔액이 부족합니다! 본 발주 처리에 필요한 금액: ¥",
+    errInsufficientBalance: "❌ 상점 잔액이 부족하여 주문을 처리할 수 없습니다! 지갑에서 충전 후 시도하세요.",
     submissionSuccess: "🎉 발주 주문이 접수되었습니다! 본부 패널의 발송 처리를 기다리세요.",
 
     myStoreConfig: "마이 명품 멀티샵 제어 설정",
@@ -2673,6 +2678,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     orderTotal: "Tổng số tiền thực tế shop cần chi",
     submitOrderBtn: "Xác nhận Thanh toán & Lập hóa đơn sỉ",
     insufficientFunds: "Số dư tài khoản không đủ! Tổng hóa đơn cần thanh toán: ¥",
+    errInsufficientBalance: "❌ Số dư cửa hàng không đủ để thanh toán đơn hàng này! Vui lòng nạp tiền vào Ví của bạn.",
     submissionSuccess: "🎉 Tạo hóa đơn sỉ thành công! Đang chờ tổng kho xử lý xuất vận chuyển.",
 
     myStoreConfig: "Thiết lập Gian hàng Luxury riêng",

@@ -1,6 +1,19 @@
 import { Product } from './types';
-// @ts-ignore
-import defaultAvatar from './assets/images/aliexpress_seller_logo_1780316211327.png';
+export const defaultAvatar = '/aliexpress_seller_logo_1780316211327.png';
+
+export const resolveAvatar = (avatarUrl: string | undefined): string => {
+  if (!avatarUrl) return defaultAvatar;
+  if (
+    avatarUrl.includes('aliexpress_seller_logo') || 
+    avatarUrl.includes('photo-1628157582853-a796fa650a6a') || 
+    avatarUrl.includes('unsplash.com') || 
+    avatarUrl.includes('assets/images/') ||
+    avatarUrl.startsWith('data:image/svg+xml;')
+  ) {
+    return defaultAvatar;
+  }
+  return avatarUrl;
+};
 
 // Core pre-defined luxury products
 const CORE_PRODUCTS = [

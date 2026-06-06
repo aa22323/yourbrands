@@ -7,7 +7,7 @@ import {
   Copy, UserPlus, Trash2
 } from 'lucide-react';
 import { Product, Order, Shop, FinancialTransaction } from '../types';
-import { ALL_PRODUCTS, DEFAULT_SHOP } from '../data';
+import { ALL_PRODUCTS, DEFAULT_SHOP, resolveAvatar } from '../data';
 
 interface AdminDashboardViewProps {
   merchantsDb: Record<string, any>;
@@ -1288,7 +1288,16 @@ export default function AdminDashboardView({
                     {/* Shop settings or profile */}
                     <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-200 flex items-center justify-between gap-1.5">
                       <div className="flex items-center gap-2">
-                        <img src={merchant.shop?.avatar || DEFAULT_SHOP.avatar} alt="" className="w-5 h-5 rounded-full object-cover border border-zinc-300" referrerPolicy="no-referrer" />
+                        <img 
+                          src={resolveAvatar(merchant.shop?.avatar || DEFAULT_SHOP.avatar)} 
+                          alt="" 
+                          className="w-5 h-5 rounded-full object-cover border border-zinc-300" 
+                          referrerPolicy="no-referrer" 
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="50" fill="%23fff5f5"/><circle cx="50" cy="40" r="18" fill="%23e51923" fill-opacity="0.85"/><path d="M22 78C22 62.536 34.536 50 50 50C65.464 50 78 62.536 78 78" stroke="%23e51923" stroke-width="8" stroke-linecap="round"/></svg>`;
+                          }}
+                        />
                         <span className="text-xs text-zinc-650 font-bold font-sans">
                           美学商店名称: <span className="text-zinc-900 font-black">{merchant.shop?.name || `${merchant.name}精品店`}</span>
                         </span>

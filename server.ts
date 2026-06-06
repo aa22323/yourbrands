@@ -186,6 +186,8 @@ async function startServer() {
   });
 
   // Serve static/assets or bundle middleware
+  app.use(express.static(path.join(process.cwd(), 'public')));
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },

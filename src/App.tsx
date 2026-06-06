@@ -14,7 +14,8 @@ import {
   DEFAULT_SHOP, 
   DEFAULT_ORDERS, 
   SHOP_DATA_KEY, 
-  ORDERS_DATA_KEY 
+  ORDERS_DATA_KEY,
+  resolveAvatar
 } from './data';
 
 import HomeView from './components/HomeView';
@@ -499,6 +500,7 @@ export default function App() {
 
   // Admin control panel toggle
   const [isAdminConsoleOpen, setIsAdminConsoleOpen] = useState(false);
+  const [showBalanceToast, setShowBalanceToast] = useState(false);
 
   // Referral code for invited merchant registrations
   const [referralCode, setReferralCode] = useState<string | null>(() => {
@@ -772,7 +774,7 @@ export default function App() {
         cleanShop.addedProductIds = [];
         changed = true;
       }
-      if (!cleanShop.avatar || cleanShop.avatar.includes('photo-1628157582853-a796fa650a6a') || cleanShop.avatar.includes('unsplash.com')) {
+      if (!cleanShop.avatar || cleanShop.avatar.includes('photo-1628157582853-a796fa650a6a') || cleanShop.avatar.includes('unsplash.com') || cleanShop.avatar.includes('assets/images/')) {
         cleanShop.avatar = DEFAULT_SHOP.avatar;
         changed = true;
       }
@@ -1105,8 +1107,12 @@ export default function App() {
     if (!order.isSelfOrder) {
       const costPriceSum = order.items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0);
       
-      // Check if user has enough balance (blocking shipment, but with no warning popup)
+      // Check if user has enough balance (blocking shipment, but show a central toast)
       if (userBalance < costPriceSum) {
+        setShowBalanceToast(true);
+        setTimeout(() => {
+          setShowBalanceToast(false);
+        }, 3000);
         return;
       }
 
@@ -1604,7 +1610,16 @@ export default function App() {
             <div className="sticky top-0 bg-white/95 backdrop-blur-md px-5 py-3 border-b border-zinc-200/80 z-30 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full overflow-hidden border border-red-500/20 bg-zinc-100">
-              <img src={shop.avatar} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              <img 
+                src={resolveAvatar(shop.avatar)} 
+                alt="" 
+                className="w-full h-full object-cover" 
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="50" fill="%23fff5f5"/><circle cx="50" cy="40" r="18" fill="%23e51923" fill-opacity="0.85"/><path d="M22 78C22 62.536 34.536 50 50 50C65.464 50 78 62.536 78 78" stroke="%23e51923" stroke-width="8" stroke-linecap="round"/></svg>`;
+                }}
+              />
             </div>
             <div className="flex flex-col">
               <h4 className="font-sans text-xs font-bold text-zinc-900 truncate max-w-[155px]">
@@ -1827,6 +1842,26 @@ export default function App() {
               currentUser={userAccountName}
               registeredUsers={registeredUsers}
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Central Insufficient Balance Toast with smooth animation */}
+      <AnimatePresence>
+        {showBalanceToast && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
+          >
+            <div className="bg-zinc-900/95 backdrop-blur-md text-white px-6 py-4 rounded-xl shadow-2xl border border-white/15 flex items-center gap-3 pointer-events-auto max-w-sm mx-4">
+              <span className="text-xl">⚠️</span>
+              <p className="text-sm font-medium tracking-wide leading-relaxed">
+                {t('errInsufficientBalance')}
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
