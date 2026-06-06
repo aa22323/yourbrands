@@ -290,7 +290,6 @@ export default function App() {
 
       } catch (err) {
         console.warn('Firebase document load offline. Using local cache/localStorage fallback.', err);
-        hasFetchedRef.current = true;
       }
     };
 
