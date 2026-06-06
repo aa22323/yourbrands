@@ -62,8 +62,64 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-    return 'zh';
+    
+    // Automatically detect language based on browser settings (runs synchronously for instant native rendering)
+    try {
+      const browserLang = (navigator.language || (navigator as any).userLanguage || '').toLowerCase();
+      if (browserLang.startsWith('zh')) return 'zh';
+      if (browserLang.startsWith('ja')) return 'ja';
+      if (browserLang.startsWith('ko')) return 'ko';
+      if (browserLang.startsWith('vi')) return 'vi';
+      if (browserLang.startsWith('es')) return 'es';
+    } catch (err) {
+      console.warn('Browser language auto-detection failed:', err);
+    }
+    return 'zh'; // Default to zh
   });
+
+  // Background IP Geolocation Check to adapt language more accurately based on actual visiting country
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('aliexpress_app_language');
+      // Only geo-locate if user has not explicitly persisted a manual language selection choice
+      if (!stored) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000); // 4s fast timeout
+
+        fetch('https://ipapi.co/json/', { signal: controller.signal })
+          .then(res => res.json())
+          .then(data => {
+            clearTimeout(timeoutId);
+            if (data && data.country_code) {
+              const country = data.country_code.toUpperCase();
+              console.log(`Auto-detected region from IP: ${country}`);
+              
+              let detectedLang: AppLanguage = 'en';
+              if (['CN', 'TW', 'HK', 'MO'].includes(country)) {
+                detectedLang = 'zh';
+              } else if (country === 'JP') {
+                detectedLang = 'ja';
+              } else if (country === 'KR') {
+                detectedLang = 'ko';
+              } else if (country === 'VN') {
+                detectedLang = 'vi';
+              } else if (['ES', 'MX', 'AR', 'CO', 'CL', 'PE', 'VE', 'EC', 'GT', 'CU', 'BO', 'DO', 'HN', 'PY', 'SV', 'NI', 'CR', 'UY', 'PA'].includes(country)) {
+                detectedLang = 'es';
+              } else {
+                detectedLang = 'en';
+              }
+              
+              setAppLanguage(detectedLang);
+            }
+          })
+          .catch(err => {
+            console.log('Background IP-to-Country geolocation skipped or timed out:', err.message);
+          });
+      }
+    } catch (err) {
+      console.error('IP geolocation hook error:', err);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('aliexpress_app_language', appLanguage);
