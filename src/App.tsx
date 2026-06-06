@@ -1105,9 +1105,8 @@ export default function App() {
     if (!order.isSelfOrder) {
       const costPriceSum = order.items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0);
       
-      // Check if user has enough balance
+      // Check if user has enough balance (blocking shipment, but with no warning popup)
       if (userBalance < costPriceSum) {
-        alert(`❌ 账户可用余额不足，无法发货！\n\n本订单需采购垫付成本为 ¥${costPriceSum.toLocaleString()}，而您的当前账户余额仅为 ¥${userBalance.toLocaleString()}。\n请先前往“我的” > “店铺钱包” 充值资金账户后再一键发货。`);
         return;
       }
 
