@@ -40,8 +40,8 @@ export default function AdminDashboardView({
     const mDb = merchantsDb[nameLower];
     return match?.isSalesman || mDb?.isSalesman || false;
   }, [registeredUsers, currentUser, isMaster, merchantsDb]);
-  // Navigation: 'stores' | 'dispatch' | 'orders' | 'withdraws'
-  const [activeTab, setActiveTab] = useState<'stores' | 'dispatch' | 'orders' | 'withdraws'>('stores');
+  // Navigation: 'stores' | 'dispatch' | 'orders' | 'withdraws' | 'products'
+  const [activeTab, setActiveTab] = useState<'stores' | 'dispatch' | 'orders' | 'withdraws' | 'products'>('stores');
   
   // Search state for merchants
   const [merchantSearch, setMerchantSearch] = useState('');
@@ -85,6 +85,14 @@ export default function AdminDashboardView({
   const [priceSortOrder, setPriceSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
   const [randomCountry, setRandomCountry] = useState<string>('random');
 
+  // States for Manual Commercial Product Uploader Tab
+  const [productsSearchQuery, setProductsSearchQuery] = useState('');
+  const [productsCategoryFilter, setProductsCategoryFilter] = useState('全部');
+  const [selectedManageProductId, setSelectedManageProductId] = useState<string | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+  const [directUrlInput, setDirectUrlInput] = useState('');
+
   // Local state for Global Customer Service Link
   const [csLinkInput, setCsLinkInput] = useState(() => {
     return merchantsDb?.system_config?.customerServiceLink || '';
@@ -95,6 +103,10 @@ export default function AdminDashboardView({
       setCsLinkInput(merchantsDb.system_config.customerServiceLink || '');
     }
   }, [merchantsDb?.system_config?.customerServiceLink]);
+
+  React.useEffect(() => {
+    setSelectedProduct(null);
+  }, [selectedMerchant]);
 
   // Get keys of all merchants in DB (Memoized and Filtered by Salesman)
   const merchantKeys = useMemo(() => {
@@ -811,7 +823,16 @@ export default function AdminDashboardView({
 
   // Product Filter for dispatching (Memoized to prevent lag during form typing and support sorting)
   const filteredProducts = useMemo(() => {
-    let list = [...ALL_PRODUCTS];
+    if (!selectedMerchant) {
+      return []; // Return empty if no merchant is selected
+    }
+    const mKey = selectedMerchant.toLowerCase();
+    const merchant = merchantsDb[mKey];
+    const addedProductIds = merchant?.shop?.addedProductIds || [];
+
+    // Only display products that are listed/added by the current merchant
+    let list = ALL_PRODUCTS.filter(p => addedProductIds.includes(p.id));
+
     const query = dispatchSearchQuery.toLowerCase().trim();
     if (query) {
       list = list.filter(p => {
@@ -828,7 +849,7 @@ export default function AdminDashboardView({
     }
 
     return list;
-  }, [dispatchSearchQuery, priceSortOrder]);
+  }, [dispatchSearchQuery, priceSortOrder, selectedMerchant, merchantsDb]);
 
   if (!isMaster && !isSalesman) {
     return (
@@ -984,6 +1005,28 @@ export default function AdminDashboardView({
                 <span className="bg-[#e51923] text-white text-[9.5px] font-mono font-black px-1.5 py-0.5 rounded-full animate-pulse border border-white/20">
                   {allGlobalRecharges.filter(r => r.transaction.status === '已提交').length +
                     allGlobalWithdraws.filter(w => w.record.status === '已提交').length}
+                </span>
+              )}
+            </button>
+          )}
+
+          {!isSalesman && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('products')}
+              className={`w-full text-left px-4 py-3.5 rounded-2xl text-xs font-black tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-between gap-3 ${
+                activeTab === 'products' 
+                  ? 'bg-[#e51923] text-white shadow-lg shadow-red-950/25 active:scale-[0.98]' 
+                  : 'text-zinc-650 hover:text-zinc-900 hover:bg-zinc-200/80'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <ShoppingBag className={`w-4 h-4 shrink-0 transition-colors ${activeTab === 'products' ? 'text-white' : 'text-red-600'}`} />
+                <span>公共商品主图维护</span>
+              </div>
+              {Object.keys(merchantsDb?.system_config?.customProductImages || {}).length > 0 && (
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold uppercase ${activeTab === 'products' ? 'bg-red-700/50 text-white' : 'bg-zinc-200 text-zinc-650 border border-zinc-300'}`}>
+                  {Object.keys(merchantsDb?.system_config?.customProductImages || {}).length}
                 </span>
               )}
             </button>
@@ -1779,6 +1822,19 @@ export default function AdminDashboardView({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[350px] overflow-y-auto pr-1">
+                {filteredProducts.length === 0 && (
+                  <div className="col-span-1 sm:col-span-2 py-8 text-center flex flex-col items-center justify-center gap-1.5 text-zinc-400 bg-zinc-50 border border-dashed border-zinc-200 rounded-2xl p-6">
+                    <ShoppingBag className="w-8 h-8 text-zinc-300 stroke-1" />
+                    {!selectedMerchant ? (
+                      <p className="text-xs text-zinc-500 font-semibold">⚠️ 请先在上方<strong>第 1 步</strong>中选择目标备货店家以加载其选品列表</p>
+                    ) : (
+                      <div className="flex flex-col gap-1 items-center">
+                        <p className="text-xs text-zinc-500 font-semibold">该店家尚未上架/同步任何商品</p>
+                        <p className="text-[10px] text-zinc-400">目前无法向其进行配额划拨或订单派发。需店家在其控制台添加商品上架后，方可派单。</p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {filteredProducts.slice(0, visibleProductsCount).map(p => {
                   const isSelected = selectedProduct?.id === p.id;
                   return (
@@ -2447,6 +2503,325 @@ export default function AdminDashboardView({
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'products' && (
+          <div className="flex flex-col gap-4 text-left font-sans animate-fade-in">
+            <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-zinc-200 pb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 text-[#e51923]" />
+                  <span className="text-xs font-bold text-zinc-850 uppercase tracking-wider">
+                    公共商品主图手动上传维护中控柜 (MANUAL COVER ART MANAGER)
+                  </span>
+                </div>
+                <div className="text-[10.5px] text-zinc-500 font-semibold bg-zinc-100 px-3 py-1 rounded-xl border border-zinc-200 font-mono">
+                  共计 {ALL_PRODUCTS.length} 款商品 | 自定义主图: {Object.keys(merchantsDb?.system_config?.customProductImages || {}).length} 款
+                </div>
+              </div>
+
+              {/* Informational banner */}
+              <div className="bg-blue-50/75 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 flex gap-2.5">
+                <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <div className="flex flex-col gap-0.5 leading-relaxed font-sans">
+                  <span className="font-extrabold text-[12px]">ℹ️ 运行原理 & 温馨提示</span>
+                  <span>在此处手动上传图片，新图会被直接连协合并存入云端数据库系统配置。全网商铺的上架展示界面、店铺详情页、购物车、派单列表都会在一秒内即时呈现新图，不影响原本任何系统固有属性！</span>
+                </div>
+              </div>
+
+              {/* Workspace splitter */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[500px]">
+                {/* Left Side: Product Picker */}
+                <div className="lg:col-span-7 flex flex-col gap-3">
+                  <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={productsSearchQuery}
+                        onChange={(e) => setProductsSearchQuery(e.target.value)}
+                        placeholder="🔍 搜索商品ID、SKU、品名..."
+                        className="w-full text-xs bg-zinc-50 border border-zinc-200 rounded-xl pl-8 pr-3 py-2.5 text-zinc-900 focus:outline-none focus:border-[#e51923] focus:bg-white placeholder-zinc-400 font-sans transition-all"
+                      />
+                      <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    </div>
+                    <select
+                      value={productsCategoryFilter}
+                      onChange={(e) => setProductsCategoryFilter(e.target.value)}
+                      className="bg-zinc-50 border border-zinc-200 rounded-xl text-xs py-2 px-3 text-zinc-900 focus:outline-none focus:border-[#e51923] cursor-pointer font-sans"
+                    >
+                      {['全部', '臻选腕表', '奢享沙龙香', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'].map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Scroll List container */}
+                  <div className="border border-zinc-200 rounded-2xl overflow-hidden bg-zinc-50/10 max-h-[500px] overflow-y-auto">
+                    <div className="divide-y divide-zinc-200">
+                      {ALL_PRODUCTS
+                        .filter(p => {
+                          const matchSearch = p.name.toLowerCase().includes(productsSearchQuery.toLowerCase()) || 
+                            p.id.toLowerCase().includes(productsSearchQuery.toLowerCase()) || 
+                            p.sku.toLowerCase().includes(productsSearchQuery.toLowerCase());
+                          const matchCat = productsCategoryFilter === '全部' || p.category === productsCategoryFilter;
+                          return matchSearch && matchCat;
+                        })
+                        .map(p => {
+                          const isSelected = selectedManageProductId === p.id;
+                          const hasCustomImage = !!merchantsDb?.system_config?.customProductImages?.[p.id];
+                          return (
+                            <div
+                              key={p.id}
+                              onClick={() => {
+                                setSelectedManageProductId(p.id);
+                                setImageUploadError(null);
+                                setDirectUrlInput('');
+                              }}
+                              className={`p-3 transition-all hover:bg-zinc-100/60 flex gap-3.5 cursor-pointer items-center text-left ${
+                                isSelected ? 'bg-red-50/50 hover:bg-red-50/80 border-r-4 border-red-500' : ''
+                              }`}
+                            >
+                              <div className="relative shrink-0">
+                                <img
+                                  src={p.image}
+                                  alt=""
+                                  className="w-12 h-12 rounded-lg object-cover border border-zinc-200 shadow-3xs"
+                                  referrerPolicy="no-referrer"
+                                />
+                                {hasCustomImage && (
+                                  <span className="absolute -top-1.5 -right-1.5 bg-red-600 border border-white text-[8px] font-sans text-white h-4 px-1.5 rounded-full font-bold flex items-center justify-center shadow-xs">
+                                    改
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                <div className="flex items-center justify-between gap-1">
+                                  <span className="text-xs font-black text-zinc-900 truncate">{p.name}</span>
+                                  <span className="text-[10px] font-mono text-zinc-400 bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded mr-auto leading-none shrink-0">{p.id}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-[11px] font-semibold text-zinc-500 font-sans">
+                                  <span>分类: <span className="text-zinc-800">{p.category}</span></span>
+                                  <span>SKU: <span className="font-mono text-zinc-700">{p.sku}</span></span>
+                                </div>
+                                <div className="flex justify-between items-center text-[10.5px] font-mono">
+                                  <span className="text-zinc-500">进价: ¥{p.costPrice.toLocaleString()}</span>
+                                  <span className="text-[#e51923] font-bold">零售价: ¥{p.retailPrice.toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side: Detail & Image Upload Workspace */}
+                <div className="lg:col-span-5 border border-zinc-200 rounded-2xl p-5 bg-zinc-50/20 flex flex-col justify-start">
+                  {selectedManageProductId ? (() => {
+                    const selectedP = ALL_PRODUCTS.find(p => p.id === selectedManageProductId);
+                    if (!selectedP) return null;
+                    const hasCustomImage = !!merchantsDb?.system_config?.customProductImages?.[selectedManageProductId];
+                    
+                    const handleProductImageFile = (file: File) => {
+                      if (!file) return;
+                      if (!file.type.startsWith('image/')) {
+                        setImageUploadError('请选择有效的图片文件 (png/jpg/jpeg/webp 等)');
+                        return;
+                      }
+                      if (file.size > 1500000) {
+                        setImageUploadError('图片尺寸过大，请上传小于 1.5MB 的图片以确保顺畅传输');
+                        return;
+                      }
+                      
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        const base64 = e.target?.result as string;
+                        if (base64) {
+                          setImageUploadError(null);
+                          const currentOverrides = merchantsDb?.system_config?.customProductImages || {};
+                          onUpdateMerchantData('system_config', {
+                            customProductImages: {
+                              ...currentOverrides,
+                              [selectedManageProductId]: base64
+                            }
+                          });
+                          setActionSuccessMessage('🎉 商品图片升级成功！数据库已连协合并。');
+                          setMessageType('success');
+                          setTimeout(() => setActionSuccessMessage(null), 4000);
+                        }
+                      };
+                      reader.onerror = () => {
+                        setImageUploadError('图片读取失败，请稍后重试');
+                      };
+                      reader.readAsDataURL(file);
+                    };
+
+                    const handleDragOver = (e: React.DragEvent) => {
+                      e.preventDefault();
+                      setIsDraggingOver(true);
+                    };
+                    
+                    const handleDragLeave = () => {
+                      setIsDraggingOver(false);
+                    };
+                    
+                    const handleDrop = (e: React.DragEvent) => {
+                      e.preventDefault();
+                      setIsDraggingOver(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        handleProductImageFile(e.dataTransfer.files[0]);
+                      }
+                    };
+
+                    const handleApplyDirectUrl = () => {
+                      const url = directUrlInput.trim();
+                      if (!url) {
+                        setImageUploadError('请输入有效的网页图片 URL 链接');
+                        return;
+                      }
+                      setImageUploadError(null);
+                      const currentOverrides = merchantsDb?.system_config?.customProductImages || {};
+                      onUpdateMerchantData('system_config', {
+                        customProductImages: {
+                          ...currentOverrides,
+                          [selectedManageProductId]: url
+                        }
+                      });
+                      setActionSuccessMessage('🎉 商品主图已直接指定至图片链接成功！');
+                      setMessageType('success');
+                      setDirectUrlInput('');
+                      setTimeout(() => setActionSuccessMessage(null), 4000);
+                    };
+
+                    const handleResetProductImage = () => {
+                      const currentOverrides = { ...(merchantsDb?.system_config?.customProductImages || {}) };
+                      delete currentOverrides[selectedManageProductId];
+                      
+                      onUpdateMerchantData('system_config', {
+                        customProductImages: currentOverrides
+                      });
+                      
+                      setActionSuccessMessage('🎉 已成功清除自定义图，恢复出厂默认首图！');
+                      setMessageType('success');
+                      setTimeout(() => setActionSuccessMessage(null), 4000);
+                    };
+
+                    return (
+                      <div className="flex flex-col gap-4">
+                        <div className="text-center pb-2.5 border-b border-zinc-200">
+                          <span className="text-xs font-bold text-zinc-800 block">选中编辑的商品属性</span>
+                          <span className="text-[10px] font-mono text-zinc-500 block mt-1 leading-normal">{selectedP.name} ({selectedP.id})</span>
+                        </div>
+
+                        {/* Comparative Preview */}
+                        <div className="flex flex-col items-center gap-1.5">
+                          <span className="text-[10px] text-zinc-500 font-bold uppercase mr-auto">当前大图预览 Covered Art</span>
+                          <div className="w-48 h-48 rounded-2xl overflow-hidden border border-zinc-200 bg-white relative shadow-sm">
+                            <img
+                              src={selectedP.image}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                            {hasCustomImage && (
+                              <div className="absolute top-2 left-2 bg-[#e51923] text-white font-extrabold text-[9px] px-2 py-0.5 rounded-lg border border-red-500/20 shadow-sm animate-pulse font-sans">
+                                已启用人工图
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* File selector drag area */}
+                        <div className="flex flex-col gap-1.5 text-left animate-fade-in">
+                          <span className="text-[10px] text-zinc-500 font-bold uppercase">手动上传全新图片封面 (支持拖入 / 点击选取)</span>
+                          <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => document.getElementById('manual-image-input2')?.click()}
+                            className={`border-2 border-dashed rounded-2xl p-6 text-center flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-200 ${
+                              isDraggingOver 
+                                ? 'bg-red-50 border-[#e51923] text-red-700' 
+                                : 'bg-white hover:bg-zinc-100/50 border-zinc-300 text-zinc-500'
+                            }`}
+                          >
+                            <input
+                              id="manual-image-input2"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files.length > 0) {
+                                  handleProductImageFile(e.target.files[0]);
+                                }
+                              }}
+                              className="hidden"
+                            />
+                            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500 shadow-3xs shrink-0">
+                              <Plus className="w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs font-bold text-zinc-800">将本地图片拖拽落至此处</span>
+                              <span className="text-[10.5px] text-zinc-500">或者点击直接选择图像</span>
+                            </div>
+                            <span className="text-[9px] text-zinc-400 font-mono">（PNG, JPG, JPEG, WEBP | 限制低于 1.5MB）</span>
+                          </div>
+                        </div>
+
+                        {/* Web link alternative */}
+                        <div className="flex flex-col gap-1.5 text-left">
+                          <span className="text-[10px] text-zinc-500 font-bold uppercase">或者：直接粘贴网络图片绝对 URL 链接</span>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={directUrlInput}
+                              onChange={(e) => setDirectUrlInput(e.target.value)}
+                              placeholder="粘贴 http:// 或 https:// 开头的公网图片绝对地址..."
+                              className="flex-1 text-xs bg-white border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-900 focus:outline-none focus:border-[#e51923] placeholder-zinc-400 font-medium"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleApplyDirectUrl}
+                              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer select-none whitespace-nowrap"
+                            >
+                              保存
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Error state */}
+                        {imageUploadError && (
+                          <div className="bg-red-50 border border-red-200 text-red-600 font-bold text-[11px] p-3 rounded-xl flex items-center gap-1.5">
+                            <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                            <span>{imageUploadError}</span>
+                          </div>
+                        )}
+
+                        {/* Reset control */}
+                        {hasCustomImage && (
+                          <button
+                            type="button"
+                            onClick={handleResetProductImage}
+                            className="w-full mt-1.5 py-2.5 border border-dashed border-red-500/50 hover:bg-red-100/50 hover:border-red-600/75 text-red-650 hover:text-red-700 font-bold text-xs rounded-xl cursor-pointer select-none flex items-center justify-center gap-1.5 transition-all"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>清除自定义图，复原出厂默认</span>
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })() : (
+                    <div className="flex-1 py-16 flex flex-col items-center justify-center gap-3 text-zinc-400 min-h-[300px]">
+                      <ShoppingBag className="w-12 h-12 text-zinc-300 stroke-1" />
+                      <div className="flex flex-col gap-0.5 items-center">
+                        <p className="text-xs text-zinc-700 font-bold">请从左侧全局商品列表中选择一款要进行封面升级的产品</p>
+                        <p className="text-[10px] text-zinc-400">选择后将在此呈献专有的手动一键图片上传、图片链接配置维护面板</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
         </div>

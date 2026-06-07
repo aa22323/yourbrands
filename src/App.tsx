@@ -502,6 +502,18 @@ export default function App() {
   const [isAdminConsoleOpen, setIsAdminConsoleOpen] = useState(false);
   const [showBalanceToast, setShowBalanceToast] = useState(false);
 
+  // Synchronically apply custom product images loaded/updated from Firebase to prevent flicker
+  useEffect(() => {
+    if (merchantsDb?.system_config?.customProductImages) {
+      const overrides = merchantsDb.system_config.customProductImages;
+      ALL_PRODUCTS.forEach(p => {
+        if (overrides[p.id]) {
+          p.image = overrides[p.id];
+        }
+      });
+    }
+  }, [merchantsDb]);
+
   // Referral code for invited merchant registrations
   const [referralCode, setReferralCode] = useState<string | null>(() => {
     try {
