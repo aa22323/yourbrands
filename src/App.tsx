@@ -1124,9 +1124,6 @@ export default function App() {
         '已扣除',
         `店家发货垫付境外高奢一件代发货源采购成本，包囊运单 [订单号: ${order.id}]`
       );
-
-      // Alert successful automatic deduction
-      alert(`🚀 [一件代发成功]\n\n系统已从您的商铺余额中自动扣划垫底采购货款 ¥${costPriceSum.toLocaleString()}！海外供应商已开始打包包裹，开始安排国际急速空运专线派送流转！`);
     }
 
     setOrders(prev => prev.map(o => {
