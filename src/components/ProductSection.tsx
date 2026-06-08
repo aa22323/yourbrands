@@ -198,8 +198,8 @@ export default function ProductSection({
           )}
         </div>
 
-        {/* Rich Dual-Row Grid Category Selector - Perfect wrap matching annotated region */}
-        <div className="flex flex-wrap gap-1.5 sm:gap-2 p-2 rounded-xl bg-zinc-50/50 border border-zinc-200/60">
+        {/* Rich Scrollable Horizontal Category Selector - Perfect snap, avoids vertical clutter, is highly usable and native with touch scroll */}
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
           {categories.map((cat) => (
             <button
               key={cat}
@@ -207,10 +207,10 @@ export default function ProductSection({
                 setSelectedCategory(cat);
                 setItemsPerPage(20);
               }}
-              className={`px-3 py-1.5 text-[11px] sm:text-xs font-bold rounded-lg cursor-pointer whitespace-nowrap transition-all duration-300 border ${
+              className={`px-3.5 py-1.5 text-[11px] sm:text-xs font-bold rounded-full cursor-pointer whitespace-nowrap transition-all duration-300 flex-shrink-0 border ${
                 selectedCategory === cat
                   ? 'bg-[#e51923] text-white border-transparent shadow-[0_2px_8px_rgba(229,25,35,0.2)] font-black scale-[1.02]'
-                  : 'bg-white text-zinc-600 border-zinc-250/70 hover:border-[#e51923]/40 hover:text-zinc-900 shadow-xxs'
+                  : 'bg-zinc-100 text-zinc-650 border-zinc-200/60 hover:text-[#e51923] font-semibold'
               }`}
             >
               {t(categoryKeys[cat] || cat)}
@@ -264,12 +264,12 @@ export default function ProductSection({
                   {product.category}
                 </div>
 
-                {/* Perfect square aspect image for standard catalog lists */}
-                <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 border-b border-zinc-100">
+                {/* Perfect square aspect image for standard catalog lists using robust padding-bottom lock */}
+                <div className="relative w-full pb-[100%] h-0 overflow-hidden bg-zinc-100 border-b border-zinc-100">
                   <img 
                     src={product.image} 
                     alt={product.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
@@ -593,6 +593,10 @@ export default function ProductSection({
           </div>
         )}
       </AnimatePresence>
+
+    </div>
+  );
+}
 
     </div>
   );
