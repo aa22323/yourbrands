@@ -668,10 +668,88 @@ function generate1000Products(): Product[] {
     const retailPrice = Math.max(costPrice + 100, Math.round(costPrice * markup / 100) * 100);
     const profit = retailPrice - costPrice;
     
-    let itemName = `${noun}${style} · No.${idCounter}`;
-    let itemDescription = `此款${noun}${style}是${adj}匠心力作。甄选卓越材质，精细融合现代与经典，为高阶美学生活家量身定制。`;
+    let itemName = '';
+    let itemDescription = '';
 
-    if (category === '香水' || category === '奢享沙龙香') {
+    if (category === '臻选腕表') {
+      const watchBrands = [
+        'Rolex 劳力士宇宙计型', 'Patek Philippe 百达翡丽源流', 'Audemars Piguet 爱彼皇家橡树', 
+        'Omega 欧米茄海马', 'Vacheron Constantin 江诗丹顿传袭', 'Cartier 卡地亚经典蓝气球', 
+        'IWC 万国表葡萄牙', 'Longines 浪琴名匠系列', 'Jaeger-LeCoultre 积家大师', 'Hublot 宇舶大爆炸'
+      ];
+      const watchDesigns = [
+        '全金圈 自动机械腕表', '镶钻刻度 奢华陀飞轮腕表', '碳纤维圈 计时运动表', '夜光超强 极速潜水腕表', 
+        '珐琅表盘 月相全历商务表', '超薄镂空 典雅收藏表', '极光蓝盘 运动计时男表', '玫瑰金镶钻 璀璨女士腕表'
+      ];
+      const watchMaterials = [
+        '(18K重金版)', '(高定防磁款)', '(秘境典藏系列)', '(钛金属极光版)', '(复刻金轮款)', '(冰蓝重磅限定)'
+      ];
+      
+      const brand = watchBrands[idCounter % watchBrands.length];
+      const design = watchDesigns[(idCounter + 2) % watchDesigns.length];
+      const material = watchMaterials[(idCounter + 4) % watchMaterials.length];
+      itemName = `${brand} ${design} ${material} · No.${idCounter}`;
+      itemDescription = `此款${itemName}搭载世界顶级全自动机械或精密度陀飞轮机芯，历时数千小时精雕细琢。兼具极致抗震与保值属性，是顶级制表工艺的巅峰之作。`;
+    } else if (category === '高级珠宝') {
+      const jewelryBrands = [
+        'Cartier 卡地亚重工', 'Bulgari 宝格丽经典', 'Tiffany & Co. 蒂芙尼浪漫', 
+        'Van Cleef & Arpels 梵克雅宝秘境', 'Chaumet 尚美巴黎高定', 'Harry Winston 海瑞温斯顿璀璨', 
+        'Chopard 萧邦臻选', 'Boucheron 宝诗龙复古'
+      ];
+      const jewelryGems = [
+        '18K白金 满钻梨形', '18K金 满天星圆融', '南洋金珠 吊坠级', '哥伦比亚祖母绿 重工折射', 
+        '帕拉伊巴蓝碧玺 迷人切割', '天然大单克拉 钻冕级', '精雕孔雀石 18K金锁骨', '白贝母高定 月光萦绕', 
+        '重磅红宝石 灼热之爱', '皇家蓝萨菲尔 瑰丽满钻'
+      ];
+      const jewelryTypes = [
+        '项链', '铂金戒指', '耳环套组', '编织手链', '灵蛇手镯', '传世胸针', '婚誓对戒'
+      ];
+
+      const brand = jewelryBrands[idCounter % jewelryBrands.length];
+      const gem = jewelryGems[(idCounter + 3) % jewelryGems.length];
+      const type = jewelryTypes[(idCounter + 1) % jewelryTypes.length];
+      itemName = `${brand} ${gem} ${type} · No.${idCounter}`;
+      itemDescription = `此款${itemName}由高奢定制工坊御用珠宝巨匠纯手工镶嵌而成。选用克拉级纯净彩钻与稀世矿物，线条优雅流转，是折射永恒奢光的传家之选。`;
+    } else if (category === '匠心皮具') {
+      const leatherBrands = [
+        'Hermes 经典莉纳', 'Chanel 优雅唇膏', 'Louis Vuitton 经典老花', 'Gucci 奢华双G', 
+        'Dior 戴妃高定', 'Goyard 经典印饰', 'Prada 复古羊皮', 'Bottega Veneta 编织皮艺', 
+        'YSL 优雅翻盖', 'Fendi 马鞍皮具', 'Celine 凯旋门印花', 'Loewe 大师拼皮', 'Balenciaga 褶皱机车'
+      ];
+      const leatherTypes = [
+        '手提皮包 (Handbag)', '双肩皮包 (Backpack)', '水桶皮包 (Bucket Bag)', '手拿皮包 (Clutch Bag)', 
+        '金扣链条皮包 (Flap Bag)', '高定大容量托特包 (Tote Bag)', '经典风琴公文包 (Briefcase)', 
+        '复古马鞍皮包 (Saddle Bag)', '法棍腋下皮包 (Baguette Bag)', '重工波士顿手袋 (Boston Bag)', 
+        '休闲邮差斜挎包 (Messenger Bag)', '信封皮夹卡包 (Accordion Wallet)'
+      ];
+      const leatherColors = [
+        '极夜黑', '经典象牙白', '波尔多红', '青瓷暗绿', '太妃金棕', '冰川浅蓝', '玫瑰深粉', '日落暖橘'
+      ];
+
+      const brand = leatherBrands[idCounter % leatherBrands.length];
+      const color = leatherColors[(idCounter + 2) % leatherColors.length];
+      const type = leatherTypes[(idCounter + 5) % leatherTypes.length];
+      itemName = `${brand} ${color} ${type} · No.${idCounter}`;
+      itemDescription = `此款${itemName}甄选全球最优质皮革拼皮材质，融合大师级纯手工缝线工艺，容量合理，完美搭衬先锋奢尚，彰显极致法式优雅风情。`;
+    } else if (category === '大师器物') {
+      const utensilStyles = [
+        '景德镇手制 青花缠枝', '宜兴名窑 手作朱泥', '龙泉官窑 仿宋粉青', '柴烧粗陶 冰裂流釉', 
+        '掐丝珐琅 御用宫廷手工', '大漆螺钿 雕填描金', '手工吹制 极光琉璃', '大师制 纯铜手锤纹'
+      ];
+      const utensilObjects = [
+        '茶盏套组', '公道提梁杯', '玄关迎宾花器', '禅意双耳香炉', '温酒高足执壶', '多功能干泡盘', 
+        '博古架山水陈设摆件', '极简插花瓷瓶', '琢面随手茶杯'
+      ];
+      const utensilDescriptors = [
+        '【大师传世之作】', '【限量窑变孤品】', '【古法非遗传承】', '【一砂一界禅定版】', '【重磅精修典藏】'
+      ];
+
+      const styleSel = utensilStyles[idCounter % utensilStyles.length];
+      const obj = utensilObjects[(idCounter + 4) % utensilObjects.length];
+      const desc = utensilDescriptors[(idCounter + 1) % utensilDescriptors.length];
+      itemName = `${styleSel} ${obj} ${desc} · No.${idCounter}`;
+      itemDescription = `此款${itemName}完美凝聚非物质文化遗产传承工艺。一触一抚皆能感受到手工制作的人文温度与至真之美，是高阶收藏家书房茶台上的绝佳雅器。`;
+    } else if (category === '香水' || category === '奢享沙龙香') {
       const perfumeNames = [
         '荒野玫瑰沙龙高定香水', '蔚蓝深海极境男士古龙水', '无人区午后乌木沙龙香',
         '极光白麝香私享淡香氛', '薄荷森林清晨秘境冷香', '鎏金琥珀高阶无香精沙龙香',

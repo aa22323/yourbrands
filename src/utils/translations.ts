@@ -3548,6 +3548,59 @@ export function translateProduct(product: any, lang: AppLanguage): any {
     };
   }
 
+  // 3.5 Custom checks for high-luxury categories
+  if (product.category === '臻选腕表' || product.category === '高级珠宝' || product.category === '匠心皮具' || product.category === '大师器物') {
+    let transDesc = product.description;
+    let transName = product.name;
+
+    // For non-Chinese languages, provide highly polished high-luxury description translations on the fly
+    if (product.category === '臻选腕表') {
+      const descTemplates: Record<Exclude<AppLanguage, 'zh'>, string> = {
+        en: `Equipped with the world's finest automatic mechanical or tourbillon movement, meticulously crafted over thousands of hours. Combining extreme shock resistance with long-term collection value, it represents the absolute pinnacle of luxury horological art.`,
+        es: `Equipado con el movimiento mecánico automático o tourbillon más fino del mundo, meticulosamente fabricado durante miles de horas. Un pináculo del arte relojero de lujo.`,
+        ja: `何千時間もの精巧な細工を経て開発された、世界最高レベルの自動巻きまたはトゥールビヨン・ムーブメントを搭載。極限の耐衝撃性と高い資産価値を兼ね備えた、時計芸術の最高峰。`,
+        ko: `수천 시간의 정교한 세공을 결합한 세계 최고급 오토매틱 기계식 무브먼트 또는 투르비옹을 탑재하였습니다. 뛰어난 내구성과 자산 소장 가치를 지닌 하이엔드 워치 메이킹의 절대적 결정체입니다.`,
+        vi: `Trang bị bộ chuyển động cơ học tự động hoặc tourbillon tinh xảo nhất thế giới, được chế tác tỉ mỉ trong hàng ngàn giờ. Độc đáo tuyệt đối, bảo chứng giá trị cao quý cho chủ sở hữu.`
+      };
+      transDesc = descTemplates[lang as Exclude<AppLanguage, 'zh'>] || product.description;
+    } else if (product.category === '高级珠宝') {
+      const descTemplates: Record<Exclude<AppLanguage, 'zh'>, string> = {
+        en: `Hand-set by master artisans in a haute joaillerie atelier. Handpicked precious gemstones and pristine carat diamonds set in elegant structures reflecting eternal brilliance — a perfect heirloom choice.`,
+        es: `Engastado a mano por maestros artesanos en un taller de alta joyería. Gemas preciosas seleccionadas a mano y diamantes de quilates impecables que reflejan un brillo eterno.`,
+        ja: `ハイジュエリー工房の専属職人によって手作業でセッティングされた極上の芸術品。厳選されたクオリティの大粒ダイヤモンドと貴重な貴石が、眩い輝きを優美に放つ生涯の逸品。`,
+        ko: `고급 커스텀 주얼리 공방의 예술 거장에 의해 전 공정 수작업으로 마감되었습니다. 엄선된 캐럿급 다이아몬드와 유색 보석의 환상적인 매치로 찬연하게 빛나는 명품 자산입니다.`,
+        vi: `Được đính đá hoàn toàn thủ công bởi các nghệ nhân chế tác trang sức bậc thầy trong xưởng nghệ thuật độc bản. Sử dụng các loại đá quý tinh tuyển phản chiếu ánh sáng vĩnh cửu.`
+      };
+      transDesc = descTemplates[lang as Exclude<AppLanguage, 'zh'>] || product.description;
+    } else if (product.category === '匠心皮具') {
+      const descTemplates: Record<Exclude<AppLanguage, 'zh'>, string> = {
+        en: `Individually crafted from the world's most premium saddle or calfskin leather. Accented with masterful stitching, this bag offers premium space, timeless geometry, and absolute elegance matching any haute lifestyle.`,
+        es: `Elaborado individualmente con los cueros de becerro o montura más premiums del mundo. Con costuras magistrales, ofrece espacio premium, geometría clásica y elegancia absoluta.`,
+        ja: `世界最高峰のサドルレザーやプレミアムカーフを贅沢に採用。熟練の縫製技術により、機能性と美しい幾何学的ラインを結び、洗練されたエレガンスを毎日の洗练に加えます。`,
+        ko: `세계 최고급 이탈리아 및 프랑스 명품 가죽 원단을 사용하여 완성된 핸드메이드 스... 티치 가방입니다. 넉넉하고 정돈된 수납 공간과 클래식한 비례감으로 품격 있는 아우라를 완성해 줍니다.`,
+        vi: `Được chế tác thủ công bằng tay từ nguồn da bê cao cấp thượng hạng nhất thế giới, phối hợp với các đường chỉ khâu tay tinh xảo. Đem lại phom dáng hoàn hảo, thanh lịch đúng đẳng cấp.`
+      };
+      transDesc = descTemplates[lang as Exclude<AppLanguage, 'zh'>] || product.description;
+    } else if (product.category === '大师器物') {
+      const descTemplates: Record<Exclude<AppLanguage, 'zh'>, string> = {
+        en: `A master-level work fusing cultural heritage and pristine design. Every touch reveals the warmth and beauty of artisanal craftsmanship, making it a stellar collector piece for fine spaces.`,
+        es: `Una obra de nivel maestro que fusiona el patrimonio cultural y el diseño impecable. Cada toque revela la calidez y belleza de la artesanía excepcional.`,
+        ja: `伝統的な非物質文化遺産への深いリスペクトとモダンな美意識を凝縮したマスターピース。一目見て、触れるだけで伝わる素材の奥行きと生命力。空間を彩る極上の調度品。`,
+        ko: `문화 유산 기술 전수 장인의 손끝에서 탄생한 최고 형태의 예술 감상 도구이자 식기입니다. 손길이 닿을 때마다 느껴지는 장인의 노력과 미학은 주거 공간의 가치를 드높입니다.`,
+        vi: `Tác phẩm gốm sứ/vật phẩm thủ công hội tụ tinh hoa làng nghề di sản phi vật thể. Mỗi đường nét đều toát lên hơi ấm nghệ thuật và vẻ đẹp tao nhã, thanh quý cao sang.`
+      };
+      transDesc = descTemplates[lang as Exclude<AppLanguage, 'zh'>] || product.description;
+    }
+
+    return {
+      ...product,
+      sku: translatedSku,
+      name: transName,
+      description: transDesc,
+      category: CATEGORIES_MAP[product.category]?.[lang] || product.category
+    };
+  }
+
   // 4. Fallback parser for dynamically generated 1000 items (pattern name: NOUN + STYLE)
   let translatedName = product.name;
   let translatedDesc = product.description;
