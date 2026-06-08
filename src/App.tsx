@@ -1863,22 +1863,22 @@ export default function App() {
 
         </div>
 
-        {/* Premium Floating Base Tabbar with exact Luxury Red & White Accents */}
+        {/* Premium Floating Base Tabbar - Balanced 4-column responsive grid to absolutely prevent horizontal overflow on all mobile screens */}
         <div className="fixed bottom-0 left-0 right-0 bg-white/95 border-t border-zinc-200 z-40 backdrop-blur-xl select-none shadow-[0_-6px_20px_rgba(0,0,0,0.06)]">
-          <div className="max-w-7xl mx-auto px-6 py-2.5 flex justify-around items-center w-full">
+          <div className="max-w-7xl mx-auto px-2 sm:px-6 py-2.5 grid grid-cols-4 w-full">
           {/* Tab 1 */}
           <button 
             type="button"
             id="tab-home"
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${
+            className={`flex flex-col items-center justify-center gap-1 cursor-pointer transition-all w-full min-w-0 ${
               activeTab === 'home' 
                 ? 'text-[#e51923] scale-105 font-bold' 
                 : 'text-zinc-400 hover:text-zinc-650'
             }`}
           >
-            <Home className="w-5 h-5 transition-transform" />
-            <span className="text-[10px] tracking-widest font-sans font-medium">{t('tabHome')}</span>
+            <Home className="w-5 h-5 shrink-0 transition-transform" />
+            <span className="text-[10px] tracking-wide font-sans font-medium truncate w-full text-center">{t('tabHome')}</span>
           </button>
 
           {/* Tab 2 */}
@@ -1886,14 +1886,14 @@ export default function App() {
             type="button"
             id="tab-pick"
             onClick={() => setActiveTab('pick')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${
+            className={`flex flex-col items-center justify-center gap-1 cursor-pointer transition-all w-full min-w-0 ${
               activeTab === 'pick' 
                 ? 'text-[#e51923] scale-105 font-bold' 
                 : 'text-zinc-400 hover:text-zinc-650'
             }`}
           >
-            <ShoppingBag className="w-5 h-5 transition-transform" />
-            <span className="text-[10px] tracking-widest font-sans font-medium">{t('tabPick')}</span>
+            <ShoppingBag className="w-5 h-5 shrink-0 transition-transform" />
+            <span className="text-[10px] tracking-wide font-sans font-medium truncate w-full text-center">{t('tabPick')}</span>
           </button>
 
           {/* Tab 3: Cart */}
@@ -1901,21 +1901,21 @@ export default function App() {
             type="button"
             id="tab-cart"
             onClick={() => setActiveTab('cart')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-all relative ${
+            className={`flex flex-col items-center justify-center gap-1 cursor-pointer transition-all relative w-full min-w-0 ${
               activeTab === 'cart' 
                 ? 'text-[#e51923] scale-105 font-bold' 
                 : 'text-zinc-400 hover:text-zinc-650'
             }`}
           >
-            <div className="relative">
-              <ShoppingCart className="w-5 h-5 transition-transform" />
+            <div className="relative flex justify-center">
+              <ShoppingCart className="w-5 h-5 shrink-0 transition-transform" />
               {cartItems.length > 0 && (
                 <span className="absolute -top-1.5 -right-2 bg-[#e51923] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold font-mono">
                   {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
                 </span>
               )}
             </div>
-            <span className="text-[10px] tracking-widest font-sans font-medium">{t('tabCart')}</span>
+            <span className="text-[10px] tracking-wide font-sans font-medium truncate w-full text-center">{t('tabCart')}</span>
           </button>
 
           {/* Tab 4 */}
@@ -1923,14 +1923,14 @@ export default function App() {
             type="button"
             id="tab-profile"
             onClick={() => setActiveTab('profile')}
-            className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${
+            className={`flex flex-col items-center justify-center gap-1 cursor-pointer transition-all w-full min-w-0 ${
               activeTab === 'profile' 
                 ? 'text-[#e51923] scale-105 font-bold' 
                 : 'text-zinc-400 hover:text-zinc-650'
             }`}
           >
-            <User className="w-5 h-5 transition-transform" />
-            <span className="text-[10px] tracking-widest font-sans font-medium">{t('tabProfile')}</span>
+            <User className="w-5 h-5 shrink-0 transition-transform" />
+            <span className="text-[10px] tracking-wide font-sans font-medium truncate w-full text-center">{t('tabProfile')}</span>
           </button>
           </div>
         </div>
