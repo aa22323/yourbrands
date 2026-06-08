@@ -24,7 +24,7 @@ import ProfileView from './components/ProfileView';
 import CartView from './components/CartView';
 import MyShopModal from './components/MyShopModal';
 import AdminDashboardView from './components/AdminDashboardView';
-import { AppLanguage, TRANSLATIONS } from './utils/translations';
+import { AppLanguage, TRANSLATIONS, setProductImageOverrides } from './utils/translations';
 
 export default function App() {
   const isPollingUpdateRef = useRef<boolean>(false);
@@ -451,6 +451,9 @@ export default function App() {
     };
   });
 
+  // Synchronize custom product image overrides to translation registry synchronously inside the render cycle
+  setProductImageOverrides(merchantsDb?.system_config?.customProductImages || {});
+
   // Combine registeredUsers and merchantsDb saving into a single atomic payload to prevent write race conditions
   useEffect(() => {
     // CRITICAL: Avoid saving on initial mount before we have successfully fetched the master database from the server.
@@ -598,6 +601,7 @@ export default function App() {
   useEffect(() => {
     if (merchantsDb?.system_config?.customProductImages) {
       const overrides = merchantsDb.system_config.customProductImages;
+      setProductImageOverrides(overrides);
       ALL_PRODUCTS.forEach(p => {
         if (overrides[p.id]) {
           p.image = overrides[p.id];

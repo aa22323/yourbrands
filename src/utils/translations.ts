@@ -3471,12 +3471,25 @@ const PERFUME_TRANSLATIONS: Record<string, Record<Exclude<AppLanguage, 'zh'>, { 
   }
 };
 
+let productImageOverrides: Record<string, string> = {};
+
+export function setProductImageOverrides(overrides: Record<string, string>) {
+  productImageOverrides = overrides;
+}
+
 /**
  * Translates a given product on-the-fly depending on the selected language.
  * Keeps the administrative backend strictly in Chinese, while full localized translations are returned 
  * on the merchant store view of the frontend applet!
  */
 export function translateProduct(product: any, lang: AppLanguage): any {
+  // Always apply custom base64 image overrides immediately during the render cycle if present
+  const baseImage = productImageOverrides[product.id] || product.image;
+  const overridden = { ...product, image: baseImage };
+  return translateProductInner(overridden, lang);
+}
+
+function translateProductInner(product: any, lang: AppLanguage): any {
   if (lang === 'zh') return product;
 
   const translatedSku = translateSku(product.sku, lang);
