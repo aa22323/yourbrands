@@ -17,7 +17,7 @@ let firebaseConfig: any = fallbackConfig;
 
 try {
   // 动态导入配置，避免本地没有此文件时打包报错
-  const activeAppletConfig = import.meta.glob("../firebase-applet-config.json", { eager: true, import: "default" })["../firebase-applet-config.json"];
+  const activeAppletConfig = (import.meta as any).glob("../firebase-applet-config.json", { eager: true, import: "default" })["../firebase-applet-config.json"];
   if (activeAppletConfig && (activeAppletConfig as any).projectId) {
     firebaseConfig = activeAppletConfig;
     console.log("Connected successfully to permanent AI Studio Database: ", firebaseConfig.projectId);

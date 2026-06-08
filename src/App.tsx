@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from './firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { 
   Home, ShoppingBag, User, Sparkles, Wifi, Battery, Radio, 
   Clock, Share2, Compass, AlertCircle, HelpCircle, ShoppingCart,
@@ -31,6 +31,7 @@ export default function App() {
   const lastMutationTimeRef = useRef<number>(0);
   const lastFetchedDataRef = useRef<{ registeredUsers: any[]; merchantsDb: Record<string, any> } | null>(null);
   const hasFetchedRef = useRef<boolean>(false);
+  const prevCustomImagesRef = useRef<Record<string, string>>({});
   
   // 1. Core State Handlers
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -196,37 +197,80 @@ export default function App() {
   // Load initial remote database data if available for real-time full-stack multi-user sync
   useEffect(() => {
     let active = true;
+    let isInitial = true;
+    const loadedCustomImages: Record<string, string> = {};
+
     const fetchDb = async () => {
       // If we recently performed a local mutation, wait to prevent race conditions
       if (Date.now() - lastMutationTimeRef.current < 8000) {
         return;
       }
       try {
-        const docRef = doc(db, 'system_data', 'aliexpress_database');
-        const docSnap = await getDoc(docRef);
-        if (!active) return;
-        
+        let incomingUsers: any[] = [];
+        let incomingMerchants: Record<string, any> = {};
+
+        if (isInitial) {
+          // One-shot compilation from the entire system_data collection to extract custom images and main DB simultaneously
+          const querySnapshot = await getDocs(collection(db, 'system_data'));
+          if (!active) return;
+
+          querySnapshot.forEach((docSnap) => {
+            const id = docSnap.id;
+            if (id === 'aliexpress_database') {
+              const d = docSnap.data();
+              incomingUsers = d.registeredUsers || [];
+              incomingMerchants = d.merchantsDb || {};
+            } else if (id.startsWith('custom_image_')) {
+              const productId = id.replace('custom_image_', '');
+              const d = docSnap.data();
+              if (d && d.image) {
+                loadedCustomImages[productId] = d.image;
+              }
+            }
+          });
+          isInitial = false;
+        } else {
+          // Subsequent small-packet real-time metadata syncing (poll only the essential aliexpress_database doc)
+          const docRef = doc(db, 'system_data', 'aliexpress_database');
+          const docSnap = await getDoc(docRef);
+          if (!active) return;
+
+          if (docSnap.exists()) {
+            const d = docSnap.data();
+            incomingUsers = d.registeredUsers || [];
+            incomingMerchants = d.merchantsDb || {};
+          }
+        }
+
         hasFetchedRef.current = true; // Complete the initial fetch
         if (Date.now() - lastMutationTimeRef.current < 8000) {
           return;
         }
 
-        let data: any = { registeredUsers: [], merchantsDb: {} };
-        if (docSnap.exists()) {
-          data = docSnap.data();
-        } else {
-          console.log("No document in Firestore yet. Default initialized values will be seeded upon write.");
+        // Lazy-load check: if other admins added images not present in our local state, fetch them lazy on-the-fly
+        const cloudImagesDict = incomingMerchants.system_config?.customProductImages || {};
+        for (const pId of Object.keys(cloudImagesDict)) {
+          if (!loadedCustomImages[pId] && !prevCustomImagesRef.current[pId]) {
+            try {
+              const imgSnap = await getDoc(doc(db, 'system_data', `custom_image_${pId}`));
+              if (imgSnap.exists()) {
+                const imgData = imgSnap.data();
+                if (imgData?.image) {
+                  loadedCustomImages[pId] = imgData.image;
+                }
+              }
+            } catch (imageErr) {
+              console.warn(`Failed lazy-loading custom image for product ${pId}:`, imageErr);
+            }
+          }
         }
 
         isPollingUpdateRef.current = true;
 
-        lastFetchedDataRef.current = {
-          registeredUsers: data.registeredUsers || [],
-          merchantsDb: data.merchantsDb || {}
-        };
-
-        const incomingUsers = data.registeredUsers || [];
-        const incomingMerchants = { ...(data.merchantsDb || {}) };
+        // Ensure system_config exists
+        if (!incomingMerchants.system_config) {
+          incomingMerchants.system_config = {};
+        }
 
         // Pre-populate missing profile structures for registered users in merchantsDb
         incomingUsers.forEach((u: any) => {
@@ -273,13 +317,34 @@ export default function App() {
         }
 
         setMerchantsDb(prev => {
-          // If Firestore is completely fresh and empty, keep current local state (e.g. seeded with admin/oopqwe001)
           if (Object.keys(incomingMerchants).length === 0) {
             return prev;
           }
+          
+          const prevCustomImages = prev.system_config?.customProductImages || {};
           const merged = { ...prev, ...incomingMerchants };
           
-          // Apply custom image overrides on raw ALL_PRODUCTS immediately upon database fetch to ensure zero-delay reactivity
+          if (merged.system_config) {
+            merged.system_config.customProductImages = {
+              ...(merged.system_config.customProductImages || {}), // holds true flags indicating presence
+              ...prevCustomImages, // restore locally active in-memory base64 strings
+              ...loadedCustomImages // overlay initial files loaded on boot
+            };
+
+            // Purge pure boolean "true" placekeepers and guarantee strings
+            Object.keys(merged.system_config.customProductImages).forEach(k => {
+              if (merged.system_config.customProductImages[k] === true) {
+                const localBase = prevCustomImages[k] || loadedCustomImages[k];
+                if (localBase) {
+                  merged.system_config.customProductImages[k] = localBase;
+                } else {
+                  delete merged.system_config.customProductImages[k];
+                }
+              }
+            });
+          }
+          
+          // Apply custom image overrides on raw ALL_PRODUCTS immediately upon database fetch
           if (merged.system_config?.customProductImages) {
             const overrides = merged.system_config.customProductImages;
             ALL_PRODUCTS.forEach(p => {
@@ -414,9 +479,25 @@ export default function App() {
     localStorage.setItem('aliexpress_registered_users_list', JSON.stringify(registeredUsers));
     localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(merchantsDb));
 
-    // Save directly to cloud Firestore system_data collection
+    // Save directly to cloud Firestore system_data collection (sanitize customProductImages to keep it ultra-lightweight and stay under 1MB limits)
     const docRef = doc(db, 'system_data', 'aliexpress_database');
-    setDoc(docRef, { registeredUsers, merchantsDb })
+    
+    const sanitizedMerchantsDb = { ...merchantsDb };
+    if (sanitizedMerchantsDb.system_config) {
+      const lightImages: Record<string, boolean> = {};
+      const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
+      Object.keys(currentImages).forEach(pId => {
+        if (currentImages[pId]) {
+          lightImages[pId] = true; // Use true flag as a placeholder/marker instead of the actual heavy Base64 data
+        }
+      });
+      sanitizedMerchantsDb.system_config = {
+        ...sanitizedMerchantsDb.system_config,
+        customProductImages: lightImages
+      };
+    }
+
+    setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb })
       .then(() => {
         console.log("Successfully back-propagated state updates to cloud Firebase Firestore.");
       })
@@ -925,13 +1006,44 @@ export default function App() {
     const key = targetAccount.toLowerCase();
     
     if (key === 'system_config') {
-      setMerchantsDb(prev => ({
-        ...prev,
-        system_config: {
+      setMerchantsDb(prev => {
+        const nextConfig = {
           ...(prev.system_config || {}),
           ...updatedFields
+        };
+
+        // Real-time custom product image synchronization to dedicated Firestore documents inside the 'system_data' collection
+        if (updatedFields.customProductImages) {
+          const imagesObj = updatedFields.customProductImages;
+          const previousImages = prev.system_config?.customProductImages || {};
+
+          // Delete any images that were removed in the updated state dictionary
+          Object.keys(previousImages).forEach(productId => {
+            if (!imagesObj[productId]) {
+              const imgDocRef = doc(db, 'system_data', `custom_image_${productId}`);
+              deleteDoc(imgDocRef)
+                .then(() => console.log(`Deleted custom product image document: system_data/custom_image_${productId}`))
+                .catch(e => console.error(`Error deleting custom image document for product ${productId}:`, e));
+            }
+          });
+
+          // Sync new or updated base64 image strings to separate Firestore documents to bypass 1MB single-doc limit
+          Object.keys(imagesObj).forEach(productId => {
+            const imgBase64 = imagesObj[productId];
+            if (imgBase64 && previousImages[productId] !== imgBase64) {
+              const imgDocRef = doc(db, 'system_data', `custom_image_${productId}`);
+              setDoc(imgDocRef, { image: imgBase64 })
+                .then(() => console.log(`Custom product image synced cleanly: system_data/custom_image_${productId}`))
+                .catch(e => console.error(`Error saving custom image document for product ${productId}:`, e));
+            }
+          });
         }
-      }));
+
+        return {
+          ...prev,
+          system_config: nextConfig
+        };
+      });
       return;
     }
     

@@ -115,7 +115,7 @@ export default function AdminDashboardView({
     setSelectedProduct(null);
   }, [selectedMerchant]);
 
-  // Get keys of all merchants in DB (Memoized and Filtered by Salesman)
+  // Get keys of all merchants in DB (Memoized and Filtered by Salesman with Self-shop Support)
   const merchantKeys = useMemo(() => {
     const keys = Object.keys(merchantsDb).filter(k => k !== 'system_config');
     if (!isSalesman) return keys;
@@ -126,6 +126,7 @@ export default function AdminDashboardView({
       if (!m) return false;
       const promotedBy = m.promotedBy?.toLowerCase() || '';
       return (
+        k === currentUser.toLowerCase() ||
         promotedBy === currentUser.toLowerCase() ||
         (salesmanId && promotedBy === salesmanId.toLowerCase())
       );
@@ -2619,7 +2620,7 @@ export default function AdminDashboardView({
                               const loaded: { id: string; name: string; base64: string }[] = [];
                               
                               for (let i = 0; i < limitFiles.length; i++) {
-                                const file = limitFiles[i];
+                                const file = limitFiles[i] as any;
                                 if (!file.type.startsWith('image/')) continue;
                                 if (file.size > 2200000) {
                                   setBatchErrorMessage(`图片「${file.name}」超过 2.2MB 限制，已被忽略`);
