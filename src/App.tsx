@@ -1809,6 +1809,7 @@ export default function App() {
                   searchQuery={globalSearchQuery}
                   onSearchQueryChange={setGlobalSearchQuery}
                   language={appLanguage}
+                  customProductImages={merchantsDb?.system_config?.customProductImages}
                 />
               )}
 

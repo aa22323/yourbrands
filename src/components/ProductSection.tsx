@@ -19,6 +19,7 @@ interface ProductSectionProps {
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   language?: AppLanguage;
+  customProductImages?: Record<string, string>;
 }
 
 export default function ProductSection({
@@ -30,7 +31,8 @@ export default function ProductSection({
   onAddToCart,
   searchQuery,
   onSearchQueryChange,
-  language = 'zh'
+  language = 'zh',
+  customProductImages
 }: ProductSectionProps) {
   // Category & Search State
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
@@ -95,7 +97,7 @@ export default function ProductSection({
 
     // Translate each product on-the-fly depending on selected language
     return list.map(item => translateProduct(item, language));
-  }, [viewRole, shop.addedProductIds, selectedCategory, searchQuery, language]);
+  }, [viewRole, shop.addedProductIds, selectedCategory, searchQuery, language, customProductImages]);
 
   // Paginated viewing for rendering performance of 1000 products
   const visibleProducts = useMemo(() => {
