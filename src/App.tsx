@@ -278,6 +278,17 @@ export default function App() {
             return prev;
           }
           const merged = { ...prev, ...incomingMerchants };
+          
+          // Apply custom image overrides on raw ALL_PRODUCTS immediately upon database fetch to ensure zero-delay reactivity
+          if (merged.system_config?.customProductImages) {
+            const overrides = merged.system_config.customProductImages;
+            ALL_PRODUCTS.forEach(p => {
+              if (overrides[p.id]) {
+                p.image = overrides[p.id];
+              }
+            });
+          }
+
           if (JSON.stringify(prev) !== JSON.stringify(merged)) {
             return merged;
           }

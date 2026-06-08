@@ -93,6 +93,13 @@ export default function AdminDashboardView({
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [directUrlInput, setDirectUrlInput] = useState('');
 
+  // States for Category-Based Sequential Batch Upload Manager
+  const [showBatchUploadPanel, setShowBatchUploadPanel] = useState(false);
+  const [batchTargetCategory, setBatchTargetCategory] = useState('臻选腕表');
+  const [uploadedBatchFiles, setUploadedBatchFiles] = useState<{ id: string; name: string; base64: string }[]>([]);
+  const [isProcessingBatch, setIsProcessingBatch] = useState(false);
+  const [batchErrorMessage, setBatchErrorMessage] = useState<string | null>(null);
+
   // Local state for Global Customer Service Link
   const [csLinkInput, setCsLinkInput] = useState(() => {
     return merchantsDb?.system_config?.customerServiceLink || '';
@@ -2529,6 +2536,265 @@ export default function AdminDashboardView({
                   <span>在此处手动上传图片，新图会被直接连协合并存入云端数据库系统配置。全网商铺的上架展示界面、店铺详情页、购物车、派单列表都会在一秒内即时呈现新图，不影响原本任何系统固有属性！</span>
                 </div>
               </div>
+
+              {/* Advanced Efficiency: Batch Cover Art Auto-Replacing Helper */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-zinc-50 border border-zinc-200 p-4 rounded-2xl">
+                <div className="flex flex-col gap-1 text-left flex-1">
+                  <span className="text-xs font-black text-zinc-900 flex items-center gap-1.5">
+                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    🚀 极速效率：按商品分类批量一键【顺序配图】助手
+                  </span>
+                  <span className="text-[10.5px] text-zinc-500 leading-relaxed">
+                    如果您已准备好了一组（如10张或100张）精美图片，希望一次性自动顺序更新某个分类（如“臻选腕表”）的所有商品，只需在此开启控制台，按本地文件顺序一一对应更新！
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBatchUploadPanel(!showBatchUploadPanel);
+                    setUploadedBatchFiles([]);
+                    setBatchErrorMessage(null);
+                  }}
+                  className={`text-[11px] font-black px-4 py-2 rounded-xl border cursor-pointer transition-all flex items-center gap-2 shrink-0 ${
+                    showBatchUploadPanel
+                      ? 'bg-zinc-950 border-zinc-950 text-white shadow-sm'
+                      : 'bg-emerald-600 hover:bg-emerald-700 border-emerald-600 text-white shadow-xs font-sans'
+                  }`}
+                >
+                  {showBatchUploadPanel ? '✕ 关闭批量配图' : '⚡ 开启批量配图工作台'}
+                </button>
+              </div>
+
+              {showBatchUploadPanel && (
+                <div className="bg-emerald-50/30 border border-emerald-200 p-5 rounded-2xl flex flex-col gap-4 text-left animate-fade-in">
+                  <div className="border-b border-emerald-200/80 pb-2.5 flex justify-between items-center">
+                    <span className="text-[11px] font-black text-emerald-900 uppercase tracking-wide">
+                      📂 类目商品顺序配图工作台 (BATCH CATEGORY PRODUCT GRAPHICS WORKSTATION)
+                    </span>
+                    <span className="text-[9px] text-emerald-700 font-mono font-black bg-emerald-100 px-2 py-0.5 rounded-md">
+                      STATUS: ACTIVE
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+                    {/* Step 1 & 2: Controls details */}
+                    <div className="flex flex-col gap-3.5 bg-white p-4 rounded-xl border border-emerald-100 shadow-3xs">
+                      <div>
+                        <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-wider mb-1">
+                          第 1 步：挑选目标商品类目
+                        </label>
+                        <select
+                          value={batchTargetCategory}
+                          onChange={(e) => {
+                            setBatchTargetCategory(e.target.value);
+                            setUploadedBatchFiles([]);
+                          }}
+                          className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-2 px-3 text-xs text-zinc-800 cursor-pointer focus:outline-none focus:border-emerald-600 focus:bg-white font-sans font-bold"
+                        >
+                          {['臻选腕表', '奢享沙龙香', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'].map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
+                        <span className="text-[10px] text-zinc-400 mt-1 block font-semibold">
+                          该分类下系统现有可配图商品数: <strong className="text-emerald-600 font-bold">{ALL_PRODUCTS.filter(p => p.category === batchTargetCategory).length}</strong> 款
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-black text-zinc-500 uppercase tracking-wider mb-1">
+                          第 2 步：选择或拖拽本地图片
+                        </label>
+                        <div className="relative border-2 border-dashed border-emerald-200 hover:border-emerald-400 rounded-xl p-5 text-center bg-emerald-50/15 hover:bg-emerald-50/30 transition-colors cursor-pointer group">
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={async (e) => {
+                              if (!e.target.files) return;
+                              setBatchErrorMessage(null);
+                              const filesArray = Array.from(e.target.files);
+                              if (filesArray.length === 0) return;
+                              
+                              const limitFiles = filesArray.slice(0, 150);
+                              const loaded: { id: string; name: string; base64: string }[] = [];
+                              
+                              for (let i = 0; i < limitFiles.length; i++) {
+                                const file = limitFiles[i];
+                                if (!file.type.startsWith('image/')) continue;
+                                if (file.size > 2200000) {
+                                  setBatchErrorMessage(`图片「${file.name}」超过 2.2MB 限制，已被忽略`);
+                                  continue;
+                                }
+                                
+                                const base64 = await new Promise<string>((resolve) => {
+                                  const reader = new FileReader();
+                                  reader.onload = (re) => resolve(re.target?.result as string);
+                                  reader.readAsDataURL(file);
+                                });
+                                loaded.push({
+                                  id: `file-${i}-${Date.now()}`,
+                                  name: file.name,
+                                  base64
+                                });
+                              }
+                              
+                              // Sort filenames naturally to align sequential indices cleanly
+                              loaded.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+                              setUploadedBatchFiles(loaded);
+                            }}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          <Plus className="w-5 h-5 text-emerald-600 mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
+                          <span className="text-[11px] font-black text-emerald-950 block">点击本区域 或 将多张图片批量拖拽到此处</span>
+                          <span className="text-[10px] text-zinc-400 block mt-1">支持 PNG, JPG, JPEG, WEBP | 一次最高更新 150 款</span>
+                        </div>
+                      </div>
+
+                      {batchErrorMessage && (
+                        <div className="text-[10.5px] text-red-650 bg-red-50 border border-red-150 p-2 rounded-lg font-bold">
+                          ⚠️ {batchErrorMessage}
+                        </div>
+                      )}
+
+                      {uploadedBatchFiles.length > 0 && (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setUploadedBatchFiles([])}
+                            className="flex-1 bg-zinc-100 hover:bg-zinc-200 border border-zinc-250 text-zinc-650 py-2 rounded-xl text-xs font-bold cursor-pointer transition-colors"
+                          >
+                            清空重选
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                setIsProcessingBatch(true);
+                                const categoryProducts = ALL_PRODUCTS.filter(p => p.category === batchTargetCategory);
+                                const currentOverrides = { ...(merchantsDb?.system_config?.customProductImages || {}) };
+                                
+                                const updateCount = Math.min(uploadedBatchFiles.length, categoryProducts.length);
+                                for (let i = 0; i < updateCount; i++) {
+                                  const targetP = categoryProducts[i];
+                                  const imageStr = uploadedBatchFiles[i].base64;
+                                  currentOverrides[targetP.id] = imageStr;
+                                }
+
+                                onUpdateMerchantData('system_config', {
+                                  customProductImages: currentOverrides
+                                });
+
+                                setActionSuccessMessage(`🎉 批量顺序配图大功告成！已对「${batchTargetCategory}」里的 ${updateCount} 款商品大图进行了顺序更新替换！`);
+                                setMessageType('success');
+                                setUploadedBatchFiles([]);
+                                setShowBatchUploadPanel(false);
+                                setTimeout(() => setActionSuccessMessage(null), 5000);
+                              } catch (err: any) {
+                                setBatchErrorMessage(err.message || '批量上传失败，请重新试一下');
+                              } finally {
+                                setIsProcessingBatch(false);
+                              }
+                            }}
+                            disabled={isProcessingBatch}
+                            className="flex-[2] bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2 rounded-xl text-xs cursor-pointer shadow-md shadow-emerald-900/10 transition-colors flex items-center justify-center gap-1.5"
+                          >
+                            {isProcessingBatch ? (
+                              <>
+                                <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                                正在顺序写入云端...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                确认顺序更新 {Math.min(uploadedBatchFiles.length, ALL_PRODUCTS.filter(p => p.category === batchTargetCategory).length)} 款大图
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Step 3: Predictive Matching Visualizer */}
+                    <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl flex flex-col gap-2.5">
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider block">
+                        第 3 步：一合一顺序替换预览 (PREDICTIVE SEQUENTIAL ALIGNMENT)
+                      </span>
+                      
+                      {uploadedBatchFiles.length === 0 ? (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-zinc-400 gap-1.5 border border-dashed border-zinc-250 rounded-xl min-h-[160px]">
+                          <ShoppingBag className="w-7 h-7 text-zinc-300 stroke-1" />
+                          <span className="text-[11px] font-bold">请选好分类，然后在左边上传本地配图文件组</span>
+                          <span className="text-[10px] text-zinc-400 text-center max-w-[200px]">
+                            系统将自动为您呈现 📄本地图片文件名 与 📦商品目录 的【1对1从上到下顺序对准关系】。
+                          </span>
+                        </div>
+                      ) : (
+                        (() => {
+                          const categoryProducts = ALL_PRODUCTS.filter(p => p.category === batchTargetCategory);
+                          const limitMatches = Math.max(uploadedBatchFiles.length, categoryProducts.length);
+                          
+                          return (
+                            <div className="flex flex-col gap-2 flex-1 max-h-[220px] overflow-y-auto pr-1">
+                              <div className="bg-emerald-100/50 text-emerald-800 p-2.5 rounded-lg text-[10px] font-bold leading-relaxed border border-emerald-250">
+                                📊 本次已解析了 <strong>{uploadedBatchFiles.length}</strong> 张图片，该分类系统内共 <strong>{categoryProducts.length}</strong> 款。<br />
+                                顺序规则：按文件名升序一一匹配对应。
+                              </div>
+                              
+                              <div className="flex flex-col gap-1.5 divide-y divide-zinc-200">
+                                {categoryProducts.slice(0, Math.max(uploadedBatchFiles.length, 10)).map((p, idx) => {
+                                  const matchingFile = uploadedBatchFiles[idx];
+                                  return (
+                                    <div key={p.id} className="flex items-center gap-2 pt-1.5 text-left text-[11px]">
+                                      <span className="font-mono text-[9px] text-zinc-500 bg-zinc-200 p-1 w-5 h-5 rounded-full flex items-center justify-center font-black">
+                                        {idx + 1}
+                                      </span>
+                                      
+                                      {/* Product Details */}
+                                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                        <img src={p.image} alt="" className="w-8 h-8 rounded object-cover border border-zinc-200 shrink-0" referrerPolicy="no-referrer" />
+                                        <div className="min-w-0 flex-1">
+                                          <div className="font-black text-zinc-850 truncate text-[11px]">{p.name}</div>
+                                          <div className="text-[9px] text-zinc-400 font-mono">{p.id}</div>
+                                        </div>
+                                      </div>
+
+                                      {/* Arrow */}
+                                      <ArrowLeftRight className="w-3 h-3 text-emerald-600 shrink-0" />
+
+                                      {/* Target File */}
+                                      <div className="flex items-center gap-1.5 flex-1 min-w-0 bg-emerald-50/40 p-1 rounded border border-emerald-100">
+                                        {matchingFile ? (
+                                          <>
+                                            <img src={matchingFile.base64} alt="" className="w-8 h-8 rounded object-cover shrink-0 border border-emerald-100" />
+                                            <div className="min-w-0 flex-1">
+                                              <span className="font-bold text-emerald-950 truncate block text-[9.5px]">{matchingFile.name}</span>
+                                              <span className="text-[8px] text-emerald-600 font-black block uppercase tracking-wider">配此图</span>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <div className="text-[10px] text-zinc-400 font-bold pl-1 italic">
+                                            不更新
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+
+                                {categoryProducts.length > 10 && uploadedBatchFiles.length <= 10 && (
+                                  <div className="text-center text-[10px] text-zinc-400 pt-2 font-bold">
+                                    还有 {categoryProducts.length - 10} 款商品将保持未更新默认状态。
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Workspace splitter */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[500px]">
