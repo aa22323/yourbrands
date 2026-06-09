@@ -258,7 +258,7 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     searchWholesalePlaceholder: "搜索源头货仓",
     catAll: "全部",
     catWatch: "臻选腕表",
-    catFragrance: "奢享沙龙香",
+    catFragrance: "化妆品",
     catJewelry: "高级珠宝",
     catLeather: "匠心皮具",
     catMaster: "大师器物",
@@ -479,10 +479,10 @@ export const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     slide1Subtitle: "金字塔尖的传世臻品",
     slide1Accent: "从优雅中沉淀经典，诠释极致尊崇",
     slide1Tag: "精奢腕表 CHRONO",
-    slide2Title: "香榭沙龙香氛美学",
-    slide2Subtitle: "嗅觉感官的奢华艺术",
-    slide2Accent: "用隐形的外衣，彰显每一寸不凡",
-    slide2Tag: "沙龙香氛 SCENT",
+    slide2Title: "高奢护肤美妆美学",
+    slide2Subtitle: "无暇凝脂的至臻宠护",
+    slide2Accent: "诠释极致奢华宠爱，焕发青春元气",
+    slide2Tag: "高端美妆 COSMETICS",
     slide3Title: "卡地亚臻宝高定系列",
     slide3Subtitle: "匠心雕琢 绝世光芒",
     slide3Accent: "世代传承之作，璀璨流传",
@@ -3172,7 +3172,7 @@ const ADJ_MAP: Record<string, TranslationPair> = {
 
 const CATEGORIES_MAP: Record<string, TranslationPair> = {
   '臻选腕表': { en: 'Luxury Watches', es: 'Relojes de Lujo', ja: '高級時計・ウオッチ', ko: '명품 타임피스', vi: 'Đồng Hồ Tuyển Chọn' },
-  '奢享沙龙香': { en: 'Aroma Masterpieces', es: 'Salón de Perfumes', ja: '高級サロンフレグランス', ko: '럭셔리 살롱 니치향수', vi: 'Nước Hoa Sa Lông' },
+  '化妆品': { en: 'Luxury Cosmetics', es: 'Cosméticos de Lujo', ja: '高級化粧品', ko: '럭셔리 화장품', vi: 'Mỹ Phẩm Cao Cấp' },
   '高级珠宝': { en: 'Fine Jewelry', es: 'Joyería Fina', ja: 'ハイエンドファインジュエリー', ko: '파인 고가주얼리', vi: 'Trang Sức Cao Cấp' },
   '匠心皮具': { en: 'Artisan Leather', es: 'Bolsos de Alta Gama', ja: 'こだわり特注革製品', ko: '장인정신 명품 가죽백', vi: 'Đồ Da Cao Cấp' },
   '大师器物': { en: 'Curated Collectibles', es: 'Objetos de Colección', ja: 'コレクター向け伝統美術工芸', ko: '명장 프리미엄 수집품', vi: 'Tác Phẩm Sưu Tầm' },
@@ -3508,7 +3508,7 @@ function translateProductInner(product: any, lang: AppLanguage): any {
   }
 
   // 2. Custom check for dynamic special perfumes
-  if (product.category === '香水' || product.category === '奢享沙龙香') {
+  if (product.category === '香水' || product.category === '化妆品') {
     const perfumeTrans = PERFUME_TRANSLATIONS[product.name];
     if (perfumeTrans) {
       const transObj = perfumeTrans[lang as Exclude<AppLanguage, 'zh'>] || perfumeTrans['en'];

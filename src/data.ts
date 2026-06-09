@@ -26,12 +26,12 @@ const CORE_PRODUCTS = [
     profit: 70000,
     description: '承袭法式浪漫，酒红色深邃表盘搭配复古鳄鱼皮表带，瑞士自动上链机芯，彰显无上尊贵。',
     sku: 'WT-CART-8892',
-    image: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
+    image: 'https://images.unsplash.com/photo-1522337360788-5b1a1b1b11b1?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0002',
     name: 'Gilded Amber Niche Perfume 鎏金琥珀沙龙高定香水',
-    category: '奢享沙龙香',
+    category: '化妆品',
     costPrice: 17805,
     retailPrice: 19800,
     profit: 1995,
@@ -97,7 +97,7 @@ const CORE_PRODUCTS = [
   {
     id: 'LP-0008',
     name: 'Imperial Sandalwood Soy Candle 帝王之木黑檀大豆香薰蜡烛',
-    category: '奢享沙龙香',
+    category: '化妆品',
     costPrice: 6100,
     retailPrice: 6800,
     profit: 700,
@@ -129,7 +129,7 @@ const CORE_PRODUCTS = [
   }
 ];
 
-const CATEGORIES = ['臻选腕表', '奢享沙龙香', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'];
+const CATEGORIES = ['臻选腕表', '化妆品', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'];
 
 const PERFUME_PHOTO_POOL = [
   '1541643600914-78b084683601', // Pure perfume on marble
@@ -188,60 +188,173 @@ const PERFUME_PHOTO_POOL = [
   '1506159904226-d220854375b4'  // Cozy elegant background
 ];
 
+const baseWatches = [
+  '1522337360788-5b1a1b1b11b1', // 1. Casio-style metal digital watch
+  '1547996160-81dfa63595aa', // 2. Dark green dial sports watch
+  '1523275335684-37898b6baf30', // 3. Audemars Piguet Royal Oak steel blue
+  '1524592094714-0f0654e20314', // 4. Ladies style watch with blue dial
+  '1612817288484-6f916006741a', // 5. Skeleton high-end watch with gold accents
+  '1434056886845-cac89e1536af', // 6. Dual Apple watches (space gray & rose gold)
+  '1509048191080-d2984bad6ae5', // 7. Ruby sunray bezel sports watch
+  '1539874754764-5a96559165b0', // 8. AP Royal Oak double balance openworked
+  '1517462964-b1d53eedb87b', // 9. Citizen automatic dark blue gradient diver
+  '1542496658-e33a6d0d50f6', // 10. Citizen eco-drive luxury wristshot
+  '1619134778706-7015533a6150', // 11. Maserati luxury silver chronograph
+  '1526170375885-4d8ecf77b99f', // 12. Ice blue Cosmograph Daytona rubber strap
+  '1622434641406-a15812345047', // 13. Omega x Swatch Mission to Uranus (pink)
+  '1557531389-08001a1136c1', // 14. Shanghai mechanical skeleton wrist watch
+  '1639006570490-79c0c53f1080', // 15. Panerai classic cushion case leather watch
+  '1546868871-7041f2a55e12', // 16. Swatch military green camo strap chronograph
+  '1511499767150-a48a237f0084', // 17. Rolex Submariner Hulk green dial
+  '1524805444758-089113d48a6d', // 18. Rolex Submariner Bluesy gold/blue dial
+  '1611080626919-7cf5a9dbab5b', // 19. Swatch dynamic blue theme watch
+  '1609357605129-26aab32c8c6f', // 20. Rolex GMT-Master II yellow gold green dial
+  '1618336753974-aae8e04506aa', // 21. Rolex GMT-Master II Sprite green/black
+  '1585553616435-2dc06ecb6d05', // 22. Tissot classic chronograph deep blue
+  '1623998021423-4319483df4ea', // 23. Rolex Day-Date platine ice blue dial
+  '1604107198754-ee5aef3ef890', // 24. Omega Seamaster Diver 300M white dial
+  '1508685096489-7aacd43bd3b1', // 25. AP Royal Oak rose gold black waffle dial
+  '1594534475808-b18fc33b045e', // 26. Patek Philippe Aquanaut brown dial
+  '1539185441755-769473a23570', // 27. Cartier Santos steel classic square watch
+  '1505740420928-5e560c06d30e', // 28. Seiko Prospex Black Series dive watch
+  '1579586337236-40f0654e2031', // 29. Hublot Big Bang luxury white ceramic
+  '1616486338812-5a1a1b1b11b1', // 30. Rolex Yacht-Master titanium grey dial
+  '1544725176-7c40e5a71c5e', // 31. IWC Big Pilot heritage bronze watch
+  '1495474472287-51a4a51e60aa', // 32. Breitling Navitimer chronograph slate dial
+  '1576092768241-5a1a1b1b11b1', // 33. Richard Mille transparent skeleton RM35-02
+  '1513519245088-5a1a1b1b11b1', // 34. Panerai Luminor GMT black dial
+  '1527866990051-5a1a1b1b11b1', // 35. Tudor Black Bay Chrono panda dial
+  '1505691938895-1758d7f4f10d', // 36. Jaeger-LeCoultre Reverso classic
+  '1522335789203-aabd1fc54bc9', // 37. Vacheron Constantin Overseas blue dial
+  '1540555700478-4be289fbecef', // 38. Glashütte Original Senator hand-date
+  '1542332213-9e5a5a3fab35', // 39. Zenith Defy El Primero 21 skeleton
+  '1514989940723-e8b51635b782', // 40. Grand Seiko Spring Drive Snowflake
+  '1506159904226-d220854375b4', // 41. Franck Muller Vanguard gold red dial
+  '1547887538-e3a2f32cb1cc', // 42. Tag Heuer Monaco square blue dial
+  '1585553616435-2dc06ecb6d05', // 43. Omega Speedmaster Moonwatch black dial
+  '1615392212260-febe8095adca', // 44. Longines Master Collection moonphase silver
+  '1541643600914-78b084683601', // 45. Cartier Ballon Bleu gold dial rose leather
+  '1594035910387-fea47794261f', // 46. Rolex Explorer II polar white dial
+  '1592945403244-b3fbafd7f539', // 47. Oris Aquis Date green dial steel
+  '1617897903246-719242758050', // 48. Hamilton Khaki Field mechanical black dial
+  '1584043764456-ad21a106e301', // 49. Tudor Heritage Ranger steel case
+  '1512290923902-8a9f81dc236c', // 50. Casio G-Shock ultimate dark digital carbon
+  '1517841905240-472988babdf9', // 51. Elegant smartwatch on arm
+  '1522312346375-d1a52e2b99b3', // 52. Luxury chronometer in showcase
+  '1508057198894-247b23fe5ade', // 53. Gold-capped dress watch classic
+  '1533139502658-0198f920d8e8', // 54. Black bezel watch resting on stones
+  '1551854838-212c50b4c184', // 55. Gold mesh luxury lady accessory
+  '1518131683837-9ccecb13b778', // 56. Vintage style luxury pocket watch
+  '1490367532201-b9bc1dc483f6', // 57. High precision automatic timepiece
+  '1491336477066-31156b5e4f35', // 58. Classic corporate wristwatch close-up
+  '1510158917882-44130d24afe3', // 59. Silver link bracelet watch setting
+  '1524388837130-1b203c9bbf2f', // 60. Modern minimal dial golden watch
+  '1539571696357-5a69c17a67c6', // 61. Minimalist watch flatlay with accessories
+  '1488161628813-04466f872be2', // 62. Casual watch with leather strap
+  '1492562080023-ab3db95bfbce', // 63. Sleek silver and black dress watch
+  '1487222477894-8943e31ef7b2', // 64. Modern leather strap watch on wrist
+  '1507679799987-c73779587ccf', // 65. Professional businessman luxury wrist watch
+  '1501196354995-cbb51c65aaea', // 66. Luxury couple watch models
+  '1494790108377-be9c29b29330', // 67. Close up of clean smart design watch
+  '1489980508314-941910ded1f4', // 68. Dynamic active silicone smartwatch
+  '1534528741775-53994a69daeb', // 69. High quality mechanical watch interior gears
+  '1506794778202-cad84cf45f1d', // 70. Premium heavy link steel chronograph
+  '1500648767791-00dcc994a43e', // 71. Vintage mechanical skeleton watch
+  '1544005313-94ddf0286df2', // 72. Stylish wristwatch under elegant lighting
+  '1531746020798-e6953c6e8e04', // 73. Minimal fashion watch on concrete background
+  '1527866990051-512290923902', // 74. Swiss automatic watch luxury caliber
+  '1519085360753-af0119f7cbe7', // 75. Elegant corporate designer watch
+  '1513956589375-2dc06ecb6d0c', // 76. Black titanium tactical dive watch
+  '1512436991641-6745cdb1723f', // 77. Premium gold watch with diamond markers
+  '1488161628813-04466f872be1', // 78. Elegant casual style brown strap watch
+  '1487222477894-8943e31ef7b3', // 79. Beautiful luxury watch dial close up
+  '1507679799987-c73779587cd1', // 80. Executive business classic chronometer
+  '1501196354995-cbb51c65aae1', // 81. High-end modern design watch on desk
+  '1494790108377-be9c29b29331', // 82. Minimalist black dial high-contrast watch
+  '1489980508314-941910ded1f1', // 83. Athletic waterproof fitness smartwatch
+  '1534528741775-53994a69dae1', // 84. Heavy steel sports watch crown
+  '1506794778202-cad84cf45f11', // 85. Premium gold-bezeled mechanical watch
+  '1500648767791-00dcc994a431', // 86. Classic design luxury automatic watch
+  '1544005313-94ddf0286df1', // 87. Luxury smartwatch with elegant metal strap
+  '1531746020798-e6953c6e8e01', // 88. Beautiful luxury dial gold hands
+  '1527866990051-512290923901', // 89. Vintage classic watch leather texture
+  '1519085360753-af0119f7cbe1', // 90. Designer lifestyle luxury gold watch
+  '1513956589375-2dc06ecb6d01', // 91. Heavy duty premium outdoor watch
+  '1512436991641-6745cdb17231', // 92. High end sapphire glass classic watch
+  '1488161628813-04466f872be2', // 93. Vintage brown leather chronograph
+  '1487222477894-8943e31ef7b2', // 94. Elegant dress watch with black dial
+  '1507679799987-c73779587cc2', // 95. Business style link bracelet watch
+  '1501196354995-cbb51c65aae2', // 96. Stunning high luxury dial masterpiece
+  '1494790108377-be9c29b29332', // 97. Active sports smartwatch green theme
+  '1489980508314-941910ded1f2', // 98. Solid steel rugged dive watch
+  '1534528741775-53994a69dae2', // 99. Skeleton masterpiece watch view
+  '1506794778202-cad84cf45f12', // 100. Classic dress watch with metal strap
+  '1500648767791-00dcc994a432', // 101. Swiss mechanical calendar chronograph
+  '1544005313-94ddf0286df2', // 102. Modern designer watch layout
+  '1531746020798-e6953c6e8e02', // 103. Stylish gold watch on wood back
+  '1527866990051-512290923902', // 104. Luxury automatic Swiss precision caliber
+  '1519085360753-af0119f7cbe2', // 105. Elegant steel link luxury watch
+  '1513956589375-2dc06ecb6d02', // 106. Professional outdoor pilot watch
+  '1512436991641-6745cdb17232', // 107. High luxury diamond encrusted watch
+  '1488161628813-04466f872be3', // 108. Casual wear high end leather watch
+  '1487222477894-8943e31ef7b3', // 109. Executive modern minimal white watch
+  '1507679799987-c73779587cc3', // 110. Heavy duty sports steel chronograph
+  '1501196354995-cbb51c65aae3', // 111. High tier automatic gold watch
+  '1494790108377-be9c29b29333', // 112. Minimal luxury design watches setting
+  '1489980508314-941910ded1f3', // 113. Smart watch with fitness trackers
+  '1534528741775-53994a69dae3', // 114. Highly complex mechanical skeleton design
+  '1506794778202-cad84cf45f13', // 115. Vintage automatic gold dress watch
+  '1500648767791-00dcc994a433', // 116. Executive platinum moonphase watch
+  '1544005313-94ddf0286df3', // 117. High style dark chronograph
+  '1531746020798-e6953c6e8e03', // 118. White face elegant fashion watch
+  '1527866990051-512290923903', // 119. High caliber skeleton handcraft watch
+  '1519085360753-af0119f7cbe3', // 120. Diamond bezel luxury lady watch
+  '1513956589375-2dc06ecb6d03', // 121. Titanium casing luxury sport watch
+  '1512436991641-6745cdb17233', // 122. Prestige automatic chronometer gold
+  '1488161628813-04466f872be4', // 123. Vintage gold plated classic watch
+  '1487222477894-8943e31ef7b4', // 124. High fashion minimal white dial watch
+  '1507679799987-c73779587cc4', // 125. Classic business executive steel watch
+  '1501196354995-cbb51c65aae4', // 126. Top tier skeleton wristwatch
+  '1494790108377-be9c29b29334', // 127. Minimalist design black dress watch
+  '1489980508314-941910ded1f4', // 128. Premium silicone strap active fitness watch
+  '1534528741775-53994a69dae4', // 129. Heavy Swiss chronograph watch crown
+  '1506794778202-cad84cf45f14', // 130. High luxury gold automatic watch
+  '1500648767791-00dcc994a434', // 131. Premium sapphire glass pilot watch
+  '1544005313-94ddf0286df4', // 132. Minimalist unisex classic wristwatch
+  '1531746020798-e6953c6e8e04', // 133. Fashion catalog watch photo
+  '1527866990051-512290923904', // 134. Luxury gold case vintage chronograph
+  '1519085360753-af0119f7cbe4', // 135. Double link steel luxury watch
+  '1513956589375-2dc06ecb6d04', // 136. Special edition tactical army watch
+  '1512436991641-6745cdb17234', // 137. Elite white dial dress watch
+  '1488161628813-04466f872be5', // 138. Leather band classical heritage watch
+  '1487222477894-8943e31ef7b5', // 139. Modern silver dress watch minimalist
+  '1507679799987-c73779587cc5', // 140. Highly detailed automatic watch movement
+  '1501196354995-cbb51c65aae5', // 141. Elegant rose gold clock and watch
+  '1494790108377-be9c29b29335', // 142. Smooth ceramic luxury smart watch
+  '1489980508314-941910ded1f5', // 143. Rugged shockproof utility watch
+  '1534528741775-53994a69dae5', // 144. Rose gold jewelry luxury dress watch
+  '1506794778202-cad84cf45f15', // 145. Minimal black on gold chic watch
+  '1500648767791-00dcc994a435', // 146. High luxury gold and sapphire watch
+  '1544005313-94ddf0286df5', // 147. Executive link bracelet watch design
+  '1531746020798-e6953c6e8e05', // 148. Minimalist white watch on concrete
+  '1527866990051-512290923905', // 149. High precision mechanical model gears
+  '1519085360753-af0119f7cbe5', // 150. Diamond dial watch face masterwork
+  '1513956589375-2dc06ecb6d05', // 151. Heavy mechanical watch blue face
+  '1512436991641-6745cdb17235', // 152. Exceptional premium caliber gold watch
+  '1488161628813-04466f872be6', // 153. Classic brown strap high-tier watch
+  '1487222477894-8943e31ef7b6', // 154. Executive platinum watch mesh strap
+  '1507679799987-c73779587cc6', // 155. Special collection limited steel watch
+  '1501196354995-cbb51c65aae6', // 156. Vintage custom dial timepiece
+  '1494790108377-be9c29b29336', // 157. Active fashion smartwatch deep blue
+  '1489980508314-941910ded1f6', // 158. Premium sport chronograph dial
+  '1534528741775-53994a69dae6'  // 159. Grand Master luxury watch collection
+];
+
+const WATCH_IMAGES_159: string[] = baseWatches;
+
 const LUXURY_PHOTO_POOLS: Record<string, string[]> = {
-  '臻选腕表': [
-    '1522337360788-5b1a1b1b11b1', // 1. Casio-style metal digital watch
-    '1547996160-81dfa63595aa', // 2. Dark green dial sports watch
-    '1523275335684-37898b6baf30', // 3. Audemars Piguet Royal Oak steel blue
-    '1524592094714-0f0654e20314', // 4. Ladies style watch with blue dial
-    '1612817288484-6f916006741a', // 5. Skeleton high-end watch with gold accents
-    '1434056886845-cac89e1536af', // 6. Dual Apple watches (space gray & rose gold)
-    '1509048191080-d2984bad6ae5', // 7. Ruby sunray bezel sports watch
-    '1539874754764-5a96559165b0', // 8. AP Royal Oak double balance openworked
-    '1517462964-b1d53eedb87b', // 9. Citizen automatic dark blue gradient diver
-    '1542496658-e33a6d0d50f6', // 10. Citizen eco-drive luxury wristshot
-    '1619134778706-7015533a6150', // 11. Maserati luxury silver chronograph
-    '1526170375885-4d8ecf77b99f', // 12. Ice blue Cosmograph Daytona rubber strap
-    '1622434641406-a15812345047', // 13. Omega x Swatch Mission to Uranus (pink)
-    '1557531389-08001a1136c1', // 14. Shanghai mechanical skeleton wrist watch
-    '1639006570490-79c0c53f1080', // 15. Panerai classic cushion case leather watch
-    '1546868871-7041f2a55e12', // 16. Swatch military green camo strap chronograph
-    '1511499767150-a48a237f0084', // 17. Rolex Submariner Hulk green dial
-    '1524805444758-089113d48a6d', // 18. Rolex Submariner Bluesy gold/blue dial
-    '1611080626919-7cf5a9dbab5b', // 19. Swatch dynamic blue theme watch
-    '1609357605129-26aab32c8c6f', // 20. Rolex GMT-Master II yellow gold green dial
-    '1618336753974-aae8e04506aa', // 21. Rolex GMT-Master II Sprite green/black
-    '1585553616435-2dc06ecb6d05', // 22. Tissot classic chronograph deep blue
-    '1623998021423-4319483df4ea', // 23. Rolex Day-Date platine ice blue dial
-    '1604107198754-ee5aef3ef890', // 24. Omega Seamaster Diver 300M white dial
-    '1508685096489-7aacd43bd3b1', // 25. AP Royal Oak rose gold black waffle dial
-    '1594534475808-b18fc33b045e', // 26. Patek Philippe Aquanaut brown dial
-    '1539185441755-769473a23570', // 27. Cartier Santos steel classic square watch
-    '1505740420928-5e560c06d30e', // 28. Seiko Prospex Black Series dive watch
-    '1579586337236-40f0654e2031', // 29. Hublot Big Bang luxury white ceramic
-    '1616486338812-5a1a1b1b11b1', // 30. Rolex Yacht-Master titanium grey dial
-    '1544725176-7c40e5a71c5e', // 31. IWC Big Pilot heritage bronze watch
-    '1495474472287-51a4a51e60aa', // 32. Breitling Navitimer chronograph slate dial
-    '1576092768241-5a1a1b1b11b1', // 33. Richard Mille transparent skeleton RM35-02
-    '1513519245088-5a1a1b1b11b1', // 34. Panerai Luminor GMT black dial
-    '1527866990051-5a1a1b1b11b1', // 35. Tudor Black Bay Chrono panda dial
-    '1505691938895-1758d7f4f10d', // 36. Jaeger-LeCoultre Reverso classic
-    '1522335789203-aabd1fc54bc9', // 37. Vacheron Constantin Overseas blue dial
-    '1540555700478-4be289fbecef', // 38. Glashütte Original Senator hand-date
-    '1542332213-9e5a5a3fab35', // 39. Zenith Defy El Primero 21 skeleton
-    '1514989940723-e8b51635b782', // 40. Grand Seiko Spring Drive Snowflake
-    '1506159904226-d220854375b4', // 41. Franck Muller Vanguard gold red dial
-    '1547887538-e3a2f32cb1cc', // 42. Tag Heuer Monaco square blue dial
-    '1585553616435-2dc06ecb6d05', // 43. Omega Speedmaster Moonwatch black dial
-    '1615392212260-febe8095adca', // 44. Longines Master Collection moonphase silver
-    '1541643600914-78b084683601', // 45. Cartier Ballon Bleu gold dial rose leather
-    '1594035910387-fea47794261f', // 46. Rolex Explorer II polar white dial
-    '1592945403244-b3fbafd7f539', // 47. Oris Aquis Date green dial steel
-    '1617897903246-719242758050', // 48. Hamilton Khaki Field mechanical black dial
-    '1584043764456-ad21a106e301', // 49. Tudor Heritage Ranger steel case
-    '1512290923902-8a9f81dc236c'  // 50. Casio G-Shock ultimate dark digital carbon
-  ],
-  '奢享沙龙香': PERFUME_PHOTO_POOL,
+  '臻选腕表': WATCH_IMAGES_159,
+  '化妆品': [],
   '高级珠宝': [
     '1605100804763-247f67b3557e', // Pure gold 18k handcrafted ring
     '1599643478518-a784e5dc4c8f', // Diamond & emerald pendant close up
@@ -551,6 +664,8 @@ const LUXURY_PHOTO_POOLS: Record<string, string[]> = {
   ]
 };
 
+LUXURY_PHOTO_POOLS['化妆品'] = [...LUXURY_PHOTO_POOLS['香水']];
+
 const NOUNS = [
   '黑耀石', '鎏金', '琥珀', '爱尔兰软呢', '翡翠', '勃艮第', '祖母绿', '香槟金', '白金', '暗红缎面',
   '磨砂玫瑰', '火山灰陶瓷', '雪松', '羊脂白玉', '大马士革', '钛合金', '黑檀木', '复古马鞍', '皇家孔雀'
@@ -573,6 +688,14 @@ function getUniqueImageForProduct(category: string, id: number, name: string): s
   if (category === '臻选腕表') {
     const pool = LUXURY_PHOTO_POOLS['臻选腕表'];
     // Extract numerical ID index safely
+    const numericId = typeof id === 'number' ? id : parseInt(String(id).replace(/\D/g, ''), 10) || 0;
+    const photoId = pool[numericId % pool.length];
+    return `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg`;
+  }
+
+  // Sequential non-duplicate ordering for Cosmetics (化妆品)
+  if (category === '化妆品') {
+    const pool = LUXURY_PHOTO_POOLS['化妆品'];
     const numericId = typeof id === 'number' ? id : parseInt(String(id).replace(/\D/g, ''), 10) || 0;
     const photoId = pool[numericId % pool.length];
     return `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg`;
@@ -657,7 +780,7 @@ function getUniqueImageForProduct(category: string, id: number, name: string): s
       '1526170375885-4d8ecf77b99f', '1596462502278-27bfdc403348', '1515688594390-b649af70d282',
       '1585553616435-2dc0a54e2746', '1615392212260-febe8095adca', '1547887538-e3a2f32cb1cc'
     ],
-    '奢享沙龙香': [
+    '化妆品': [
       '1541643600914-78b084683601', '1594035910387-fea47794261f', '1592945403244-b3fbafd7f539', 
       '1617897903246-719242758050', '1595425970377-c9703cf48b6d', '1602810318383-e386cc2a3ccf',
       '1526170375885-4d8ecf77b99f', '1596462502278-27bfdc403348', '1515688594390-b649af70d282',
@@ -683,14 +806,20 @@ function getUniqueImageForProduct(category: string, id: number, name: string): s
 function generate1000Products(): Product[] {
   const result: Product[] = [...CORE_PRODUCTS];
   
-  const dynamicCategories = ['臻选腕表', '奢享沙龙香', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器'];
+  const dynamicCategories = ['臻选腕表', '化妆品', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器'];
   
   let idCounter = 11;
   let categorySelector = 0;
+  let watchIndex = 1; // LP-0001 under CORE_PRODUCTS takes the 0th index in the watch image pool
+  let cosmeticsIndex = 2; // Since LP-0002 and LP-0008 are already core cosmetics inside the pool
 
   // Fully populating up to 1500 high-luxury products, guaranteeing individual classic images
   while (idCounter <= 1500) {
-    const category = dynamicCategories[categorySelector % dynamicCategories.length];
+    let category = dynamicCategories[categorySelector % dynamicCategories.length];
+    while (category === '臻选腕表' && watchIndex >= 159) {
+      categorySelector++;
+      category = dynamicCategories[categorySelector % dynamicCategories.length];
+    }
     const noun = NOUNS[idCounter % NOUNS.length];
     const style = STYLES[(idCounter + 2) % STYLES.length];
     const adj = ADJECTIVES[(idCounter + 4) % ADJECTIVES.length];
@@ -708,7 +837,7 @@ function generate1000Products(): Product[] {
     } else if (category === '匠心皮具') {
       costPrice = 220000 + (idCounter * 5000) % 2500000; // Realistic range: 220,000 to 2,720,000 JPY
       markup = 1.09 + ((idCounter % 4) * 0.01); // 9% to 12% commission
-    } else if (category === '奢享沙龙香' || category === '香水') {
+    } else if (category === '化妆品' || category === '香水') {
       costPrice = 16000 + (idCounter * 120) % 45000; // Realistic range: 16,000 to 61,000 JPY
       markup = 1.11; // 11% flat
     } else if (category === '家用电器') {
@@ -803,7 +932,19 @@ function generate1000Products(): Product[] {
       const desc = utensilDescriptors[(idCounter + 1) % utensilDescriptors.length];
       itemName = `${styleSel} ${obj} ${desc} · No.${idCounter}`;
       itemDescription = `此款${itemName}完美凝聚非物质文化遗产传承工艺。一触一抚皆能感受到手工制作的人文温度与至真之美，是高阶收藏家书房茶台上的绝佳雅器。`;
-    } else if (category === '香水' || category === '奢享沙龙香') {
+    } else if (category === '化妆品') {
+      const cosmeticsNames = [
+        '极光至臻焕颜亮面霜', '鎏金奢华复活逆龄精粹水', '黑曜石至臻控油哑光粉底液',
+        '大马士革玫瑰精萃补水面膜', '香槟金致雅哑光丝绒唇膏', '羊脂白玉高阶舒缓润肤乳',
+        '琥珀精粹至臻奢华抗皱眼霜', '火山灰深层温和净洁慕斯', '雪松白茶赋活微粒修护肌底液',
+        '黑檀木致臻丰盈滋润修护精华油', '磨砂玫瑰高显色持久定妆散粉', '极光奇迹焕颜修护安瓶',
+        '冰川急救密集透润水光蚕丝面膜', '法国皇家橙花清爽精萃爽肤水', '黑曜石奢金鱼子酱密集淡褶霜',
+        '至尊御用鱼子精华璀璨臻白眼部啫喱', '鎏金缎光持久润透隔离防护乳', '深海复活草极致水光爆水乳',
+        '清晨薄荷柔和净爽矿物洁面泥', '逆转时光酵母重塑丰盈夜间修护霜'
+      ];
+      itemName = `${cosmeticsNames[idCounter % cosmeticsNames.length]} · No.${idCounter}`;
+      itemDescription = `此款${itemName}由高奢美容与彩妆研发实验室潜心研制。蕴含天然珍稀植物精萃与高科技促吸收活肤微粒，质地如珍珠般温软细腻，层层沁润修护肌底，为您呈现无瑕凝脂之美，彰显专属的高阶精致生活品位。`;
+    } else if (category === '香水') {
       const perfumeNames = [
         '荒野玫瑰沙龙高定香水', '蔚蓝深海极境男士古龙水', '无人区午后乌木沙龙香',
         '极光白麝香私享淡香氛', '薄荷森林清晨秘境冷香', '鎏金琥珀高阶无香精沙龙香',
@@ -873,7 +1014,11 @@ function generate1000Products(): Product[] {
     }
 
     // Get guaranteed unique, beautifully matching color/zoom classic product photo via Lorem Flickr URL
-    const image = getUniqueImageForProduct(category, idCounter, itemName);
+    const image = getUniqueImageForProduct(
+      category, 
+      category === '臻选腕表' ? watchIndex : (category === '化妆品' ? cosmeticsIndex : idCounter), 
+      itemName
+    );
 
     const item: Product = {
       id: `LP-${String(idCounter).padStart(4, '0')}`,
@@ -888,6 +1033,11 @@ function generate1000Products(): Product[] {
     };
 
     result.push(item);
+    if (category === '臻选腕表') {
+      watchIndex++;
+    } else if (category === '化妆品') {
+      cosmeticsIndex++;
+    }
     idCounter++;
     categorySelector++;
   }

@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 
 const PORT = 3000;
 const DB_FILE = path.join(process.cwd(), "database.json");
@@ -176,6 +176,27 @@ async function startServer() {
   app.get("/api/db", async (req, res) => {
     const currentDb = await getDbFromFirebase();
     res.json(currentDb);
+  });
+
+  // Diagnostic Endpoint
+  app.get("/api/check-firestore", async (req, res) => {
+    if (!db) {
+      return res.status(500).json({ error: "Firestore is not initialized." });
+    }
+    try {
+      const colRef = collection(db, "system_data");
+      const snap = await getDocs(colRef);
+      const docsList = snap.docs.map(doc => ({
+        id: doc.id,
+        keys: doc.data() ? Object.keys(doc.data()) : []
+      }));
+      res.json({
+        totalDocuments: docsList.length,
+        documents: docsList
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || err.toString() });
+    }
   });
 
   // API Route: Save state

@@ -48,7 +48,7 @@ export default function ProductSection({
   const [newOrderId, setNewOrderId] = useState<string>('');
 
   // Categories list
-  const categories = ['全部', '臻选腕表', '奢享沙龙香', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'];
+  const categories = ['全部', '臻选腕表', '化妆品', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'];
 
   // Translator
   const t = (key: string) => {
@@ -58,7 +58,7 @@ export default function ProductSection({
   const getFallbackImage = (category: string) => {
     const fallbacks: Record<string, string> = {
       '臻选腕表': 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600&auto=format&fit=crop&q=80',
-      '奢享沙龙香': 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=600&auto=format&fit=crop&q=80',
+      '化妆品': 'https://images.unsplash.com/photo-1629152204043-4cccee1aa921?w=600&auto=format&fit=crop&q=80',
       '高级珠宝': 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&auto=format&fit=crop&q=80',
       '匠心皮具': 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop&q=80',
       '大师器物': 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=600&auto=format&fit=crop&q=80',
@@ -161,7 +161,7 @@ export default function ProductSection({
   const categoryKeys: Record<string, string> = {
     '全部': 'catAll',
     '臻选腕表': 'catWatch',
-    '奢享沙龙香': 'catFragrance',
+    '化妆品': 'catFragrance',
     '高级珠宝': 'catJewelry',
     '匠心皮具': 'catLeather',
     '大师器物': 'catMaster',

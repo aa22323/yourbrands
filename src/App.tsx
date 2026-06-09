@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from './firebase';
-import { doc, getDoc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
 import { 
   Home, ShoppingBag, User, Sparkles, Wifi, Battery, Radio, 
   Clock, Share2, Compass, AlertCircle, HelpCircle, ShoppingCart,
@@ -360,6 +360,12 @@ export default function App() {
           return prev;
         });
 
+        // Keep our local cached reference of the fetched data synchronized
+        lastFetchedDataRef.current = {
+          registeredUsers: JSON.parse(JSON.stringify(incomingUsers)),
+          merchantsDb: JSON.parse(JSON.stringify(incomingMerchants))
+        };
+
         // Reset polling flag after state updates settle
         setTimeout(() => {
           isPollingUpdateRef.current = false;
@@ -482,30 +488,100 @@ export default function App() {
     localStorage.setItem('aliexpress_registered_users_list', JSON.stringify(registeredUsers));
     localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(merchantsDb));
 
-    // Save directly to cloud Firestore system_data collection (sanitize customProductImages to keep it ultra-lightweight and stay under 1MB limits)
     const docRef = doc(db, 'system_data', 'aliexpress_database');
-    
-    const sanitizedMerchantsDb = { ...merchantsDb };
-    if (sanitizedMerchantsDb.system_config) {
-      const lightImages: Record<string, boolean> = {};
-      const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
-      Object.keys(currentImages).forEach(pId => {
-        if (currentImages[pId]) {
-          lightImages[pId] = true; // Use true flag as a placeholder/marker instead of the actual heavy Base64 data
-        }
-      });
-      sanitizedMerchantsDb.system_config = {
-        ...sanitizedMerchantsDb.system_config,
-        customProductImages: lightImages
-      };
+
+    // Build highly optimized update payload to prevent concurrency conflicts or deleting config!
+    const updatePayload: Record<string, any> = {};
+
+    // 1. If registeredUsers changed, synchronize the array
+    if (!lastFetchedDataRef.current || JSON.stringify(registeredUsers) !== JSON.stringify(lastFetchedDataRef.current.registeredUsers)) {
+      updatePayload['registeredUsers'] = registeredUsers;
     }
 
-    setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb })
+    // 2. Identify and synchronize ONLY modified merchant profiles
+    if (lastFetchedDataRef.current?.merchantsDb) {
+      Object.keys(merchantsDb).forEach(k => {
+        if (k === 'system_config') return; // system_config is handled separately with proper admin verification
+        const currentProfile = merchantsDb[k];
+        const lastProfile = lastFetchedDataRef.current?.merchantsDb[k];
+        if (JSON.stringify(currentProfile) !== JSON.stringify(lastProfile)) {
+          updatePayload[`merchantsDb.${k}`] = currentProfile;
+        }
+      });
+    } else {
+      // If no last fetched data is available yet, only update the active logged-in merchant to keep it extremely safe
+      const userKey = userAccountName.toLowerCase();
+      if (userKey && merchantsDb[userKey]) {
+        updatePayload[`merchantsDb.${userKey}`] = merchantsDb[userKey];
+      }
+    }
+
+    // 3. System Config (Admin setup, custom product images)
+    // ONLY permit the authenticated administrator to update global configurations!
+    const userKeyLower = userAccountName.toLowerCase();
+    const isCurrentUserAdmin = userKeyLower === 'admin' || userKeyLower === 'oopqwe001@gmail.com' || merchantsDb[userKeyLower]?.isAdmin === true;
+
+    if (isCurrentUserAdmin && merchantsDb.system_config) {
+      const lastSys = lastFetchedDataRef.current?.merchantsDb?.system_config;
+      if (!lastSys || JSON.stringify(merchantsDb.system_config) !== JSON.stringify(lastSys)) {
+        // Sanitize product image overrides to keep system_data lightweight (use placeholder 'true' to stay under 1MB limits)
+        const lightImages: Record<string, boolean> = {};
+        const currentImages = merchantsDb.system_config.customProductImages || {};
+        Object.keys(currentImages).forEach(pId => {
+          if (currentImages[pId]) {
+            lightImages[pId] = true;
+          }
+        });
+
+        updatePayload['merchantsDb.system_config'] = {
+          ...merchantsDb.system_config,
+          customProductImages: lightImages
+        };
+      }
+    }
+
+    // If updatePayload is empty, skip calling Firestore altogether (efficient!)
+    if (Object.keys(updatePayload).length === 0) {
+      return;
+    }
+
+    // Perform targeted update on Firestore instead of full overwriting setDoc!
+    updateDoc(docRef, updatePayload)
       .then(() => {
-        console.log("Successfully back-propagated state updates to cloud Firebase Firestore.");
+        console.log("Successfully synchronized target database updates atomically in Firestore:", Object.keys(updatePayload));
+        // Keep our lastFetchedDataRef updated with our own mutated state to prevent redundant loops
+        lastFetchedDataRef.current = {
+          registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
+          merchantsDb: JSON.parse(JSON.stringify(merchantsDb))
+        };
       })
       .catch(err => {
-        console.error('Failed to sync to cloud Firebase Firestore:', err);
+        console.error('Failed to sync atomically to Firestore (falling back to setDoc):', err);
+        // Fallback to full setDoc if updateDoc fails due to uninitialized document structure
+        const sanitizedMerchantsDb = { ...merchantsDb };
+        if (sanitizedMerchantsDb.system_config) {
+          const lightImages: Record<string, boolean> = {};
+          const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
+          Object.keys(currentImages).forEach(pId => {
+            if (currentImages[pId]) {
+              lightImages[pId] = true;
+            }
+          });
+          sanitizedMerchantsDb.system_config = {
+            ...sanitizedMerchantsDb.system_config,
+            customProductImages: lightImages
+          };
+        }
+        setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb })
+          .then(() => {
+            lastFetchedDataRef.current = {
+              registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
+              merchantsDb: JSON.parse(JSON.stringify(merchantsDb))
+            };
+          })
+          .catch(fallbackErr => {
+            console.error('Full setDoc sync fallback also failed:', fallbackErr);
+          });
       });
   }, [registeredUsers, merchantsDb]);
 

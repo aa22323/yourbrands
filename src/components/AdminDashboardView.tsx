@@ -2592,7 +2592,7 @@ export default function AdminDashboardView({
                           }}
                           className="w-full bg-zinc-50 border border-zinc-200 rounded-xl py-2 px-3 text-xs text-zinc-800 cursor-pointer focus:outline-none focus:border-emerald-600 focus:bg-white font-sans font-bold"
                         >
-                          {['臻选腕表', '奢享沙龙香', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'].map(cat => (
+                          {['臻选腕表', '化妆品', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'].map(cat => (
                             <option key={cat} value={cat}>{cat}</option>
                           ))}
                         </select>
@@ -2817,7 +2817,7 @@ export default function AdminDashboardView({
                       onChange={(e) => setProductsCategoryFilter(e.target.value)}
                       className="bg-zinc-50 border border-zinc-200 rounded-xl text-xs py-2 px-3 text-zinc-900 focus:outline-none focus:border-[#e51923] cursor-pointer font-sans"
                     >
-                      {['全部', '臻选腕表', '奢享沙龙香', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'].map(cat => (
+                      {['全部', '臻选腕表', '化妆品', '高级珠宝', '匠心皮具', '大师器物', '香水', '家用电器', '情趣用品'].map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>

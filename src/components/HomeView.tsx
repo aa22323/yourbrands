@@ -37,7 +37,7 @@ export default function HomeView({
   const getFallbackImage = (category: string) => {
     const fallbacks: Record<string, string> = {
       '臻选腕表': 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600&auto=format&fit=crop&q=80',
-      '奢享沙龙香': 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=600&auto=format&fit=crop&q=80',
+      '化妆品': 'https://images.unsplash.com/photo-1629152204043-4cccee1aa921?w=600&auto=format&fit=crop&q=80',
       '高级珠宝': 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&auto=format&fit=crop&q=80',
       '匠心皮具': 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop&q=80',
       '大师器物': 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=600&auto=format&fit=crop&q=80',
@@ -59,7 +59,7 @@ export default function HomeView({
       return '匠心皮具';
     }
     if (id === 'P6' || id === 'P8' || name.includes('香') || name.includes('Creed') || name.includes('Maison')) {
-      return '奢享沙龙香';
+      return '化妆品';
     }
     return '臻选腕表';
   };
@@ -214,7 +214,7 @@ export default function HomeView({
   const categories = [
     { id: 'all', label: '首推 Explore', tag: 'NEW' },
     { id: 'watches', label: '臻选腕表', tag: 'HOT' },
-    { id: 'scents', label: '沙龙香氛', tag: 'LUX' },
+    { id: 'scents', label: '化妆品', tag: 'LUX' },
     { id: 'jewelry', label: '高级珠宝', tag: 'GEM' },
     { id: 'crafts', label: '大师器物', tag: 'ART' }
   ];
