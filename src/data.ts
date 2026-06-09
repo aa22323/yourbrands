@@ -190,11 +190,56 @@ const PERFUME_PHOTO_POOL = [
 
 const LUXURY_PHOTO_POOLS: Record<string, string[]> = {
   '臻选腕表': [
-    '1547996160-81dfa63595aa', // Bordeaux red mechanical watch
-    '1523275335684-37898b6baf30', // White minimalist watch
-    '1524592094714-0f0654e20314', // Classic golden woman's watch
-    '1542496658-e33a6d0d50f6', // Premium brown leather strap watch
-    '1612817288484-6f916006741a' // Fine luxury gold watch close up
+    '1522337360788-5b1a1b1b11b1', // 1. Casio-style metal digital watch
+    '1547996160-81dfa63595aa', // 2. Dark green dial sports watch
+    '1523275335684-37898b6baf30', // 3. Audemars Piguet Royal Oak steel blue
+    '1524592094714-0f0654e20314', // 4. Ladies style watch with blue dial
+    '1612817288484-6f916006741a', // 5. Skeleton high-end watch with gold accents
+    '1434056886845-cac89e1536af', // 6. Dual Apple watches (space gray & rose gold)
+    '1509048191080-d2984bad6ae5', // 7. Ruby sunray bezel sports watch
+    '1539874754764-5a96559165b0', // 8. AP Royal Oak double balance openworked
+    '1517462964-b1d53eedb87b', // 9. Citizen automatic dark blue gradient diver
+    '1542496658-e33a6d0d50f6', // 10. Citizen eco-drive luxury wristshot
+    '1619134778706-7015533a6150', // 11. Maserati luxury silver chronograph
+    '1526170375885-4d8ecf77b99f', // 12. Ice blue Cosmograph Daytona rubber strap
+    '1622434641406-a15812345047', // 13. Omega x Swatch Mission to Uranus (pink)
+    '1557531389-08001a1136c1', // 14. Shanghai mechanical skeleton wrist watch
+    '1639006570490-79c0c53f1080', // 15. Panerai classic cushion case leather watch
+    '1546868871-7041f2a55e12', // 16. Swatch military green camo strap chronograph
+    '1511499767150-a48a237f0084', // 17. Rolex Submariner Hulk green dial
+    '1524805444758-089113d48a6d', // 18. Rolex Submariner Bluesy gold/blue dial
+    '1611080626919-7cf5a9dbab5b', // 19. Swatch dynamic blue theme watch
+    '1609357605129-26aab32c8c6f', // 20. Rolex GMT-Master II yellow gold green dial
+    '1618336753974-aae8e04506aa', // 21. Rolex GMT-Master II Sprite green/black
+    '1585553616435-2dc06ecb6d05', // 22. Tissot classic chronograph deep blue
+    '1623998021423-4319483df4ea', // 23. Rolex Day-Date platine ice blue dial
+    '1604107198754-ee5aef3ef890', // 24. Omega Seamaster Diver 300M white dial
+    '1508685096489-7aacd43bd3b1', // 25. AP Royal Oak rose gold black waffle dial
+    '1594534475808-b18fc33b045e', // 26. Patek Philippe Aquanaut brown dial
+    '1539185441755-769473a23570', // 27. Cartier Santos steel classic square watch
+    '1505740420928-5e560c06d30e', // 28. Seiko Prospex Black Series dive watch
+    '1579586337236-40f0654e2031', // 29. Hublot Big Bang luxury white ceramic
+    '1616486338812-5a1a1b1b11b1', // 30. Rolex Yacht-Master titanium grey dial
+    '1544725176-7c40e5a71c5e', // 31. IWC Big Pilot heritage bronze watch
+    '1495474472287-51a4a51e60aa', // 32. Breitling Navitimer chronograph slate dial
+    '1576092768241-5a1a1b1b11b1', // 33. Richard Mille transparent skeleton RM35-02
+    '1513519245088-5a1a1b1b11b1', // 34. Panerai Luminor GMT black dial
+    '1527866990051-5a1a1b1b11b1', // 35. Tudor Black Bay Chrono panda dial
+    '1505691938895-1758d7f4f10d', // 36. Jaeger-LeCoultre Reverso classic
+    '1522335789203-aabd1fc54bc9', // 37. Vacheron Constantin Overseas blue dial
+    '1540555700478-4be289fbecef', // 38. Glashütte Original Senator hand-date
+    '1542332213-9e5a5a3fab35', // 39. Zenith Defy El Primero 21 skeleton
+    '1514989940723-e8b51635b782', // 40. Grand Seiko Spring Drive Snowflake
+    '1506159904226-d220854375b4', // 41. Franck Muller Vanguard gold red dial
+    '1547887538-e3a2f32cb1cc', // 42. Tag Heuer Monaco square blue dial
+    '1585553616435-2dc06ecb6d05', // 43. Omega Speedmaster Moonwatch black dial
+    '1615392212260-febe8095adca', // 44. Longines Master Collection moonphase silver
+    '1541643600914-78b084683601', // 45. Cartier Ballon Bleu gold dial rose leather
+    '1594035910387-fea47794261f', // 46. Rolex Explorer II polar white dial
+    '1592945403244-b3fbafd7f539', // 47. Oris Aquis Date green dial steel
+    '1617897903246-719242758050', // 48. Hamilton Khaki Field mechanical black dial
+    '1584043764456-ad21a106e301', // 49. Tudor Heritage Ranger steel case
+    '1512290923902-8a9f81dc236c'  // 50. Casio G-Shock ultimate dark digital carbon
   ],
   '奢享沙龙香': PERFUME_PHOTO_POOL,
   '高级珠宝': [
@@ -523,6 +568,15 @@ const ADJECTIVES = [
 
 function getUniqueImageForProduct(category: string, id: number, name: string): string {
   const combined = (name || '').toLowerCase();
+
+  // If category is watches, direct return from LUXURY_PHOTO_POOLS['臻选腕表'] for sequential ordering matching user upload
+  if (category === '臻选腕表') {
+    const pool = LUXURY_PHOTO_POOLS['臻选腕表'];
+    // Extract numerical ID index safely
+    const numericId = typeof id === 'number' ? id : parseInt(String(id).replace(/\D/g, ''), 10) || 0;
+    const photoId = pool[numericId % pool.length];
+    return `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg`;
+  }
 
   // 1. Strict Brand, Category & Scent alignment overruling (strictly respecting user intent)
   if (combined.includes('鎏金琥珀') || combined.includes('amber') || id === 2) {

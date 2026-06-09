@@ -290,7 +290,7 @@ export default function App() {
                   ...DEFAULT_SHOP, 
                   id: fId, 
                   name: u.name,
-                  addedProductIds: []
+                  addedProductIds: [...DEFAULT_SHOP.addedProductIds]
                 },
                 orders: [],
                 financialLogs: [],
@@ -749,7 +749,7 @@ export default function App() {
          ...DEFAULT_SHOP, 
         id: newId, 
         name: trimmedReg,
-        addedProductIds: []
+        addedProductIds: [...DEFAULT_SHOP.addedProductIds]
       },
       orders: [],
       financialLogs: [],
@@ -1342,9 +1342,9 @@ export default function App() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#f0f2f5] text-zinc-800 font-sans antialiased flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white via-[#f0f2f5] to-zinc-300 p-4">
-        {/* elegant centered container for login panel */}
-        <div className="w-full max-w-[430px] bg-white border border-zinc-200 shadow-2xl rounded-3xl flex flex-col overflow-hidden h-[790px] relative">
+      <div className="min-h-screen bg-[#f0f2f5] text-zinc-800 font-sans antialiased flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white via-[#f0f2f5] to-zinc-300 sm:p-4">
+        {/* elegant container for login panel: full screen on mobile, styled phone card container on desktop/tablet */}
+        <div className="w-full h-screen sm:h-[790px] max-w-full sm:max-w-[430px] bg-white sm:border sm:border-zinc-200 sm:shadow-2xl sm:rounded-3xl flex flex-col overflow-hidden relative">
           
           {/* Top logo header */}
           <div className="bg-[#e51923] h-12 border-b border-[#c4151e] flex items-center justify-center z-40 select-none px-6 shrink-0">
@@ -1536,7 +1536,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f4f6] text-zinc-800 font-sans antialiased flex flex-col relative pb-28">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#f4f4f6] text-zinc-800 font-sans antialiased flex flex-col relative pb-28">
       
       {/* Top red header brand bar */}
       <div className="bg-[#e51923] h-12 border-b border-[#c4151e] flex items-center justify-center z-40 select-none shadow-sm shrink-0">
