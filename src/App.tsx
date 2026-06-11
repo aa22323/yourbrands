@@ -606,49 +606,62 @@ export default function App() {
       return;
     }
 
-    // Perform targeted update on Firestore using safe vararg FieldPath notation!
-    // Since updateDoc syntax can take either an object or field/value pairs, we pass them as varargs to support safe FieldPath evaluation.
-    const [firstField, firstVal, ...restArgs] = updateArgs;
-    updateDoc(docRef, firstField, firstVal, ...restArgs)
-      .then(() => {
-        console.log("Successfully synchronized target database updates atomically in Firestore using FieldPath.");
-        // Keep our lastFetchedDataRef updated with our own mutated state to prevent redundant loops
-        lastFetchedDataRef.current = {
-          registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
-          merchantsDb: JSON.parse(JSON.stringify(merchantsDb))
-        };
-      })
-      .catch(err => {
-        console.error('Failed to sync atomically to Firestore (falling back to setDoc):', err);
-        // Fallback to full setDoc if updateDoc fails due to uninitialized document structure
-        const sanitizedMerchantsDb = { ...merchantsDb };
-        if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
-          // Safeguard: Protect system_config from being cleared by non-admin updates in fallback mode
-          sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
-        } else if (sanitizedMerchantsDb.system_config) {
-          const lightImages: Record<string, boolean> = {};
-          const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
-          Object.keys(currentImages).forEach(pId => {
-            if (currentImages[pId]) {
-              lightImages[pId] = true;
-            }
-          });
-          sanitizedMerchantsDb.system_config = {
-            ...sanitizedMerchantsDb.system_config,
-            customProductImages: lightImages
+    // Debounce the Firestore write operation by 1200ms to group rapid clicks / mutations (like "One-click to store") safely
+    // and respect Firestore's 1-write-per-second single document update rate limit!
+    let activeTimer = true;
+    const timerId = setTimeout(() => {
+      if (!activeTimer) return;
+
+      const [firstField, firstVal, ...restArgs] = updateArgs;
+      updateDoc(docRef, firstField, firstVal, ...restArgs)
+        .then(() => {
+          if (!activeTimer) return;
+          console.log("Successfully synchronized target database updates atomically in Firestore using FieldPath.");
+          // Keep our lastFetchedDataRef updated with our own mutated state to prevent redundant loops
+          lastFetchedDataRef.current = {
+            registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
+            merchantsDb: JSON.parse(JSON.stringify(merchantsDb))
           };
-        }
-        setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb })
-          .then(() => {
-            lastFetchedDataRef.current = {
-              registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
-              merchantsDb: JSON.parse(JSON.stringify(merchantsDb))
+        })
+        .catch(err => {
+          if (!activeTimer) return;
+          console.error('Failed to sync atomically to Firestore (falling back to setDoc):', err);
+          // Fallback to full setDoc if updateDoc fails due to uninitialized document structure
+          const sanitizedMerchantsDb = { ...merchantsDb };
+          if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
+            // Safeguard: Protect system_config from being cleared by non-admin updates in fallback mode
+            sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
+          } else if (sanitizedMerchantsDb.system_config) {
+            const lightImages: Record<string, boolean> = {};
+            const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
+            Object.keys(currentImages).forEach(pId => {
+              if (currentImages[pId]) {
+                lightImages[pId] = true;
+              }
+            });
+            sanitizedMerchantsDb.system_config = {
+              ...sanitizedMerchantsDb.system_config,
+              customProductImages: lightImages
             };
-          })
-          .catch(fallbackErr => {
-            console.error('Full setDoc sync fallback also failed:', fallbackErr);
-          });
-      });
+          }
+          setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb })
+            .then(() => {
+              if (!activeTimer) return;
+              lastFetchedDataRef.current = {
+                registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
+                merchantsDb: JSON.parse(JSON.stringify(merchantsDb))
+              };
+            })
+            .catch(fallbackErr => {
+              console.error('Full setDoc sync fallback also failed:', fallbackErr);
+            });
+        });
+    }, 1200);
+
+    return () => {
+      activeTimer = false;
+      clearTimeout(timerId);
+    };
   }, [registeredUsers, merchantsDb]);
 
   // Passwords Support State
@@ -763,6 +776,7 @@ export default function App() {
   // Hoisted database syncing effects moved below shop & orders declarations
 
   const handleUpdatePassword = (newPass: string) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     setUserPassword(newPass);
     setRegisteredUsers(prev => prev.map(u => u.name.toLowerCase() === userAccountName.toLowerCase() ? { ...u, password: newPass } : u));
     setMerchantsDb(prev => {
@@ -927,6 +941,7 @@ export default function App() {
     status: '成功' | '已到账' | '已扣除' | '已提交' | '已拒绝',
     description: string
   ) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     // 1. Update the balance (recharge with status '已提交' is pending and won't add to balance yet)
     if (!(type === 'recharge' && status === '已提交')) {
       setUserBalance(prev => {
@@ -1020,7 +1035,11 @@ export default function App() {
         cleanBalance = 0;
         changed = true;
       }
-      if (cleanShop.addedProductIds && cleanShop.addedProductIds.length === 9) {
+      const isExactDefaultPreset = 
+        cleanShop.addedProductIds && 
+        cleanShop.addedProductIds.length === 9 && 
+        JSON.stringify([...cleanShop.addedProductIds].sort()) === JSON.stringify(['LP-0001', 'LP-0002', 'LP-0003', 'LP-0004', 'LP-0005', 'LP-0006', 'LP-0007', 'LP-0009', 'LP-0010'].sort());
+      if (isExactDefaultPreset) {
         cleanShop.addedProductIds = [];
         changed = true;
       }
@@ -1352,6 +1371,7 @@ export default function App() {
 
   // Handle addition or deletion of products on user selections
   const handleToggleProductInStore = (productId: string) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     setShop(prev => {
       const isAdded = prev.addedProductIds.includes(productId);
       const nextAddedIds = isAdded
@@ -1365,6 +1385,7 @@ export default function App() {
   };
 
   const handleUpdateShop = (updatedFields: Partial<Shop>) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     setShop(prev => ({
       ...prev,
       ...updatedFields
@@ -1372,6 +1393,7 @@ export default function App() {
   };
 
   const handleAddOrder = (newOrder: Order) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     setOrders(prev => [newOrder, ...prev]);
     if (newOrder.isSelfOrder) {
       const itemsListStr = newOrder.items.map(it => `${it.productName} * ${it.quantity}`).join(', ');
@@ -1386,6 +1408,7 @@ export default function App() {
   };
 
   const handleShipOrder = (orderId: string) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     const pad = (num: number) => String(num).padStart(2, '0');
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
@@ -1427,6 +1450,7 @@ export default function App() {
   };
 
   const handleConfirmReceiveOrder = (orderId: string) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
     if (order.status !== 'shipped') return;
@@ -1459,7 +1483,18 @@ export default function App() {
   };
 
   const handleDeleteOrder = (orderId: string) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     setOrders(prev => prev.filter(o => o.id !== orderId));
+  };
+
+  const handleUpdateBalance = (newBalance: number | ((prev: number) => number)) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    setUserBalance(newBalance);
+  };
+
+  const handleUpdateWithdrawHistory = (newHistory: any[] | ((prev: any[]) => any[])) => {
+    lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    setWithdrawHistory(newHistory);
   };
 
   // Real-time Clock Simulator for the Mobile notch status bar
@@ -1966,7 +2001,7 @@ export default function App() {
                   searchQuery={globalSearchQuery}
                   onSearchQueryChange={setGlobalSearchQuery}
                   language={appLanguage}
-                  customProductImages={merchantsDb?.system_config?.customProductImages}
+                  customProductImages={customProductImages}
                 />
               )}
 
@@ -1995,7 +2030,7 @@ export default function App() {
                   onConfirmReceiveOrder={handleConfirmReceiveOrder}
                   onDeleteOrder={handleDeleteOrder}
                   userBalance={userBalance}
-                  onUpdateBalance={setUserBalance}
+                  onUpdateBalance={handleUpdateBalance}
                   financialLogs={financialLogs}
                   onAddFinancialLog={addFinancialLog}
                   language={appLanguage}
@@ -2007,7 +2042,7 @@ export default function App() {
                   registeredUsers={registeredUsers}
                   isSalesman={isCurrentUserSalesman}
                   withdrawHistory={withdrawHistory}
-                  onUpdateWithdrawHistory={setWithdrawHistory}
+                  onUpdateWithdrawHistory={handleUpdateWithdrawHistory}
                   onOpenAdminConsole={() => setIsAdminConsoleOpen(true)}
                 />
               )}
