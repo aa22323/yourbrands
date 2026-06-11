@@ -32,11 +32,59 @@ export default function App() {
   const lastFetchedDataRef = useRef<{ registeredUsers: any[]; merchantsDb: Record<string, any> } | null>(null);
   const hasFetchedRef = useRef<boolean>(false);
   const prevCustomImagesRef = useRef<Record<string, string>>({});
-  const [customProductImages, setCustomProductImages] = useState<Record<string, string>>({});
+
+  const [customProductImages, setCustomProductImages] = useState<Record<string, string>>(() => {
+    try {
+      const stored = localStorage.getItem('aliexpress_custom_product_images');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') {
+          setProductImageOverrides(parsed);
+          ALL_PRODUCTS.forEach(p => {
+            if (parsed[p.id]) {
+              p.image = parsed[p.id];
+            }
+          });
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Error loading cached custom product images', e);
+    }
+    return {};
+  });
+
+  const [customProductImageVersions, setCustomProductImageVersions] = useState<Record<string, number>>(() => {
+    try {
+      const stored = localStorage.getItem('aliexpress_custom_product_image_versions');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Error loading cached custom image versions', e);
+    }
+    return {};
+  });
 
   useEffect(() => {
     prevCustomImagesRef.current = customProductImages;
+    try {
+      localStorage.setItem('aliexpress_custom_product_images', JSON.stringify(customProductImages));
+    } catch (e) {
+      console.warn('Failed to save custom images to localStorage', e);
+    }
   }, [customProductImages]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('aliexpress_custom_product_image_versions', JSON.stringify(customProductImageVersions));
+    } catch (e) {
+      console.warn('Failed to save custom image versions to localStorage', e);
+    }
+  }, [customProductImageVersions]);
   
   // 1. Core State Handlers
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -204,6 +252,7 @@ export default function App() {
     let active = true;
     let isInitial = true;
     const loadedCustomImages: Record<string, string> = {};
+    const loadedCustomImageVersions: Record<string, number> = {};
 
     const fetchDb = async () => {
       // If we recently performed a local mutation, wait to prevent race conditions
@@ -230,6 +279,7 @@ export default function App() {
               const d = docSnap.data();
               if (d && d.image) {
                 loadedCustomImages[productId] = d.image;
+                loadedCustomImageVersions[productId] = Number(d.timestamp || 1);
               }
             }
           });
@@ -252,16 +302,21 @@ export default function App() {
           return;
         }
 
-        // Lazy-load check: if other admins added images not present in our local state, fetch them lazy on-the-fly
+        // Version-aware smart-fetching: check if other admins added / updated images
         const cloudImagesDict = incomingMerchants.system_config?.customProductImages || {};
         for (const pId of Object.keys(cloudImagesDict)) {
-          if (!loadedCustomImages[pId] && !prevCustomImagesRef.current[pId]) {
+          const cloudVersion = Number(cloudImagesDict[pId]);
+          const currentLocalVer = customProductImageVersions[pId] || loadedCustomImageVersions[pId] || 0;
+          const currentLocalImg = customProductImages[pId] || loadedCustomImages[pId];
+
+          if (!currentLocalImg || (cloudVersion > 0 && cloudVersion > currentLocalVer)) {
             try {
               const imgSnap = await getDoc(doc(db, 'system_data', `custom_image_${pId}`));
               if (imgSnap.exists()) {
                 const imgData = imgSnap.data();
                 if (imgData?.image) {
                   loadedCustomImages[pId] = imgData.image;
+                  loadedCustomImageVersions[pId] = Number(imgData.timestamp || cloudVersion || 1);
                 }
               }
             } catch (imageErr) {
@@ -275,6 +330,12 @@ export default function App() {
         if (Object.keys(loadedCustomImages).length > 0) {
           setCustomProductImages(prev => {
             const next = { ...prev, ...loadedCustomImages };
+            return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
+          });
+        }
+        if (Object.keys(loadedCustomImageVersions).length > 0) {
+          setCustomProductImageVersions(prev => {
+            const next = { ...prev, ...loadedCustomImageVersions };
             return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
           });
         }
@@ -364,18 +425,29 @@ export default function App() {
           
           if (merged.system_config) {
             // Guarantee light boolean presence markers under system_config.customProductImages inside state
-            const lightPresences: Record<string, boolean> = {};
+            const lightPresences: Record<string, number | boolean> = {};
             const incomingConfigImages = incomingMerchants.system_config?.customProductImages || {};
             const prevConfigImages = prev.system_config?.customProductImages || {};
             
             Object.keys(incomingConfigImages).forEach(k => {
-              if (incomingConfigImages[k]) lightPresences[k] = true;
+              if (incomingConfigImages[k]) {
+                lightPresences[k] = incomingConfigImages[k];
+              }
             });
             Object.keys(prevConfigImages).forEach(k => {
-              if (prevConfigImages[k]) lightPresences[k] = true;
+              if (prevConfigImages[k]) {
+                const incomingVal = lightPresences[k];
+                const incomingNum = typeof incomingVal === 'number' ? incomingVal : (incomingVal === true ? 1 : 0);
+                const prevNum = typeof prevConfigImages[k] === 'number' ? prevConfigImages[k] : (prevConfigImages[k] === true ? 1 : 0);
+                lightPresences[k] = Math.max(incomingNum, prevNum) || true;
+              }
             });
-            Object.keys(loadedCustomImages).forEach(k => {
-              if (loadedCustomImages[k]) lightPresences[k] = true;
+            Object.keys(loadedCustomImageVersions).forEach(k => {
+              if (loadedCustomImageVersions[k]) {
+                const currentVal = lightPresences[k];
+                const currentNum = typeof currentVal === 'number' ? currentVal : (currentVal === true ? 1 : 0);
+                lightPresences[k] = Math.max(currentNum, loadedCustomImageVersions[k]) || true;
+              }
             });
 
             merged.system_config.customProductImages = lightPresences;
@@ -519,11 +591,11 @@ export default function App() {
     // and are loaded and merged dynamically on page boot.
     const localSanitizedDb = { ...merchantsDb };
     if (localSanitizedDb.system_config) {
-      const lightImages: Record<string, boolean> = {};
+      const lightImages: Record<string, number | boolean> = {};
       const currentImages = localSanitizedDb.system_config.customProductImages || {};
       Object.keys(currentImages).forEach(pId => {
         if (currentImages[pId]) {
-          lightImages[pId] = true; // Store lightweight true markers instead of raw Base64 data
+          lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
         }
       });
       localSanitizedDb.system_config = {
@@ -585,12 +657,12 @@ export default function App() {
     if (isCurrentUserAdmin && merchantsDb.system_config) {
       const lastSys = lastFetchedDataRef.current?.merchantsDb?.system_config;
       if (!lastSys || JSON.stringify(merchantsDb.system_config) !== JSON.stringify(lastSys)) {
-        // Sanitize product image overrides to keep system_data lightweight (use placeholder 'true' to stay under 1MB limits)
-        const lightImages: Record<string, boolean> = {};
+        // Sanitize product image overrides to keep system_data lightweight (use placeholder version stamp to stay under 1MB limits)
+        const lightImages: Record<string, number | boolean> = {};
         const currentImages = merchantsDb.system_config.customProductImages || {};
         Object.keys(currentImages).forEach(pId => {
           if (currentImages[pId]) {
-            lightImages[pId] = true;
+            lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
           }
         });
 
@@ -632,11 +704,11 @@ export default function App() {
             // Safeguard: Protect system_config from being cleared by non-admin updates in fallback mode
             sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
           } else if (sanitizedMerchantsDb.system_config) {
-            const lightImages: Record<string, boolean> = {};
+            const lightImages: Record<string, number | boolean> = {};
             const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
             Object.keys(currentImages).forEach(pId => {
               if (currentImages[pId]) {
-                lightImages[pId] = true;
+                lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
               }
             });
             sanitizedMerchantsDb.system_config = {
@@ -1170,6 +1242,9 @@ export default function App() {
   const updateMerchantDataInDb = (targetAccount: string, updatedFields: Partial<any>) => {
     const key = targetAccount.toLowerCase();
     
+    // Set mutation lock immediately to prevent race conditions during propagation
+    lastMutationTimeRef.current = Date.now();
+
     if (key === 'system_config') {
       setMerchantsDb(prev => {
         const nextConfig = {
@@ -1181,10 +1256,26 @@ export default function App() {
         if (updatedFields.customProductImages) {
           const imagesObj = updatedFields.customProductImages;
           const previousImages = customProductImages || {};
+          const nextVersions = { ...customProductImageVersions };
+
+          // Sync new or updated base64 image strings to separate Firestore documents to bypass 1MB single-doc limit
+          Object.keys(imagesObj).forEach(productId => {
+            const imgBase64 = imagesObj[productId];
+            if (imgBase64 && previousImages[productId] !== imgBase64) {
+              const imgDocRef = doc(db, 'system_data', `custom_image_${productId}`);
+              const nowTs = Date.now();
+              nextVersions[productId] = nowTs;
+
+              setDoc(imgDocRef, { image: imgBase64, timestamp: nowTs })
+                .then(() => console.log(`Custom product image synced cleanly: system_data/custom_image_${productId}`))
+                .catch(e => console.error(`Error saving custom image document for product ${productId}:`, e));
+            }
+          });
 
           // Delete any images that were removed in the updated state dictionary
           Object.keys(previousImages).forEach(productId => {
             if (!imagesObj[productId]) {
+              delete nextVersions[productId];
               const imgDocRef = doc(db, 'system_data', `custom_image_${productId}`);
               deleteDoc(imgDocRef)
                 .then(() => console.log(`Deleted custom product image document: system_data/custom_image_${productId}`))
@@ -1192,24 +1283,14 @@ export default function App() {
             }
           });
 
-          // Sync new or updated base64 image strings to separate Firestore documents to bypass 1MB single-doc limit
-          Object.keys(imagesObj).forEach(productId => {
-            const imgBase64 = imagesObj[productId];
-            if (imgBase64 && previousImages[productId] !== imgBase64) {
-              const imgDocRef = doc(db, 'system_data', `custom_image_${productId}`);
-              setDoc(imgDocRef, { image: imgBase64 })
-                .then(() => console.log(`Custom product image synced cleanly: system_data/custom_image_${productId}`))
-                .catch(e => console.error(`Error saving custom image document for product ${productId}:`, e));
-            }
-          });
-
           // Core modification: Update dedicated state with raw Base64, and strip them from merchantsDb
           setCustomProductImages(imagesObj);
+          setCustomProductImageVersions(nextVersions);
           
-          const lightImages: Record<string, boolean> = {};
+          const lightImages: Record<string, number | boolean> = {};
           Object.keys(imagesObj).forEach(pId => {
             if (imagesObj[pId]) {
-              lightImages[pId] = true;
+              lightImages[pId] = nextVersions[pId] || Date.now();
             }
           });
           nextConfig.customProductImages = lightImages;
@@ -1295,6 +1376,9 @@ export default function App() {
     if (key === 'oopqwe001@gmail.com' || key === 'oopqwe521@gmail.com' || key === 'admin') {
       return;
     }
+
+    // Set mutation lock to prevent intermediate racing or polling overwrites
+    lastMutationTimeRef.current = Date.now();
     
     // 1. Remove from registeredUsers
     setRegisteredUsers(prev => prev.filter(u => u.name.toLowerCase() !== key));
