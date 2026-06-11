@@ -198,24 +198,47 @@ export default function ProductSection({
           )}
         </div>
 
-        {/* Rich Scrollable Horizontal Category Selector - Perfect snap, avoids vertical clutter, is highly usable and native with touch scroll */}
-        <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setSelectedCategory(cat);
-                setItemsPerPage(20);
-              }}
-              className={`px-3.5 py-1.5 text-[11px] sm:text-xs font-bold rounded-full cursor-pointer whitespace-nowrap transition-all duration-300 flex-shrink-0 border ${
-                selectedCategory === cat
-                  ? 'bg-[#e51923] text-white border-transparent shadow-[0_2px_8px_rgba(229,25,35,0.2)] font-black scale-[1.02]'
-                  : 'bg-zinc-100 text-zinc-650 border-zinc-200/60 hover:text-[#e51923] font-semibold'
-              }`}
-            >
-              {t(categoryKeys[cat] || cat)}
-            </button>
-          ))}
+        {/* Rich Two-Row Horizontal Category Selector for optimal mobile access */}
+        <div className="flex flex-col gap-1.5 py-1">
+          {/* Row 1 */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            {categories.slice(0, 5).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setSelectedCategory(cat);
+                  setItemsPerPage(20);
+                }}
+                className={`px-3.5 py-1.5 text-[11px] sm:text-xs font-bold rounded-full cursor-pointer whitespace-nowrap transition-all duration-300 flex-shrink-0 border ${
+                  selectedCategory === cat
+                    ? 'bg-[#e51923] text-white border-transparent shadow-[0_2px_8px_rgba(229,25,35,0.2)] font-black scale-[1.02]'
+                    : 'bg-zinc-100 text-zinc-650 border-zinc-200/60 hover:text-[#e51923] font-semibold'
+                }`}
+              >
+                {t(categoryKeys[cat] || cat)}
+              </button>
+            ))}
+          </div>
+
+          {/* Row 2 */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            {categories.slice(5).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setSelectedCategory(cat);
+                  setItemsPerPage(20);
+                }}
+                className={`px-3.5 py-1.5 text-[11px] sm:text-xs font-bold rounded-full cursor-pointer whitespace-nowrap transition-all duration-300 flex-shrink-0 border ${
+                  selectedCategory === cat
+                    ? 'bg-[#e51923] text-white border-transparent shadow-[0_2px_8px_rgba(229,25,35,0.2)] font-black scale-[1.02]'
+                    : 'bg-zinc-100 text-zinc-650 border-zinc-200/60 hover:text-[#e51923] font-semibold'
+                }`}
+              >
+                {t(categoryKeys[cat] || cat)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
