@@ -26,6 +26,11 @@ import MyShopModal from './components/MyShopModal';
 import AdminDashboardView from './components/AdminDashboardView';
 import { AppLanguage, TRANSLATIONS, setProductImageOverrides } from './utils/translations';
 
+const ORIGINAL_PRODUCT_IMAGES: Record<string, string> = {};
+ALL_PRODUCTS.forEach(p => {
+  ORIGINAL_PRODUCT_IMAGES[p.id] = p.image;
+});
+
 export default function App() {
   const isPollingUpdateRef = useRef<boolean>(false);
   const lastMutationTimeRef = useRef<number>(0);
@@ -295,6 +300,7 @@ export default function App() {
                   loadedCustomImages[pId] = fetchedImg;
                   loadedCustomImageVersions[pId] = fetchedVer;
 
+                  // Double check safety
                   setCustomProductImages(prev => ({
                     ...prev,
                     [pId]: fetchedImg
@@ -314,6 +320,27 @@ export default function App() {
             });
         }
       });
+
+      // Clear out any locally cached overrides that have been deleted in the cloud system_config
+      const localImageKeys = Object.keys(customProductImagesRef.current);
+      let localStateModified = false;
+      const nextLocalImages = { ...customProductImagesRef.current };
+      const nextLocalVersions = { ...customProductImageVersionsRef.current };
+
+      localImageKeys.forEach(pId => {
+        if (!cloudImagesDict[pId]) {
+          delete nextLocalImages[pId];
+          delete nextLocalVersions[pId];
+          delete loadedCustomImages[pId];
+          delete loadedCustomImageVersions[pId];
+          localStateModified = true;
+        }
+      });
+
+      if (localStateModified) {
+        setCustomProductImages(nextLocalImages);
+        setCustomProductImageVersions(nextLocalVersions);
+      }
 
       isPollingUpdateRef.current = true;
 
@@ -403,33 +430,8 @@ export default function App() {
         const merged = { ...prev, ...finalMerchants };
         
         if (merged.system_config) {
-          // Guarantee light boolean presence markers under system_config.customProductImages inside state
-          const lightPresences: Record<string, number | boolean> = {};
-          const incomingConfigImages = finalMerchants.system_config?.customProductImages || {};
-          const prevConfigImages = prev.system_config?.customProductImages || {};
-          
-          Object.keys(incomingConfigImages).forEach(k => {
-            if (incomingConfigImages[k]) {
-              lightPresences[k] = incomingConfigImages[k];
-            }
-          });
-          Object.keys(prevConfigImages).forEach(k => {
-            if (prevConfigImages[k]) {
-              const incomingVal = lightPresences[k];
-              const incomingNum = typeof incomingVal === 'number' ? incomingVal : (incomingVal === true ? 1 : 0);
-              const prevNum = typeof prevConfigImages[k] === 'number' ? prevConfigImages[k] : (prevConfigImages[k] === true ? 1 : 0);
-              lightPresences[k] = Math.max(incomingNum, prevNum) || true;
-            }
-          });
-          Object.keys(loadedCustomImageVersions).forEach(k => {
-            if (loadedCustomImageVersions[k]) {
-              const currentVal = lightPresences[k];
-              const currentNum = typeof currentVal === 'number' ? currentVal : (currentVal === true ? 1 : 0);
-              lightPresences[k] = Math.max(currentNum, loadedCustomImageVersions[k]) || true;
-            }
-          });
-
-          merged.system_config.customProductImages = lightPresences;
+          // Take the authoritative cloud custom product image config list as is to prevent client-side timestamp degradation
+          merged.system_config.customProductImages = finalMerchants.system_config?.customProductImages || {};
         }
 
         if (JSON.stringify(prev) !== JSON.stringify(merged)) {
@@ -845,9 +847,7 @@ export default function App() {
     if (customProductImages) {
       setProductImageOverrides(customProductImages);
       ALL_PRODUCTS.forEach(p => {
-        if (customProductImages[p.id]) {
-          p.image = customProductImages[p.id];
-        }
+        p.image = customProductImages[p.id] || ORIGINAL_PRODUCT_IMAGES[p.id] || p.image;
       });
     }
   }, [customProductImages]);
