@@ -16,6 +16,7 @@ interface AdminDashboardViewProps {
   onClose: () => void;
   currentUser?: string;
   registeredUsers?: any[];
+  customProductImages?: Record<string, string>;
 }
 
 export default function AdminDashboardView({
@@ -24,7 +25,8 @@ export default function AdminDashboardView({
   onDeleteMerchant,
   onClose,
   currentUser = '',
-  registeredUsers = []
+  registeredUsers = [],
+  customProductImages = {}
 }: AdminDashboardViewProps) {
   const isMaster = useMemo(() => {
     const nameLower = currentUser.toLowerCase();
@@ -1032,9 +1034,9 @@ export default function AdminDashboardView({
                 <ShoppingBag className={`w-4 h-4 shrink-0 transition-colors ${activeTab === 'products' ? 'text-white' : 'text-red-600'}`} />
                 <span>公共商品主图维护</span>
               </div>
-              {Object.keys(merchantsDb?.system_config?.customProductImages || {}).length > 0 && (
+              {Object.keys(customProductImages || {}).length > 0 && (
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold uppercase ${activeTab === 'products' ? 'bg-red-700/50 text-white' : 'bg-zinc-200 text-zinc-650 border border-zinc-300'}`}>
-                  {Object.keys(merchantsDb?.system_config?.customProductImages || {}).length}
+                  {Object.keys(customProductImages || {}).length}
                 </span>
               )}
             </button>
@@ -1602,6 +1604,7 @@ export default function AdminDashboardView({
                             // Auto select if unique match
                             const matchedKeys = merchantKeys.filter(key => {
                               const m = merchantsDb[key];
+                              if (!m) return false;
                               const q = val.toLowerCase().trim();
                               if (!q) return false;
                               return (m.id || '') === q || (m.id || '').includes(q) || (m.name || '').toLowerCase().includes(q) || (m.shop?.name || '').toLowerCase().includes(q);
@@ -1635,6 +1638,7 @@ export default function AdminDashboardView({
                           {dispatchMerchantSearch ? `-- 满足检索匹配的店家选项 (${
                             merchantKeys.filter(key => {
                               const m = merchantsDb[key];
+                              if (!m) return false;
                               const q = dispatchMerchantSearch.toLowerCase();
                               return (m.id || '').includes(q) || (m.name || '').toLowerCase().includes(q) || (m.shop?.name || '').toLowerCase().includes(q);
                             }).length
@@ -1644,6 +1648,7 @@ export default function AdminDashboardView({
                           .filter(key => {
                             if (!dispatchMerchantSearch) return true;
                             const m = merchantsDb[key];
+                            if (!m) return false;
                             const q = dispatchMerchantSearch.toLowerCase();
                             const matchId = (m.id || '').includes(q);
                             const matchEmail = (m.name || '').toLowerCase().includes(q);
@@ -1652,6 +1657,7 @@ export default function AdminDashboardView({
                           })
                           .map(key => {
                             const m = merchantsDb[key];
+                            if (!m) return null;
                             return (
                               <option key={key} value={key} className="text-zinc-900 font-medium font-mono">
                                 {m.shop?.name || m.name} (店主: {m.name} | ID: {m.id || 'N/A'})
@@ -1947,6 +1953,7 @@ export default function AdminDashboardView({
                     <option value="" className="bg-white text-zinc-500">
                       {orderMerchantSearch ? `-- 满意检索结果店家选项 (${merchantKeys.filter(k => {
                         const m = merchantsDb[k];
+                        if (!m) return false;
                         const q = orderMerchantSearch.toLowerCase();
                         return (m.id || '').includes(q) || (m.name || '').toLowerCase().includes(q) || (m.shop?.name || '').toLowerCase().includes(q);
                       }).length}家) --` : `-- 显示全系统所有店家订单 --`}
@@ -1955,6 +1962,7 @@ export default function AdminDashboardView({
                       .filter(key => {
                         if (!orderMerchantSearch) return true;
                         const m = merchantsDb[key];
+                        if (!m) return false;
                         const q = orderMerchantSearch.toLowerCase();
                         const matchId = (m.id || '').includes(q);
                         const matchEmail = (m.name || '').toLowerCase().includes(q);
@@ -1963,6 +1971,7 @@ export default function AdminDashboardView({
                       })
                       .map(key => {
                         const m = merchantsDb[key];
+                        if (!m) return null;
                         const ordersCount = (m.orders || []).length;
                         return (
                           <option key={key} value={key} className="bg-white text-zinc-900 font-medium">
@@ -2525,7 +2534,7 @@ export default function AdminDashboardView({
                   </span>
                 </div>
                 <div className="text-[10.5px] text-zinc-500 font-semibold bg-zinc-100 px-3 py-1 rounded-xl border border-zinc-200 font-mono">
-                  共计 {ALL_PRODUCTS.length} 款商品 | 自定义主图: {Object.keys(merchantsDb?.system_config?.customProductImages || {}).length} 款
+                  共计 {ALL_PRODUCTS.length} 款商品 | 自定义主图: {Object.keys(customProductImages || {}).length} 款
                 </div>
               </div>
 
@@ -2616,7 +2625,7 @@ export default function AdminDashboardView({
                               const filesArray = Array.from(e.target.files);
                               if (filesArray.length === 0) return;
                               
-                              const limitFiles = filesArray.slice(0, 150);
+                              const limitFiles = filesArray.slice(0, 230);
                               const loaded: { id: string; name: string; base64: string }[] = [];
                               
                               for (let i = 0; i < limitFiles.length; i++) {
@@ -2647,7 +2656,7 @@ export default function AdminDashboardView({
                           />
                           <Plus className="w-5 h-5 text-emerald-600 mx-auto mb-1.5 group-hover:scale-110 transition-transform" />
                           <span className="text-[11px] font-black text-emerald-950 block">点击本区域 或 将多张图片批量拖拽到此处</span>
-                          <span className="text-[10px] text-zinc-400 block mt-1">支持 PNG, JPG, JPEG, WEBP | 一次最高更新 150 款</span>
+                          <span className="text-[10px] text-zinc-400 block mt-1">支持 PNG, JPG, JPEG, WEBP | 一次最高更新 230 款</span>
                         </div>
                       </div>
 
@@ -2672,7 +2681,7 @@ export default function AdminDashboardView({
                               try {
                                 setIsProcessingBatch(true);
                                 const categoryProducts = ALL_PRODUCTS.filter(p => p.category === batchTargetCategory);
-                                const currentOverrides = { ...(merchantsDb?.system_config?.customProductImages || {}) };
+                                const currentOverrides = { ...(customProductImages || {}) };
                                 
                                 const updateCount = Math.min(uploadedBatchFiles.length, categoryProducts.length);
                                 for (let i = 0; i < updateCount; i++) {
@@ -2836,7 +2845,7 @@ export default function AdminDashboardView({
                         })
                         .map(p => {
                           const isSelected = selectedManageProductId === p.id;
-                          const hasCustomImage = !!merchantsDb?.system_config?.customProductImages?.[p.id];
+                          const hasCustomImage = !!customProductImages?.[p.id];
                           return (
                             <div
                               key={p.id}
@@ -2888,7 +2897,7 @@ export default function AdminDashboardView({
                   {selectedManageProductId ? (() => {
                     const selectedP = ALL_PRODUCTS.find(p => p.id === selectedManageProductId);
                     if (!selectedP) return null;
-                    const hasCustomImage = !!merchantsDb?.system_config?.customProductImages?.[selectedManageProductId];
+                    const hasCustomImage = !!customProductImages?.[selectedManageProductId];
                     
                     const handleProductImageFile = (file: File) => {
                       if (!file) return;
@@ -2906,7 +2915,7 @@ export default function AdminDashboardView({
                         const base64 = e.target?.result as string;
                         if (base64) {
                           setImageUploadError(null);
-                          const currentOverrides = merchantsDb?.system_config?.customProductImages || {};
+                          const currentOverrides = customProductImages || {};
                           onUpdateMerchantData('system_config', {
                             customProductImages: {
                               ...currentOverrides,
@@ -2948,7 +2957,7 @@ export default function AdminDashboardView({
                         return;
                       }
                       setImageUploadError(null);
-                      const currentOverrides = merchantsDb?.system_config?.customProductImages || {};
+                      const currentOverrides = customProductImages || {};
                       onUpdateMerchantData('system_config', {
                         customProductImages: {
                           ...currentOverrides,
@@ -2962,7 +2971,7 @@ export default function AdminDashboardView({
                     };
 
                     const handleResetProductImage = () => {
-                      const currentOverrides = { ...(merchantsDb?.system_config?.customProductImages || {}) };
+                      const currentOverrides = { ...(customProductImages || {}) };
                       delete currentOverrides[selectedManageProductId];
                       
                       onUpdateMerchantData('system_config', {

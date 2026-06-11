@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from './firebase';
-import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc, FieldPath } from 'firebase/firestore';
 import { 
   Home, ShoppingBag, User, Sparkles, Wifi, Battery, Radio, 
   Clock, Share2, Compass, AlertCircle, HelpCircle, ShoppingCart,
@@ -32,6 +32,11 @@ export default function App() {
   const lastFetchedDataRef = useRef<{ registeredUsers: any[]; merchantsDb: Record<string, any> } | null>(null);
   const hasFetchedRef = useRef<boolean>(false);
   const prevCustomImagesRef = useRef<Record<string, string>>({});
+  const [customProductImages, setCustomProductImages] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    prevCustomImagesRef.current = customProductImages;
+  }, [customProductImages]);
   
   // 1. Core State Handlers
   const [activeTab, setActiveTab] = useState<AppTab>('home');
@@ -267,6 +272,40 @@ export default function App() {
 
         isPollingUpdateRef.current = true;
 
+        if (Object.keys(loadedCustomImages).length > 0) {
+          setCustomProductImages(prev => {
+            const next = { ...prev, ...loadedCustomImages };
+            return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
+          });
+        }
+
+        // Renormalize any dot-corrupted Firestore maps (e.g. "abc@qq": { "com": profile }) back into flat dot keys ("abc@qq.com": profile)
+        const normalizedMerchants: Record<string, any> = {};
+        const collapseKeys = (obj: any, prefix: string) => {
+          if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+            if (obj.name) {
+              normalizedMerchants[prefix.toLowerCase()] = obj;
+            } else {
+              Object.keys(obj).forEach(key => {
+                collapseKeys(obj[key], prefix ? `${prefix}.${key}` : key);
+              });
+            }
+          }
+        };
+        Object.keys(incomingMerchants).forEach(k => {
+          if (k === 'system_config') {
+            normalizedMerchants[k] = incomingMerchants[k];
+            return;
+          }
+          const val = incomingMerchants[k];
+          if (val && typeof val === 'object' && !Array.isArray(val) && !val.name) {
+            collapseKeys(val, k);
+          } else {
+            normalizedMerchants[k] = val;
+          }
+        });
+        incomingMerchants = normalizedMerchants;
+
         // Ensure system_config exists
         if (!incomingMerchants.system_config) {
           incomingMerchants.system_config = {};
@@ -321,37 +360,25 @@ export default function App() {
             return prev;
           }
           
-          const prevCustomImages = prev.system_config?.customProductImages || {};
           const merged = { ...prev, ...incomingMerchants };
           
           if (merged.system_config) {
-            merged.system_config.customProductImages = {
-              ...(merged.system_config.customProductImages || {}), // holds true flags indicating presence
-              ...prevCustomImages, // restore locally active in-memory base64 strings
-              ...loadedCustomImages // overlay initial files loaded on boot
-            };
+            // Guarantee light boolean presence markers under system_config.customProductImages inside state
+            const lightPresences: Record<string, boolean> = {};
+            const incomingConfigImages = incomingMerchants.system_config?.customProductImages || {};
+            const prevConfigImages = prev.system_config?.customProductImages || {};
+            
+            Object.keys(incomingConfigImages).forEach(k => {
+              if (incomingConfigImages[k]) lightPresences[k] = true;
+            });
+            Object.keys(prevConfigImages).forEach(k => {
+              if (prevConfigImages[k]) lightPresences[k] = true;
+            });
+            Object.keys(loadedCustomImages).forEach(k => {
+              if (loadedCustomImages[k]) lightPresences[k] = true;
+            });
 
-            // Purge pure boolean "true" placekeepers and guarantee strings
-            Object.keys(merged.system_config.customProductImages).forEach(k => {
-              if (merged.system_config.customProductImages[k] === true) {
-                const localBase = prevCustomImages[k] || loadedCustomImages[k];
-                if (localBase) {
-                  merged.system_config.customProductImages[k] = localBase;
-                } else {
-                  delete merged.system_config.customProductImages[k];
-                }
-              }
-            });
-          }
-          
-          // Apply custom image overrides on raw ALL_PRODUCTS immediately upon database fetch
-          if (merged.system_config?.customProductImages) {
-            const overrides = merged.system_config.customProductImages;
-            ALL_PRODUCTS.forEach(p => {
-              if (overrides[p.id]) {
-                p.image = overrides[p.id];
-              }
-            });
+            merged.system_config.customProductImages = lightPresences;
           }
 
           if (JSON.stringify(prev) !== JSON.stringify(merged)) {
@@ -458,7 +485,7 @@ export default function App() {
   });
 
   // Synchronize custom product image overrides to translation registry synchronously inside the render cycle
-  setProductImageOverrides(merchantsDb?.system_config?.customProductImages || {});
+  setProductImageOverrides(customProductImages || {});
 
   // Combine registeredUsers and merchantsDb saving into a single atomic payload to prevent write race conditions
   useEffect(() => {
@@ -470,6 +497,7 @@ export default function App() {
 
     // If the state was updated from a polling response, do not POST it back to the server.
     if (isPollingUpdateRef.current) {
+      isPollingUpdateRef.current = false;
       return;
     }
 
@@ -485,34 +513,67 @@ export default function App() {
     // Set last mutation time to locked to prevent pulling older state from server during propagation
     lastMutationTimeRef.current = Date.now();
 
-    localStorage.setItem('aliexpress_registered_users_list', JSON.stringify(registeredUsers));
-    localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(merchantsDb));
+    // To prevent QuotaExceededError (which halts React execution with a white screen),
+    // we must sanitize merchantsDb to strip the heavy Base64 image strings before saving to localStorage!
+    // These heavy images are already backed up in individual system_data Firestore documents anyway,
+    // and are loaded and merged dynamically on page boot.
+    const localSanitizedDb = { ...merchantsDb };
+    if (localSanitizedDb.system_config) {
+      const lightImages: Record<string, boolean> = {};
+      const currentImages = localSanitizedDb.system_config.customProductImages || {};
+      Object.keys(currentImages).forEach(pId => {
+        if (currentImages[pId]) {
+          lightImages[pId] = true; // Store lightweight true markers instead of raw Base64 data
+        }
+      });
+      localSanitizedDb.system_config = {
+        ...localSanitizedDb.system_config,
+        customProductImages: lightImages
+      };
+    }
+
+    try {
+      localStorage.setItem('aliexpress_registered_users_list', JSON.stringify(registeredUsers));
+      localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(localSanitizedDb));
+    } catch (localErr) {
+      console.warn('Met QuotaExceededError when saving to localStorage. Stripping non-essential state cache and retrying.', localErr);
+      try {
+        // Fallback: Clear heavy caches to prevent crashes
+        localStorage.setItem('aliexpress_registered_users_list', JSON.stringify(registeredUsers));
+        // Save without system_config completely if needed as system_config is fetched on boot anyway
+        const minimalDb = { ...localSanitizedDb };
+        delete minimalDb.system_config;
+        localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(minimalDb));
+      } catch (critErr) {
+        console.error('Critical failure saving to localStorage:', critErr);
+      }
+    }
 
     const docRef = doc(db, 'system_data', 'aliexpress_database');
 
-    // Build highly optimized update payload to prevent concurrency conflicts or deleting config!
-    const updatePayload: Record<string, any> = {};
+    // Build highly optimized update arguments using FieldPath to prevent dot nesting issues inside emails!
+    const updateArgs: any[] = [];
 
     // 1. If registeredUsers changed, synchronize the array
     if (!lastFetchedDataRef.current || JSON.stringify(registeredUsers) !== JSON.stringify(lastFetchedDataRef.current.registeredUsers)) {
-      updatePayload['registeredUsers'] = registeredUsers;
+      updateArgs.push('registeredUsers', registeredUsers);
     }
 
-    // 2. Identify and synchronize ONLY modified merchant profiles
+    // 2. Identify and synchronize ONLY modified merchant profiles using FieldPath
     if (lastFetchedDataRef.current?.merchantsDb) {
       Object.keys(merchantsDb).forEach(k => {
         if (k === 'system_config') return; // system_config is handled separately with proper admin verification
         const currentProfile = merchantsDb[k];
         const lastProfile = lastFetchedDataRef.current?.merchantsDb[k];
         if (JSON.stringify(currentProfile) !== JSON.stringify(lastProfile)) {
-          updatePayload[`merchantsDb.${k}`] = currentProfile;
+          updateArgs.push(new FieldPath('merchantsDb', k), currentProfile);
         }
       });
     } else {
       // If no last fetched data is available yet, only update the active logged-in merchant to keep it extremely safe
       const userKey = userAccountName.toLowerCase();
       if (userKey && merchantsDb[userKey]) {
-        updatePayload[`merchantsDb.${userKey}`] = merchantsDb[userKey];
+        updateArgs.push(new FieldPath('merchantsDb', userKey), merchantsDb[userKey]);
       }
     }
 
@@ -533,22 +594,24 @@ export default function App() {
           }
         });
 
-        updatePayload['merchantsDb.system_config'] = {
+        updateArgs.push(new FieldPath('merchantsDb', 'system_config'), {
           ...merchantsDb.system_config,
           customProductImages: lightImages
-        };
+        });
       }
     }
 
-    // If updatePayload is empty, skip calling Firestore altogether (efficient!)
-    if (Object.keys(updatePayload).length === 0) {
+    // If updateArgs is empty, skip calling Firestore altogether (efficient!)
+    if (updateArgs.length === 0) {
       return;
     }
 
-    // Perform targeted update on Firestore instead of full overwriting setDoc!
-    updateDoc(docRef, updatePayload)
+    // Perform targeted update on Firestore using safe vararg FieldPath notation!
+    // Since updateDoc syntax can take either an object or field/value pairs, we pass them as varargs to support safe FieldPath evaluation.
+    const [firstField, firstVal, ...restArgs] = updateArgs;
+    updateDoc(docRef, firstField, firstVal, ...restArgs)
       .then(() => {
-        console.log("Successfully synchronized target database updates atomically in Firestore:", Object.keys(updatePayload));
+        console.log("Successfully synchronized target database updates atomically in Firestore using FieldPath.");
         // Keep our lastFetchedDataRef updated with our own mutated state to prevent redundant loops
         lastFetchedDataRef.current = {
           registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
@@ -559,7 +622,10 @@ export default function App() {
         console.error('Failed to sync atomically to Firestore (falling back to setDoc):', err);
         // Fallback to full setDoc if updateDoc fails due to uninitialized document structure
         const sanitizedMerchantsDb = { ...merchantsDb };
-        if (sanitizedMerchantsDb.system_config) {
+        if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
+          // Safeguard: Protect system_config from being cleared by non-admin updates in fallback mode
+          sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
+        } else if (sanitizedMerchantsDb.system_config) {
           const lightImages: Record<string, boolean> = {};
           const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
           Object.keys(currentImages).forEach(pId => {
@@ -675,16 +741,15 @@ export default function App() {
 
   // Synchronically apply custom product images loaded/updated from Firebase to prevent flicker
   useEffect(() => {
-    if (merchantsDb?.system_config?.customProductImages) {
-      const overrides = merchantsDb.system_config.customProductImages;
-      setProductImageOverrides(overrides);
+    if (customProductImages) {
+      setProductImageOverrides(customProductImages);
       ALL_PRODUCTS.forEach(p => {
-        if (overrides[p.id]) {
-          p.image = overrides[p.id];
+        if (customProductImages[p.id]) {
+          p.image = customProductImages[p.id];
         }
       });
     }
-  }, [merchantsDb]);
+  }, [customProductImages]);
 
   // Referral code for invited merchant registrations
   const [referralCode, setReferralCode] = useState<string | null>(() => {
@@ -844,8 +909,9 @@ export default function App() {
     setRegisterError('');
     setLoginAccountInput(trimmedReg); // Pre-fill login tab input
     
-    // Switch to login tab after brief delay for optimal delightful user feedback
+    // Switch to login tab and auto login after brief delay for optimal delightful user feedback
     setTimeout(() => {
+      setIsLoggedIn(true);
       setAuthTab('login');
       setRegisterSuccess('');
       setRegisterAccountInput('');
@@ -1095,7 +1161,7 @@ export default function App() {
         // Real-time custom product image synchronization to dedicated Firestore documents inside the 'system_data' collection
         if (updatedFields.customProductImages) {
           const imagesObj = updatedFields.customProductImages;
-          const previousImages = prev.system_config?.customProductImages || {};
+          const previousImages = customProductImages || {};
 
           // Delete any images that were removed in the updated state dictionary
           Object.keys(previousImages).forEach(productId => {
@@ -1117,6 +1183,17 @@ export default function App() {
                 .catch(e => console.error(`Error saving custom image document for product ${productId}:`, e));
             }
           });
+
+          // Core modification: Update dedicated state with raw Base64, and strip them from merchantsDb
+          setCustomProductImages(imagesObj);
+          
+          const lightImages: Record<string, boolean> = {};
+          Object.keys(imagesObj).forEach(pId => {
+            if (imagesObj[pId]) {
+              lightImages[pId] = true;
+            }
+          });
+          nextConfig.customProductImages = lightImages;
         }
 
         return {
@@ -1485,7 +1562,7 @@ export default function App() {
                         setLoginError('');
                       }}
                       placeholder={t('userNamePlaceholder')}
-                      className="w-full text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
+                      className="w-full text-[16px] sm:text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
                     />
                   </div>
 
@@ -1505,7 +1582,7 @@ export default function App() {
                           }
                         }}
                         placeholder={t('passwordPlaceholder')}
-                        className="w-full text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 pr-10 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
+                        className="w-full text-[16px] sm:text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 pr-10 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
                       />
                       <button
                         type="button"
@@ -1544,7 +1621,7 @@ export default function App() {
                         setRegisterError('');
                       }}
                       placeholder={t('registerAccountPlaceholder')}
-                      className="w-full text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
+                      className="w-full text-[16px] sm:text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
                     />
                   </div>
 
@@ -1558,12 +1635,12 @@ export default function App() {
                         setRegisterError('');
                       }}
                       placeholder={t('registerPasswordPlaceholder')}
-                      className="w-full text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
+                      className="w-full text-[16px] sm:text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5 text-left">
-                    <label className="text-[10px] text-zinc-550 font-bold tracking-wider">{t('registerConfirmPassLabel')}</label>
+                    <label className="text-[10px] text-zinc-555 font-bold tracking-wider">{t('registerConfirmPassLabel')}</label>
                     <input
                       type="password"
                       value={registerPasswordConfirmInput}
@@ -1572,7 +1649,7 @@ export default function App() {
                         setRegisterError('');
                       }}
                       placeholder={t('registerConfirmPlaceholder')}
-                      className="w-full text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
+                      className="w-full text-[16px] sm:text-xs bg-zinc-55 border border-zinc-200 text-zinc-800 rounded-xl p-3.5 focus:outline-none focus:border-[#e51923] focus:ring-1 focus:ring-[#e51923] font-medium shadow-xs text-left"
                     />
                   </div>
 
@@ -2054,6 +2131,7 @@ export default function App() {
               onClose={() => setIsAdminConsoleOpen(false)}
               currentUser={userAccountName}
               registeredUsers={registeredUsers}
+              customProductImages={customProductImages}
             />
           </motion.div>
         )}
