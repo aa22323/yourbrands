@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from './firebase';
-import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc, FieldPath } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc, FieldPath, onSnapshot } from 'firebase/firestore';
 import { 
   Home, ShoppingBag, User, Sparkles, Wifi, Battery, Radio, 
   Clock, Share2, Compass, AlertCircle, HelpCircle, ShoppingCart,
@@ -69,7 +69,11 @@ export default function App() {
     return {};
   });
 
+  const customProductImagesRef = useRef<Record<string, string>>(customProductImages);
+  const customProductImageVersionsRef = useRef<Record<string, number>>(customProductImageVersions);
+
   useEffect(() => {
+    customProductImagesRef.current = customProductImages;
     prevCustomImagesRef.current = customProductImages;
     try {
       localStorage.setItem('aliexpress_custom_product_images', JSON.stringify(customProductImages));
@@ -79,6 +83,7 @@ export default function App() {
   }, [customProductImages]);
 
   useEffect(() => {
+    customProductImageVersionsRef.current = customProductImageVersions;
     try {
       localStorage.setItem('aliexpress_custom_product_image_versions', JSON.stringify(customProductImageVersions));
     } catch (e) {
@@ -251,43 +256,208 @@ export default function App() {
   useEffect(() => {
     let active = true;
     let isInitial = true;
+    let unsubscribeSnap: (() => void) | null = null;
+
     const loadedCustomImages: Record<string, string> = {};
     const loadedCustomImageVersions: Record<string, number> = {};
+    const activeFetches = new Set<string>();
 
-    const fetchDb = async () => {
+    const processDatabaseUpdate = async (incomingUsers: any[], incomingMerchants: Record<string, any>) => {
+      hasFetchedRef.current = true;
+      if (!active) return;
+      
       // If we recently performed a local mutation, wait to prevent race conditions
       if (Date.now() - lastMutationTimeRef.current < 8000) {
         return;
       }
+
+      // Version-aware smart-fetching: check if other admins added / updated images
+      const cloudImagesDict = incomingMerchants.system_config?.customProductImages || {};
+
+      Object.keys(cloudImagesDict).forEach(pId => {
+        const cloudVersion = Number(cloudImagesDict[pId]);
+        const currentLocalVer = customProductImageVersionsRef.current[pId] || loadedCustomImageVersions[pId] || 0;
+        const currentLocalImg = customProductImagesRef.current[pId] || loadedCustomImages[pId];
+
+        if (!currentLocalImg || (cloudVersion > 0 && cloudVersion > currentLocalVer)) {
+          if (activeFetches.has(pId)) return;
+          activeFetches.add(pId);
+
+          // Lazy-load updated product images in background parallel threads progressively
+          getDoc(doc(db, 'system_data', `custom_image_${pId}`))
+            .then(imgSnap => {
+              if (active && imgSnap.exists()) {
+                const imgData = imgSnap.data();
+                if (imgData?.image) {
+                  const fetchedImg = imgData.image;
+                  const fetchedVer = Number(imgData.timestamp || cloudVersion || 1);
+
+                  loadedCustomImages[pId] = fetchedImg;
+                  loadedCustomImageVersions[pId] = fetchedVer;
+
+                  setCustomProductImages(prev => ({
+                    ...prev,
+                    [pId]: fetchedImg
+                  }));
+                  setCustomProductImageVersions(prev => ({
+                    ...prev,
+                    [pId]: fetchedVer
+                  }));
+                }
+              }
+            })
+            .catch(imageErr => {
+              console.warn(`Failed lazy-loading custom image for product ${pId}:`, imageErr);
+            })
+            .finally(() => {
+              activeFetches.delete(pId);
+            });
+        }
+      });
+
+      isPollingUpdateRef.current = true;
+
+      // Renormalize any dot-corrupted Firestore maps (e.g. "abc@qq": { "com": profile }) back into flat dot keys ("abc@qq.com": profile)
+      const normalizedMerchants: Record<string, any> = {};
+      const collapseKeys = (obj: any, prefix: string) => {
+        if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+          if (obj.name) {
+            normalizedMerchants[prefix.toLowerCase()] = obj;
+          } else {
+            Object.keys(obj).forEach(key => {
+              collapseKeys(obj[key], prefix ? `${prefix}.${key}` : key);
+            });
+          }
+        }
+      };
+      
+      let finalMerchants = { ...incomingMerchants };
+      Object.keys(finalMerchants).forEach(k => {
+        if (k === 'system_config') {
+          normalizedMerchants[k] = finalMerchants[k];
+          return;
+        }
+        const val = finalMerchants[k];
+        if (val && typeof val === 'object' && !Array.isArray(val) && !val.name) {
+          collapseKeys(val, k);
+        } else {
+          normalizedMerchants[k] = val;
+        }
+      });
+      finalMerchants = normalizedMerchants;
+
+      // Ensure system_config exists
+      if (!finalMerchants.system_config) {
+        finalMerchants.system_config = {};
+      }
+
+      // Pre-populate missing profile structures for registered users in merchantsDb
+      incomingUsers.forEach((u: any) => {
+        if (u && u.name) {
+          const k = u.name.toLowerCase();
+          if (!finalMerchants[k]) {
+            const fId = u.id || '53' + Math.floor(100 + Math.random() * 900);
+            finalMerchants[k] = {
+              name: u.name,
+              password: u.password || '123456',
+              id: fId,
+              promotedBy: u.promotedBy || null,
+              isSalesman: u.isSalesman || false,
+              isAdmin: u.isAdmin || false,
+              balance: 0,
+              shop: { 
+                ...DEFAULT_SHOP, 
+                id: fId, 
+                name: u.name,
+                addedProductIds: [...DEFAULT_SHOP.addedProductIds]
+              },
+              orders: [],
+              financialLogs: [],
+              withdrawHistory: []
+            };
+          } else {
+            // Ensure flags and parameters exist on merchant profile
+            finalMerchants[k].isSalesman = u.isSalesman || false;
+            finalMerchants[k].isAdmin = u.isAdmin || false;
+            if (u.promotedBy !== undefined) {
+              finalMerchants[k].promotedBy = u.promotedBy;
+            }
+          }
+        }
+      });
+
+      if (incomingUsers.length > 0) {
+        setRegisteredUsers(prev => {
+          if (JSON.stringify(prev) !== JSON.stringify(incomingUsers)) {
+            return incomingUsers;
+          }
+          return prev;
+        });
+      }
+
+      setMerchantsDb(prev => {
+        if (Object.keys(finalMerchants).length === 0) {
+          return prev;
+        }
+        
+        const merged = { ...prev, ...finalMerchants };
+        
+        if (merged.system_config) {
+          // Guarantee light boolean presence markers under system_config.customProductImages inside state
+          const lightPresences: Record<string, number | boolean> = {};
+          const incomingConfigImages = finalMerchants.system_config?.customProductImages || {};
+          const prevConfigImages = prev.system_config?.customProductImages || {};
+          
+          Object.keys(incomingConfigImages).forEach(k => {
+            if (incomingConfigImages[k]) {
+              lightPresences[k] = incomingConfigImages[k];
+            }
+          });
+          Object.keys(prevConfigImages).forEach(k => {
+            if (prevConfigImages[k]) {
+              const incomingVal = lightPresences[k];
+              const incomingNum = typeof incomingVal === 'number' ? incomingVal : (incomingVal === true ? 1 : 0);
+              const prevNum = typeof prevConfigImages[k] === 'number' ? prevConfigImages[k] : (prevConfigImages[k] === true ? 1 : 0);
+              lightPresences[k] = Math.max(incomingNum, prevNum) || true;
+            }
+          });
+          Object.keys(loadedCustomImageVersions).forEach(k => {
+            if (loadedCustomImageVersions[k]) {
+              const currentVal = lightPresences[k];
+              const currentNum = typeof currentVal === 'number' ? currentVal : (currentVal === true ? 1 : 0);
+              lightPresences[k] = Math.max(currentNum, loadedCustomImageVersions[k]) || true;
+            }
+          });
+
+          merged.system_config.customProductImages = lightPresences;
+        }
+
+        if (JSON.stringify(prev) !== JSON.stringify(merged)) {
+          return merged;
+        }
+        return prev;
+      });
+
+      // Keep our local cached reference of the fetched data synchronized
+      lastFetchedDataRef.current = {
+        registeredUsers: JSON.parse(JSON.stringify(incomingUsers)),
+        merchantsDb: JSON.parse(JSON.stringify(finalMerchants))
+      };
+
+      // Reset polling flag after state updates settle
+      setTimeout(() => {
+        isPollingUpdateRef.current = false;
+      }, 100);
+    };
+
+    const loadInitialAndListen = async () => {
       try {
         let incomingUsers: any[] = [];
         let incomingMerchants: Record<string, any> = {};
 
         if (isInitial) {
-          // One-shot compilation from the entire system_data collection to extract custom images and main DB simultaneously
-          const querySnapshot = await getDocs(collection(db, 'system_data'));
-          if (!active) return;
-
-          querySnapshot.forEach((docSnap) => {
-            const id = docSnap.id;
-            if (id === 'aliexpress_database') {
-              const d = docSnap.data();
-              incomingUsers = d.registeredUsers || [];
-              incomingMerchants = d.merchantsDb || {};
-            } else if (id.startsWith('custom_image_')) {
-              const productId = id.replace('custom_image_', '');
-              const d = docSnap.data();
-              if (d && d.image) {
-                loadedCustomImages[productId] = d.image;
-                loadedCustomImageVersions[productId] = Number(d.timestamp || 1);
-              }
-            }
-          });
-          isInitial = false;
-        } else {
-          // Subsequent small-packet real-time metadata syncing (poll only the essential aliexpress_database doc)
-          const docRef = doc(db, 'system_data', 'aliexpress_database');
-          const docSnap = await getDoc(docRef);
+          // Highly optimized flat read of only the active aliexpress_database profile document
+          const docSnap = await getDoc(doc(db, 'system_data', 'aliexpress_database'));
           if (!active) return;
 
           if (docSnap.exists()) {
@@ -295,191 +465,37 @@ export default function App() {
             incomingUsers = d.registeredUsers || [];
             incomingMerchants = d.merchantsDb || {};
           }
+
+          await processDatabaseUpdate(incomingUsers, incomingMerchants);
+          isInitial = false;
         }
 
-        hasFetchedRef.current = true; // Complete the initial fetch
-        if (Date.now() - lastMutationTimeRef.current < 8000) {
-          return;
-        }
-
-        // Version-aware smart-fetching: check if other admins added / updated images
-        const cloudImagesDict = incomingMerchants.system_config?.customProductImages || {};
-        for (const pId of Object.keys(cloudImagesDict)) {
-          const cloudVersion = Number(cloudImagesDict[pId]);
-          const currentLocalVer = customProductImageVersions[pId] || loadedCustomImageVersions[pId] || 0;
-          const currentLocalImg = customProductImages[pId] || loadedCustomImages[pId];
-
-          if (!currentLocalImg || (cloudVersion > 0 && cloudVersion > currentLocalVer)) {
-            try {
-              const imgSnap = await getDoc(doc(db, 'system_data', `custom_image_${pId}`));
-              if (imgSnap.exists()) {
-                const imgData = imgSnap.data();
-                if (imgData?.image) {
-                  loadedCustomImages[pId] = imgData.image;
-                  loadedCustomImageVersions[pId] = Number(imgData.timestamp || cloudVersion || 1);
-                }
-              }
-            } catch (imageErr) {
-              console.warn(`Failed lazy-loading custom image for product ${pId}:`, imageErr);
-            }
+        // Register the Firestore onSnapshot real-time listener for zero-latency live synchronization
+        const docRef = doc(db, 'system_data', 'aliexpress_database');
+        unsubscribeSnap = onSnapshot(docRef, async (docSnap) => {
+          if (!active) return;
+          if (docSnap.exists()) {
+            const d = docSnap.data();
+            const usersList = d.registeredUsers || [];
+            const merchantsData = d.merchantsDb || {};
+            await processDatabaseUpdate(usersList, merchantsData);
           }
-        }
-
-        isPollingUpdateRef.current = true;
-
-        if (Object.keys(loadedCustomImages).length > 0) {
-          setCustomProductImages(prev => {
-            const next = { ...prev, ...loadedCustomImages };
-            return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
-          });
-        }
-        if (Object.keys(loadedCustomImageVersions).length > 0) {
-          setCustomProductImageVersions(prev => {
-            const next = { ...prev, ...loadedCustomImageVersions };
-            return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
-          });
-        }
-
-        // Renormalize any dot-corrupted Firestore maps (e.g. "abc@qq": { "com": profile }) back into flat dot keys ("abc@qq.com": profile)
-        const normalizedMerchants: Record<string, any> = {};
-        const collapseKeys = (obj: any, prefix: string) => {
-          if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
-            if (obj.name) {
-              normalizedMerchants[prefix.toLowerCase()] = obj;
-            } else {
-              Object.keys(obj).forEach(key => {
-                collapseKeys(obj[key], prefix ? `${prefix}.${key}` : key);
-              });
-            }
-          }
-        };
-        Object.keys(incomingMerchants).forEach(k => {
-          if (k === 'system_config') {
-            normalizedMerchants[k] = incomingMerchants[k];
-            return;
-          }
-          const val = incomingMerchants[k];
-          if (val && typeof val === 'object' && !Array.isArray(val) && !val.name) {
-            collapseKeys(val, k);
-          } else {
-            normalizedMerchants[k] = val;
-          }
+        }, (err) => {
+          console.warn("Firestore database listener disconnected or insufficient permissions.", err);
         });
-        incomingMerchants = normalizedMerchants;
-
-        // Ensure system_config exists
-        if (!incomingMerchants.system_config) {
-          incomingMerchants.system_config = {};
-        }
-
-        // Pre-populate missing profile structures for registered users in merchantsDb
-        incomingUsers.forEach((u: any) => {
-          if (u && u.name) {
-            const k = u.name.toLowerCase();
-            if (!incomingMerchants[k]) {
-              const fId = u.id || '53' + Math.floor(100 + Math.random() * 900);
-              incomingMerchants[k] = {
-                name: u.name,
-                password: u.password || '123456',
-                id: fId,
-                promotedBy: u.promotedBy || null,
-                isSalesman: u.isSalesman || false,
-                isAdmin: u.isAdmin || false,
-                balance: 0,
-                shop: { 
-                  ...DEFAULT_SHOP, 
-                  id: fId, 
-                  name: u.name,
-                  addedProductIds: [...DEFAULT_SHOP.addedProductIds]
-                },
-                orders: [],
-                financialLogs: [],
-                withdrawHistory: []
-              };
-            } else {
-              // Ensure flags and parameters exist on merchant profile
-              incomingMerchants[k].isSalesman = u.isSalesman || false;
-              incomingMerchants[k].isAdmin = u.isAdmin || false;
-              if (u.promotedBy !== undefined) {
-                incomingMerchants[k].promotedBy = u.promotedBy;
-              }
-            }
-          }
-        });
-
-        if (incomingUsers.length > 0) {
-          setRegisteredUsers(prev => {
-            if (JSON.stringify(prev) !== JSON.stringify(incomingUsers)) {
-              return incomingUsers;
-            }
-            return prev;
-          });
-        }
-
-        setMerchantsDb(prev => {
-          if (Object.keys(incomingMerchants).length === 0) {
-            return prev;
-          }
-          
-          const merged = { ...prev, ...incomingMerchants };
-          
-          if (merged.system_config) {
-            // Guarantee light boolean presence markers under system_config.customProductImages inside state
-            const lightPresences: Record<string, number | boolean> = {};
-            const incomingConfigImages = incomingMerchants.system_config?.customProductImages || {};
-            const prevConfigImages = prev.system_config?.customProductImages || {};
-            
-            Object.keys(incomingConfigImages).forEach(k => {
-              if (incomingConfigImages[k]) {
-                lightPresences[k] = incomingConfigImages[k];
-              }
-            });
-            Object.keys(prevConfigImages).forEach(k => {
-              if (prevConfigImages[k]) {
-                const incomingVal = lightPresences[k];
-                const incomingNum = typeof incomingVal === 'number' ? incomingVal : (incomingVal === true ? 1 : 0);
-                const prevNum = typeof prevConfigImages[k] === 'number' ? prevConfigImages[k] : (prevConfigImages[k] === true ? 1 : 0);
-                lightPresences[k] = Math.max(incomingNum, prevNum) || true;
-              }
-            });
-            Object.keys(loadedCustomImageVersions).forEach(k => {
-              if (loadedCustomImageVersions[k]) {
-                const currentVal = lightPresences[k];
-                const currentNum = typeof currentVal === 'number' ? currentVal : (currentVal === true ? 1 : 0);
-                lightPresences[k] = Math.max(currentNum, loadedCustomImageVersions[k]) || true;
-              }
-            });
-
-            merged.system_config.customProductImages = lightPresences;
-          }
-
-          if (JSON.stringify(prev) !== JSON.stringify(merged)) {
-            return merged;
-          }
-          return prev;
-        });
-
-        // Keep our local cached reference of the fetched data synchronized
-        lastFetchedDataRef.current = {
-          registeredUsers: JSON.parse(JSON.stringify(incomingUsers)),
-          merchantsDb: JSON.parse(JSON.stringify(incomingMerchants))
-        };
-
-        // Reset polling flag after state updates settle
-        setTimeout(() => {
-          isPollingUpdateRef.current = false;
-        }, 100);
 
       } catch (err) {
         console.warn('Firebase document load offline. Using local cache/localStorage fallback.', err);
       }
     };
 
-    fetchDb();
-    const interval = setInterval(fetchDb, 5000); // sync every 5s
+    loadInitialAndListen();
+
     return () => {
       active = false;
-      clearInterval(interval);
+      if (unsubscribeSnap) {
+        unsubscribeSnap();
+      }
     };
   }, []);
 
