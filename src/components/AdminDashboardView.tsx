@@ -31,14 +31,14 @@ export default function AdminDashboardView({
   const isMaster = useMemo(() => {
     const nameLower = currentUser.toLowerCase();
     if (nameLower === 'oopqwe521@gmail.com' || nameLower === 'oopqwe001@gmail.com') return true;
-    const match = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === nameLower);
+    const match = registeredUsers.find(u => u.name.toLowerCase() === nameLower);
     const mDb = merchantsDb[nameLower];
     return match?.isAdmin || mDb?.isAdmin || false;
   }, [currentUser, registeredUsers, merchantsDb]);
   const isSalesman = useMemo(() => {
     if (isMaster) return false;
     const nameLower = currentUser.toLowerCase();
-    const match = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === nameLower);
+    const match = registeredUsers.find(u => u.name.toLowerCase() === nameLower);
     const mDb = merchantsDb[nameLower];
     return match?.isSalesman || mDb?.isSalesman || false;
   }, [registeredUsers, currentUser, isMaster, merchantsDb]);
@@ -62,7 +62,7 @@ export default function AdminDashboardView({
   // States for Order Dispatcher Form
   const [selectedMerchant, setSelectedMerchant] = useState<string>('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [dispatchQty, setDispatchQty] = useState<string>('');
+  const [dispatchQty, setDispatchQty] = useState<number>(1);
   const [custName, setCustName] = useState<string>('');
   const [custPhone, setCustPhone] = useState<string>('');
   const [custAddress, setCustAddress] = useState<string>('');
@@ -121,7 +121,7 @@ export default function AdminDashboardView({
   const merchantKeys = useMemo(() => {
     const keys = Object.keys(merchantsDb).filter(k => k !== 'system_config');
     if (!isSalesman) return keys;
-    const match = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === currentUser.toLowerCase());
+    const match = registeredUsers.find(u => u.name.toLowerCase() === currentUser.toLowerCase());
     const salesmanId = match?.id;
     return keys.filter(k => {
       const m = merchantsDb[k];
@@ -151,7 +151,7 @@ export default function AdminDashboardView({
     
     // 1. From registeredUsers
     registeredUsers.forEach(u => {
-      if (u && u.name && u.isSalesman) {
+      if (u.isSalesman) {
         list.add(u.name);
       }
     });
@@ -358,8 +358,7 @@ export default function AdminDashboardView({
       triggerError('⚠️ 请从下方列表中选择一个要派发的商品！');
       return;
     }
-    const qty = Math.max(1, parseInt(dispatchQty, 10) || 1);
-    if (qty <= 0) {
+    if (dispatchQty <= 0) {
       triggerError('⚠️ 请输入有效商品数量！');
       return;
     }
@@ -378,6 +377,7 @@ export default function AdminDashboardView({
     // Set up product pricing
     const cost = selectedProduct.costPrice;
     const retail = selectedProduct.retailPrice;
+    const qty = dispatchQty;
     const totalCost = cost * qty;
     const totalRetail = retail * qty;
     const profitVal = (retail - cost) * qty;
@@ -1097,7 +1097,7 @@ export default function AdminDashboardView({
                     <div>
                       <h3 className="text-xs font-black uppercase tracking-wider text-emerald-300 font-sans">我的专属业务员推广招商系统 (PROMOTER WORKSTATION)</h3>
                       <p className="text-[10px] text-emerald-400 font-medium mt-0.5 font-mono">
-                        业务账号: <span className="text-white font-bold select-all">{currentUser}</span> | 推广员ID: {registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === currentUser.toLowerCase())?.id || 'N/A'}
+                        业务账号: <span className="text-white font-bold select-all">{currentUser}</span> | 推广员ID: {registeredUsers.find(u => u.name.toLowerCase() === currentUser.toLowerCase())?.id || 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -1675,7 +1675,7 @@ export default function AdminDashboardView({
                         <select
                           value={randomCountry}
                           onChange={(e) => setRandomCountry(e.target.value)}
-                          className="bg-zinc-100 border border-zinc-200 rounded px-2 py-0.5 text-[9px] text-zinc-700 focus:outline-none cursor-pointer h-6 font-semibold"
+                          className="bg-zinc-100 border border-zinc-250 rounded px-2 py-0.5 text-[9px] text-zinc-700 focus:outline-none cursor-pointer h-6 font-semibold"
                         >
                           <option value="random">🌏 随机海外国家 (除中国) </option>
                           <option value="japan">🇯🇵 日本 (Japan)</option>
@@ -1698,7 +1698,7 @@ export default function AdminDashboardView({
                         </button>
                       </div>
                     </label>
-
+                    
                     <div className="flex flex-col gap-2">
                       <div className="grid grid-cols-2 gap-2">
                         <input
@@ -1717,11 +1717,11 @@ export default function AdminDashboardView({
                         />
                       </div>
                       <input
-                        type="text"
-                        placeholder="详细寄送地址 (e.g. 東京都新宿区西新宿...)"
-                        value={custAddress}
-                        onChange={(e) => setCustAddress(e.target.value)}
-                        className="w-full text-xs bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:bg-white focus:border-red-500 transition-all font-medium"
+                          type="text"
+                          placeholder="详细寄送地址 (e.g. 東京都新宿区西新宿...)"
+                          value={custAddress}
+                          onChange={(e) => setCustAddress(e.target.value)}
+                          className="w-full text-xs bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:bg-white focus:border-red-500 transition-all font-medium"
                       />
                     </div>
                   </div>
@@ -1732,9 +1732,8 @@ export default function AdminDashboardView({
                       <input
                         type="number"
                         min="1"
-                        placeholder="1"
                         value={dispatchQty}
-                        onChange={(e) => setDispatchQty(e.target.value)}
+                        onChange={(e) => setDispatchQty(Math.max(1, parseInt(e.target.value, 10) || 1))}
                         className="w-24 text-xs bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-center text-zinc-900 font-bold font-mono focus:outline-none focus:bg-white focus:border-red-500 transition-all"
                       />
                       <span className="text-[10.5px] text-zinc-500 font-semibold font-sans">件（该笔件数决定分润提成指数）</span>
@@ -1767,15 +1766,15 @@ export default function AdminDashboardView({
                     <div className="border-t border-zinc-200 pt-3 flex flex-col gap-1 text-[11.5px] text-zinc-650 font-medium font-sans">
                       <div className="flex justify-between items-center">
                         <span>首付代扣成本 (店家垫付):</span>
-                        <span className="font-mono text-zinc-900 font-bold">¥{((selectedProduct?.costPrice || 0) * (Math.max(1, parseInt(dispatchQty, 10) || 1))).toLocaleString()} JPY</span>
+                        <span className="font-mono text-zinc-900 font-bold">¥{((selectedProduct?.costPrice || 0) * dispatchQty).toLocaleString()} JPY</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>客户最终清算结算价 (GMV):</span>
-                        <span className="font-mono text-zinc-900 font-bold">¥{((selectedProduct?.retailPrice || 0) * (Math.max(1, parseInt(dispatchQty, 10) || 1))).toLocaleString()} JPY</span>
+                        <span className="font-mono text-zinc-900 font-bold">¥{((selectedProduct?.retailPrice || 0) * dispatchQty).toLocaleString()} JPY</span>
                       </div>
                       <div className="flex justify-between items-center text-[#e51923]">
                         <span>店家完成结算后到账纯利润:</span>
-                        <span className="font-mono font-black text-sm text-[#e51923]">¥{((selectedProduct?.profit || 0) * (Math.max(1, parseInt(dispatchQty, 10) || 1))).toLocaleString()} JPY</span>
+                        <span className="font-mono font-black text-sm text-[#e51923]">¥{((selectedProduct?.profit || 0) * dispatchQty).toLocaleString()} JPY</span>
                       </div>
                     </div>
                   </div>

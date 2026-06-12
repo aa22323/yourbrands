@@ -241,12 +241,11 @@ export default function App() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const sanitized = parsed.filter(u => u && u.name && typeof u.name === 'string');
-          const hasMaster = sanitized.some(u => u.name.toLowerCase() === 'oopqwe001@gmail.com');
+          const hasMaster = parsed.some(u => u.name.toLowerCase() === 'oopqwe001@gmail.com');
           if (!hasMaster) {
-            sanitized.push({ name: 'oopqwe001@gmail.com', password: '888888', id: '88888', isSalesman: false });
+            parsed.push({ name: 'oopqwe001@gmail.com', password: '888888', id: '88888', isSalesman: false });
           }
-          return sanitized;
+          return parsed;
         }
       }
     } catch (e) {
@@ -415,10 +414,9 @@ export default function App() {
       });
 
       if (incomingUsers.length > 0) {
-        const sanitizedIncomingUsers = incomingUsers.filter((u: any) => u && u.name && typeof u.name === 'string');
         setRegisteredUsers(prev => {
-          if (JSON.stringify(prev) !== JSON.stringify(sanitizedIncomingUsers)) {
-            return sanitizedIncomingUsers;
+          if (JSON.stringify(prev) !== JSON.stringify(incomingUsers)) {
+            return incomingUsers;
           }
           return prev;
         });
@@ -894,7 +892,7 @@ export default function App() {
   const isCurrentUserSalesman = useMemo(() => {
     if (!userAccountName) return false;
     const key = userAccountName.toLowerCase();
-    const match = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === key);
+    const match = registeredUsers.find(u => u.name.toLowerCase() === key);
     const mDb = merchantsDb[key];
     return (match as any)?.isSalesman || mDb?.isSalesman || false;
   }, [registeredUsers, userAccountName, merchantsDb]);
@@ -927,7 +925,7 @@ export default function App() {
   const handleUpdatePassword = (newPass: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     setUserPassword(newPass);
-    setRegisteredUsers(prev => prev.map(u => (u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === userAccountName.toLowerCase()) ? { ...u, password: newPass } : u));
+    setRegisteredUsers(prev => prev.map(u => u.name.toLowerCase() === userAccountName.toLowerCase() ? { ...u, password: newPass } : u));
     setMerchantsDb(prev => {
       const key = userAccountName.toLowerCase();
       if (prev[key]) {
@@ -966,7 +964,7 @@ export default function App() {
       return;
     }
     
-    const matchedUser = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === trimmedInput.toLowerCase());
+    const matchedUser = registeredUsers.find(u => u.name.toLowerCase() === trimmedInput.toLowerCase());
     if (!matchedUser) {
       setLoginError(t('errAccountInvalid'));
       return;
@@ -1013,7 +1011,7 @@ export default function App() {
     }
 
     // Check if user already exists
-    const exists = registeredUsers.some(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === trimmedReg.toLowerCase());
+    const exists = registeredUsers.some(u => u.name.toLowerCase() === trimmedReg.toLowerCase());
     if (exists) {
       setRegisterError(t('errRegAccountExists'));
       return;
@@ -1226,7 +1224,7 @@ export default function App() {
       setLoadedUserAccount(userAccountName);
     } else {
       // Lazy-populate profile slot for brand-new registered users
-      const matchInReg = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === key);
+      const matchInReg = registeredUsers.find(u => u.name.toLowerCase() === key);
       const fallbackId = matchInReg?.id || '53' + Math.floor(100 + Math.random() * 900);
       const newProfile = {
         name: userAccountName,
@@ -1384,7 +1382,7 @@ export default function App() {
     // Sync to registeredUsers too if password or isSalesman or isAdmin changed or promotedBy changed
     if (updatedFields.password !== undefined || updatedFields.isSalesman !== undefined || updatedFields.isAdmin !== undefined || updatedFields.promotedBy !== undefined) {
       setRegisteredUsers(prev => prev.map(u => {
-        if (u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === key) {
+        if (u.name.toLowerCase() === key) {
           const updatedUser = { ...u };
           if (updatedFields.password !== undefined) updatedUser.password = updatedFields.password;
           if (updatedFields.isSalesman !== undefined) updatedUser.isSalesman = updatedFields.isSalesman;
@@ -1401,7 +1399,7 @@ export default function App() {
       let baseProfile = existing;
       if (!baseProfile) {
         // Repair/initialize from registeredUsers or fallback
-        const matchUser = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === key);
+        const matchUser = registeredUsers.find(u => u.name.toLowerCase() === key);
         const fallbackId = matchUser?.id || '53' + Math.floor(100 + Math.random() * 900);
         baseProfile = {
           name: targetAccount,
@@ -1458,7 +1456,7 @@ export default function App() {
     lastMutationTimeRef.current = Date.now();
     
     // 1. Remove from registeredUsers
-    setRegisteredUsers(prev => prev.filter(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() !== key));
+    setRegisteredUsers(prev => prev.filter(u => u.name.toLowerCase() !== key));
     
     // 2. Remove from merchantsDb
     setMerchantsDb(prev => {
