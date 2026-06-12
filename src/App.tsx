@@ -456,16 +456,34 @@ export default function App() {
       try {
         let incomingUsers: any[] = [];
         let incomingMerchants: Record<string, any> = {};
+        let loadedFromServer = false;
 
         if (isInitial) {
-          // Highly optimized flat read of only the active aliexpress_database profile document
-          const docSnap = await getDoc(doc(db, 'system_data', 'aliexpress_database'));
-          if (!active) return;
+          // 1. Prioritize Express proxy load (avoids sandboxed iframe WebSocket and gRPC restrictions)
+          try {
+            const apiRes = await fetch('/api/db');
+            if (apiRes.ok) {
+              const apiData = await apiRes.json();
+              if (apiData && apiData.registeredUsers && apiData.merchantsDb) {
+                incomingUsers = apiData.registeredUsers;
+                incomingMerchants = apiData.merchantsDb;
+                loadedFromServer = true;
+                console.log("Successfully connected and synchronized Aliexpress database from server proxy.");
+              }
+            }
+          } catch (apiErr) {
+            console.warn("Express server proxy database query offline, trying direct cloud Firestore fallback:", apiErr);
+          }
 
-          if (docSnap.exists()) {
-            const d = docSnap.data();
-            incomingUsers = d.registeredUsers || [];
-            incomingMerchants = d.merchantsDb || {};
+          // 2. Direct Firestore fallback
+          if (!loadedFromServer) {
+            const docSnap = await getDoc(doc(db, 'system_data', 'aliexpress_database'));
+            if (!active) return;
+            if (docSnap.exists()) {
+              const d = docSnap.data();
+              incomingUsers = d.registeredUsers || [];
+              incomingMerchants = d.merchantsDb || {};
+            }
           }
 
           await processDatabaseUpdate(incomingUsers, incomingMerchants);
@@ -493,11 +511,32 @@ export default function App() {
 
     loadInitialAndListen();
 
+    // Setup highly stable Express server proxy light-polling interval to guarantee real-time updates inside iframes
+    const pollingInterval = setInterval(async () => {
+      if (!active) return;
+      try {
+        const apiRes = await fetch('/api/db');
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData && apiData.registeredUsers && apiData.merchantsDb) {
+            // Guard: If we recently made a change locally, let propagation settle before receiving polling state
+            if (Date.now() - lastMutationTimeRef.current < 8000) {
+              return;
+            }
+            await processDatabaseUpdate(apiData.registeredUsers, apiData.merchantsDb);
+          }
+        }
+      } catch (pollingErr) {
+        console.warn("Failed polling server updates, continuing backend sync fallback scheme:", pollingErr);
+      }
+    }, 12000);
+
     return () => {
       active = false;
       if (unsubscribeSnap) {
         unsubscribeSnap();
       }
+      clearInterval(pollingInterval);
     };
   }, []);
 
@@ -702,6 +741,35 @@ export default function App() {
     const timerId = setTimeout(() => {
       if (!activeTimer) return;
 
+      // Extract sanitized merchantsDb for both local setDoc fallback and Express backend POST payload
+      const sanitizedMerchantsDb = { ...merchantsDb };
+      if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
+        sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
+      } else if (sanitizedMerchantsDb.system_config) {
+        const lightImages: Record<string, number | boolean> = {};
+        const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
+        Object.keys(currentImages).forEach(pId => {
+          if (currentImages[pId]) {
+            lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
+          }
+        });
+        sanitizedMerchantsDb.system_config = {
+          ...sanitizedMerchantsDb.system_config,
+          customProductImages: lightImages
+        };
+      }
+
+      // 1. Parallel save to safe Express proxy endpoint (extremely reliable in sandboxed iframe previews)
+      fetch('/api/db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registeredUsers, merchantsDb: sanitizedMerchantsDb })
+      })
+        .then(res => res.json())
+        .then(() => console.log("State synchronized securely via Express backend proxy."))
+        .catch(err => console.error("Express proxy save fallback failed:", err));
+
+      // 2. Direct Firestore update write (zero-latency socket notification)
       const [firstField, firstVal, ...restArgs] = updateArgs;
       updateDoc(docRef, firstField, firstVal, ...restArgs)
         .then(() => {
@@ -715,25 +783,8 @@ export default function App() {
         })
         .catch(err => {
           if (!activeTimer) return;
-          console.error('Failed to sync atomically to Firestore (falling back to setDoc):', err);
-          // Fallback to full setDoc if updateDoc fails due to uninitialized document structure
-          const sanitizedMerchantsDb = { ...merchantsDb };
-          if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
-            // Safeguard: Protect system_config from being cleared by non-admin updates in fallback mode
-            sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
-          } else if (sanitizedMerchantsDb.system_config) {
-            const lightImages: Record<string, number | boolean> = {};
-            const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
-            Object.keys(currentImages).forEach(pId => {
-              if (currentImages[pId]) {
-                lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
-              }
-            });
-            sanitizedMerchantsDb.system_config = {
-              ...sanitizedMerchantsDb.system_config,
-              customProductImages: lightImages
-            };
-          }
+          console.warn('Direct updateDoc did not complete (running full setDoc fallback):', err);
+          
           setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb })
             .then(() => {
               if (!activeTimer) return;
@@ -743,7 +794,7 @@ export default function App() {
               };
             })
             .catch(fallbackErr => {
-              console.error('Full setDoc sync fallback also failed:', fallbackErr);
+              console.error('Full setDoc sync fallback failed:', fallbackErr);
             });
         });
     }, 1200);
