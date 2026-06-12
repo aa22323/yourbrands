@@ -1491,7 +1491,7 @@ export default function App() {
       }
       return [...prev, { product, quantity: 1 }];
     });
-    alert(`🎉 已成功将商品【${product.name}】加入您的速卖通购物车！`);
+    alert(t('addToCartSuccess').replace('{name}', product.name));
   };
 
   const handleUpdateCartQty = (productId: string, quantity: number) => {
@@ -1671,11 +1671,19 @@ export default function App() {
     
     if (navigator.clipboard) {
       navigator.clipboard.writeText(link).then(() => {
-        alert(`📋 链接已复制到剪切板，可发给其他好友：\n${link}`);
+        if (appLanguage === 'zh') {
+          alert(`📋 链接已复制到剪切板，可发给其他好友：\n${link}`);
+        } else {
+          alert(`📋 Link successfully copied to clipboard! Share with others:\n${link}`);
+        }
         setShowMyShopModal(false);
       });
     } else {
-      alert(`测试地址：\n${link}`);
+      if (appLanguage === 'zh') {
+        alert(`测试地址：\n${link}`);
+      } else {
+        alert(`Test link:\n${link}`);
+      }
     }
   };
 
