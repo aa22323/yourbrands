@@ -664,7 +664,7 @@ export default function ProfileView({
               {/* Sub-Tab Panels */}
               <div className="flex flex-col gap-3 min-h-[140px] text-left">
                 {settingsSubTab === 'shop' && (
-                  <form onSubmit={handleUpdateStore} className="flex flex-col gap-3">
+                  <form onSubmit={handleUpdateStore} noValidate className="flex flex-col gap-3">
                     <div className="flex flex-col gap-1 text-left">
                       <label className="text-zinc-600 font-bold text-left">{t('shopNameLabel')}</label>
                       <input 
@@ -1813,7 +1813,7 @@ export default function ProfileView({
                 </button>
               </div>
 
-              <form onSubmit={handleRechargeSubmit} className="p-5 flex flex-col gap-4">
+              <form onSubmit={handleRechargeSubmit} noValidate className="p-5 flex flex-col gap-4">
                 {transactionSuccess ? (
                   <div className="py-6 flex flex-col items-center justify-center gap-2 text-center">
                     <CheckCircle2 className="w-12 h-12 text-emerald-500 animate-bounce" />
@@ -1985,7 +1985,7 @@ export default function ProfileView({
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleWithdrawSubmit} className="p-5 flex flex-col gap-4">
+                <form onSubmit={handleWithdrawSubmit} noValidate className="p-5 flex flex-col gap-4">
                   {transactionSuccess ? (
                     <div className="py-12 flex flex-col items-center justify-center gap-2 text-center">
                       <CheckCircle2 className="w-12 h-12 text-emerald-500 animate-bounce" />

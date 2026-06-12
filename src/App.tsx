@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from './firebase';
-import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc, FieldPath, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, updateDoc, FieldPath, onSnapshot, deleteField } from 'firebase/firestore';
 import { 
   Home, ShoppingBag, User, Sparkles, Wifi, Battery, Radio, 
   Clock, Share2, Compass, AlertCircle, HelpCircle, ShoppingCart,
@@ -688,14 +688,22 @@ export default function App() {
       updateArgs.push('registeredUsers', registeredUsers);
     }
 
-    // 2. Identify and synchronize ONLY modified merchant profiles using FieldPath
+    // 2. Identify and synchronize ONLY modified or deleted merchant profiles using FieldPath
     if (lastFetchedDataRef.current?.merchantsDb) {
+      // Find modified or added merchants
       Object.keys(merchantsDb).forEach(k => {
         if (k === 'system_config') return; // system_config is handled separately with proper admin verification
         const currentProfile = merchantsDb[k];
         const lastProfile = lastFetchedDataRef.current?.merchantsDb[k];
         if (JSON.stringify(currentProfile) !== JSON.stringify(lastProfile)) {
           updateArgs.push(new FieldPath('merchantsDb', k), currentProfile);
+        }
+      });
+      // Find deleted merchants
+      Object.keys(lastFetchedDataRef.current.merchantsDb).forEach(k => {
+        if (k === 'system_config') return;
+        if (!(k in merchantsDb)) {
+          updateArgs.push(new FieldPath('merchantsDb', k), deleteField());
         }
       });
     } else {

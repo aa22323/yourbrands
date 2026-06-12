@@ -299,7 +299,7 @@ export default function CartView({
           </div>
 
           {/* Receiver Form Block */}
-          <form onSubmit={handleSubmitCartOrder} className="bg-white p-5 rounded-2xl border border-zinc-200 flex flex-col gap-4 shadow-xs">
+          <form onSubmit={handleSubmitCartOrder} noValidate className="bg-white p-5 rounded-2xl border border-zinc-200 flex flex-col gap-4 shadow-xs">
             <h3 className="font-sans font-bold text-zinc-900 border-b border-zinc-100 pb-2 flex items-center gap-1.5 text-xs">
               <MapPin className="w-4 h-4 text-[#e51923]" />
               <span>{t('enterReceiverInfoTitle')}</span>

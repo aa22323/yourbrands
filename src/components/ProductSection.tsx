@@ -484,7 +484,7 @@ export default function ProductSection({
                   </div>
                 ) : (
                   /* Form View */
-                  <form onSubmit={handleSubmitCheckout} className="flex flex-col gap-4">
+                  <form onSubmit={handleSubmitCheckout} noValidate className="flex flex-col gap-4">
                     {/* Compact Product Details summary */}
                     <div className="flex gap-3 bg-zinc-50 p-3.5 rounded-xl border border-zinc-200/80 shadow-xs">
                       <img 
