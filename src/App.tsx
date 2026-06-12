@@ -467,22 +467,31 @@ export default function App() {
               if (apiData && apiData.registeredUsers && apiData.merchantsDb) {
                 incomingUsers = apiData.registeredUsers;
                 incomingMerchants = apiData.merchantsDb;
-                loadedFromServer = true;
-                console.log("Successfully connected and synchronized Aliexpress database from server proxy.");
+                if (!apiData._isFallback) {
+                  loadedFromServer = true;
+                  console.log("Successfully connected and synchronized Aliexpress database from server proxy.");
+                } else {
+                  console.warn("Express server proxy returned safe local fallback cache. Attempting direct Firestore query but keeping local cache as active fallback.");
+                }
               }
             }
           } catch (apiErr) {
             console.warn("Express server proxy database query offline, trying direct cloud Firestore fallback:", apiErr);
           }
 
-          // 2. Direct Firestore fallback
+          // 2. Direct Firestore fallback (wrapped in try/catch to survive quota constraints)
           if (!loadedFromServer) {
-            const docSnap = await getDoc(doc(db, 'system_data', 'aliexpress_database'));
-            if (!active) return;
-            if (docSnap.exists()) {
-              const d = docSnap.data();
-              incomingUsers = d.registeredUsers || [];
-              incomingMerchants = d.merchantsDb || {};
+            try {
+              const docSnap = await getDoc(doc(db, 'system_data', 'aliexpress_database'));
+              if (docSnap.exists() && active) {
+                const d = docSnap.data();
+                incomingUsers = d.registeredUsers || incomingUsers;
+                incomingMerchants = d.merchantsDb || incomingMerchants;
+                loadedFromServer = true;
+                console.log("Successfully retrieved latest database state directly from cloud Firestore.");
+              }
+            } catch (fsErr) {
+              console.warn("Direct Firestore fallback fetch failed (e.g. daily read quota limit exceeded). Using server filesystem-level cache:", fsErr);
             }
           }
 
@@ -501,7 +510,7 @@ export default function App() {
             await processDatabaseUpdate(usersList, merchantsData);
           }
         }, (err) => {
-          console.warn("Firestore database listener disconnected or insufficient permissions.", err);
+          console.warn("Firestore database listener disconnected (or quota limit exceeded). Fallback system remains active.", err);
         });
 
       } catch (err) {

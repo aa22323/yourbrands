@@ -6,25 +6,8 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
 
 const PORT = 3000;
-const OLD_DB_FILE = path.join(process.cwd(), "database.json");
-let DB_FILE = path.join(process.cwd(), "node_modules", "database.json");
+const DB_FILE = path.join(process.cwd(), "database.json");
 const CONFIG_FILE = path.join(process.cwd(), "firebase-applet-config.json");
-
-// Safe migration: relocate cached database files from workspace root to ignored node_modules subfolder
-if (fs.existsSync(path.join(process.cwd(), "node_modules"))) {
-  if (fs.existsSync(OLD_DB_FILE)) {
-    try {
-      fs.copyFileSync(OLD_DB_FILE, DB_FILE);
-      fs.unlinkSync(OLD_DB_FILE);
-      console.log("Successfully migrated local cache to safe path: node_modules/database.json");
-    } catch (err) {
-      console.error("Migration of database.json to safe folder failed:", err);
-    }
-  }
-} else {
-  // If node_modules is not yet created for some unexpected reason, use workspace root as direct fallback
-  DB_FILE = OLD_DB_FILE;
-}
 
 let db: any = null;
 
@@ -139,7 +122,7 @@ try {
 
 async function getDbFromFirebase() {
   if (!db) {
-    return cachedDb;
+    return { ...cachedDb, _isFallback: true };
   }
   try {
     const docRef = doc(db, "system_data", "aliexpress_database");
@@ -154,15 +137,15 @@ async function getDbFromFirebase() {
       fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
         if (err) console.error("Error backing up file-system cache:", err);
       });
-      return cachedDb;
+      return { ...cachedDb, _isFallback: false };
     } else {
       console.log("No database document found in Firestore. Seeding database state...");
       await setDoc(docRef, cachedDb);
-      return cachedDb;
+      return { ...cachedDb, _isFallback: false };
     }
   } catch (e) {
     console.error("Failed to fetch from Firebase, using current cache:", e);
-    return cachedDb;
+    return { ...cachedDb, _isFallback: true };
   }
 }
 
