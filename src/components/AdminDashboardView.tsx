@@ -31,14 +31,14 @@ export default function AdminDashboardView({
   const isMaster = useMemo(() => {
     const nameLower = currentUser.toLowerCase();
     if (nameLower === 'oopqwe521@gmail.com' || nameLower === 'oopqwe001@gmail.com') return true;
-    const match = registeredUsers.find(u => u.name.toLowerCase() === nameLower);
+    const match = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === nameLower);
     const mDb = merchantsDb[nameLower];
     return match?.isAdmin || mDb?.isAdmin || false;
   }, [currentUser, registeredUsers, merchantsDb]);
   const isSalesman = useMemo(() => {
     if (isMaster) return false;
     const nameLower = currentUser.toLowerCase();
-    const match = registeredUsers.find(u => u.name.toLowerCase() === nameLower);
+    const match = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === nameLower);
     const mDb = merchantsDb[nameLower];
     return match?.isSalesman || mDb?.isSalesman || false;
   }, [registeredUsers, currentUser, isMaster, merchantsDb]);
@@ -62,7 +62,7 @@ export default function AdminDashboardView({
   // States for Order Dispatcher Form
   const [selectedMerchant, setSelectedMerchant] = useState<string>('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [dispatchQty, setDispatchQty] = useState<string>('1');
+  const [dispatchQty, setDispatchQty] = useState<string>('');
   const [custName, setCustName] = useState<string>('');
   const [custPhone, setCustPhone] = useState<string>('');
   const [custAddress, setCustAddress] = useState<string>('');
@@ -121,7 +121,7 @@ export default function AdminDashboardView({
   const merchantKeys = useMemo(() => {
     const keys = Object.keys(merchantsDb).filter(k => k !== 'system_config');
     if (!isSalesman) return keys;
-    const match = registeredUsers.find(u => u.name.toLowerCase() === currentUser.toLowerCase());
+    const match = registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === currentUser.toLowerCase());
     const salesmanId = match?.id;
     return keys.filter(k => {
       const m = merchantsDb[k];
@@ -151,7 +151,7 @@ export default function AdminDashboardView({
     
     // 1. From registeredUsers
     registeredUsers.forEach(u => {
-      if (u.isSalesman) {
+      if (u && u.name && u.isSalesman) {
         list.add(u.name);
       }
     });
@@ -1097,7 +1097,7 @@ export default function AdminDashboardView({
                     <div>
                       <h3 className="text-xs font-black uppercase tracking-wider text-emerald-300 font-sans">我的专属业务员推广招商系统 (PROMOTER WORKSTATION)</h3>
                       <p className="text-[10px] text-emerald-400 font-medium mt-0.5 font-mono">
-                        业务账号: <span className="text-white font-bold select-all">{currentUser}</span> | 推广员ID: {registeredUsers.find(u => u.name.toLowerCase() === currentUser.toLowerCase())?.id || 'N/A'}
+                        业务账号: <span className="text-white font-bold select-all">{currentUser}</span> | 推广员ID: {registeredUsers.find(u => u && u.name && typeof u.name === 'string' && u.name.toLowerCase() === currentUser.toLowerCase())?.id || 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -1732,6 +1732,7 @@ export default function AdminDashboardView({
                       <input
                         type="number"
                         min="1"
+                        placeholder="1"
                         value={dispatchQty}
                         onChange={(e) => setDispatchQty(e.target.value)}
                         className="w-24 text-xs bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-center text-zinc-900 font-bold font-mono focus:outline-none focus:bg-white focus:border-red-500 transition-all"
