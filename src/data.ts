@@ -19,111 +19,111 @@ export const resolveAvatar = (avatarUrl: string | undefined): string => {
 const CORE_PRODUCTS = [
   {
     id: 'LP-0001',
-    name: 'Cartier Bordeaux Classic 卡地亚经典勃艮第红机械表',
+    name: 'Cartier Bordeaux Classic Automatic Mechanical Watch',
     category: '臻选腕表',
     costPrice: 5800,
     retailPrice: 6200,
     profit: 400,
-    description: '承袭法式浪漫，酒红色深邃表盘搭配复古鳄鱼皮表带，瑞士自动上链机芯，彰显无上尊贵。',
+    description: 'Inheriting French romance, the deep burgundy dial is paired with a vintage alligator strap and a Swiss automatic self-winding movement, exuding absolute prestige.',
     sku: 'WT-CART-8892',
     image: 'https://images.unsplash.com/photo-1522337360788-5b1a1b1b11b1?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0002',
-    name: 'Gilded Amber Niche Perfume 鎏金琥珀沙龙高定香水',
+    name: 'Gilded Amber Niche Luxury Perfume',
     category: '化妆品',
     costPrice: 120,
     retailPrice: 135,
     profit: 15,
-    description: '前调乌木与大马士革玫瑰，后调鎏金琥珀与雪松，木质香调神秘而绵长，独居一格的高阶气场。',
+    description: 'Top notes of oud and Damask rose, base notes of gilded amber and cedarwood. The woody scent is mysterious and long-wearing, creating a high-profile presence.',
     sku: 'PF-AMB-4029',
     image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0003',
-    name: 'Pure Gold Handcrafted Ring 18K香槟金手工掐丝戒',
+    name: 'Pure Gold Handcrafted Ring - 18K Champagne Gold',
     category: '高级珠宝',
     costPrice: 1500,
     retailPrice: 1750,
     profit: 250,
-    description: '18K香槟金精工打磨，手工大马士革掐丝纹路，内敛中闪烁着极致的匠人情怀与时光印记。',
+    description: 'Exquisitely polished 18K champagne gold with handcrafted filigree texture, reflecting ultimate craftsmanship and timeless aesthetics.',
     sku: 'JW-RING-9951',
     image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0004',
-    name: 'Vintage Master leather Tote 复古意式大容量马鞍皮托特包',
+    name: 'Vintage Italian Saddle Leather Tote Bag',
     category: '匠心皮具',
     costPrice: 2100,
     retailPrice: 2400,
     profit: 300,
-    description: '托斯卡纳顶级植鞣牛皮，全手工油边缝线，随岁月沉淀愈发温润剔透。奢华大容量设计。',
+    description: 'Tuscan premium vegetable-tanned leather with hand-painted edge stitching, becoming more beautiful over time. Spacious luxury design.',
     sku: 'BG-TOTE-1102',
     image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0005',
-    name: 'Obsidian Noir Acetate Sunglasses 黑曜石复古醋酸纤维墨镜',
+    name: 'Obsidian Noir Vintage Acetate Sunglasses',
     category: '大师器物',
     costPrice: 320,
     retailPrice: 360,
     profit: 40,
-    description: '采用日本高密度醋酸纤维，黑曜石纯粹质感，全遮光防紫外线，兼顾问鼎美感与先锋设计。',
+    description: 'Made of high-density acetate fiber with pristine obsidian texture, offering complete UV protection and a bold, avant-garde design statement.',
     sku: 'EY-OBS-5531',
     image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0084?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0006',
-    name: 'Celadon Glazed Ceramic Vase 秘境青瓷大师手作艺术插花瓶',
+    name: 'Celadon Glazed Ceramic Vase - Master Crafted',
     category: '大师器物',
     costPrice: 450,
     retailPrice: 500,
     profit: 50,
-    description: '非遗传承大师亲制，高温窑变秘色青釉，造型敦厚典雅，光影之下温润如碧玉。',
+    description: 'Handcrafted by legendary kiln masters, featuring a high-temperature transmutation glaze that looks warm and exquisite under light.',
     sku: 'VA-CEL-9022',
     image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0007',
-    name: 'Imperial Jadeite Diamond Pendant 极光帝王绿翡翠18K金豪镶吊坠',
+    name: 'Imperial Jadeite Diamond Pendant in 18K Gold',
     category: '高级珠宝',
     costPrice: 19000,
     retailPrice: 21000,
     profit: 2000,
-    description: '臻选老坑冰种帝王绿翡翠，水头极足，满绿莹润。18K白金搭配重磅南非足反钻石群镶执手，极具典藏价值。',
+    description: 'Sourced translucent Imperial Jadeite accented with a heavyweight brilliant-cut diamond pave setting in 18K white gold. Highly collectible.',
     sku: 'JW-JAD-0283',
     image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0008',
-    name: 'Imperial Sandalwood Soy Candle 帝王之木黑檀大豆香薰蜡烛',
+    name: 'Imperial Sandalwood Scented Soy Candle',
     category: '化妆品',
     costPrice: 40,
     retailPrice: 45,
     profit: 5,
-    description: '手工灌装纯天然大豆蜡，奢华黑檀木与烟草皮革香，于暗夜中燃起微弱光芒，静宜而辽远。',
+    description: 'Hand-poured natural soy wax candle offering a rich blend of sandalwood, tobacco, and leather notes to bring warmth and tranquility to your space.',
     sku: 'AC-CAN-3382',
     image: 'https://images.unsplash.com/photo-1603006905503-be475563bc59?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0009',
-    name: 'Chanel No.5 Paris Vintage 香奈儿五号经典高定香水',
+    name: 'Chanel No.5 Paris Classic Scent Perfume',
     category: '香水',
     costPrice: 155,
     retailPrice: 180,
     profit: 25,
-    description: '永恒经典的女性芬芳，高端醛香与花香的完美邂逅，彰显独立、优雅与摩登。',
+    description: 'The ultimate timeless floral scent featuring a perfect encounter of aldehydes and delicate roses, expressing independence, elegance, and modernism.',
     sku: 'PF-CHN-5501',
     image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   },
   {
     id: 'LP-0010',
-    name: 'Dyson Supersonic Ionic 戴森智能复古红控温吹风机',
+    name: 'Dyson Supersonic Ionic Intelligent Hair Dryer',
     category: '家用电器',
     costPrice: 290,
     retailPrice: 325,
     profit: 35,
-    description: '智能控温技术，高倍气流倍增，复古绯红限定配色，护发气流与沙龙造型的完美平衡。',
+    description: 'Intelligent heat control to protect hair shine combined with powerful digital motor air multiply technology for swift styling in iconic retro colors.',
     sku: 'AP-DYS-8012',
     image: 'https://images.unsplash.com/photo-1522337360788-5b1a1b1b11b1?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
   }
@@ -856,161 +856,161 @@ function generate1000Products(): Product[] {
 
     if (category === '臻选腕表') {
       const watchBrands = [
-        'Rolex 劳力士宇宙计型', 'Patek Philippe 百达翡丽源流', 'Audemars Piguet 爱彼皇家橡树', 
-        'Omega 欧米茄海马', 'Vacheron Constantin 江诗丹顿传袭', 'Cartier 卡地亚经典蓝气球', 
-        'IWC 万国表葡萄牙', 'Longines 浪琴名匠系列', 'Jaeger-LeCoultre 积家大师', 'Hublot 宇舶大爆炸'
+        'Rolex Cosmograph Daytona', 'Patek Philippe Nautilus', 'Audemars Piguet Royal Oak', 
+        'Omega Seamaster Professional', 'Vacheron Constantin Patrimony', 'Cartier Ballon Bleu', 
+        'IWC Portugieser Chronograph', 'Longines Master Collection', 'Jaeger-LeCoultre Master Ultra Thin', 'Hublot Big Bang Unico'
       ];
       const watchDesigns = [
-        '全金圈 自动机械腕表', '镶钻刻度 奢华陀飞轮腕表', '碳纤维圈 计时运动表', '夜光超强 极速潜水腕表', 
-        '珐琅表盘 月相全历商务表', '超薄镂空 典雅收藏表', '极光蓝盘 运动计时男表', '玫瑰金镶钻 璀璨女士腕表'
+        'Solid Gold Bezel Automatic Mechanical Watch', 'Diamond Bezel Luxury Tourbillon Watch', 'Carbon Fiber Chronograph Sport Watch', 'Super-LumiNova Professional Diver Watch', 
+        'Enamel Dial Phase Annual Calendar Watch', 'Ultra-Thin Skeleton Collector Watch', 'Sunray Blue Dial Men\'s Luxury Watch', 'Rose Gold Diamond Elegant Lady Watch'
       ];
       const watchMaterials = [
-        '(18K重金版)', '(高定防磁款)', '(秘境典藏系列)', '(钛金属极光版)', '(复刻金轮款)', '(冰蓝重磅限定)'
+        '(Solid 18K Gold Edition)', '(Anti-Magnetic Edition)', '(Exclusive Collection Edition)', '(Titanium Aurora Edition)', '(Vintage Gold-Finished Edition)', '(Ice Blue Ultimate Limited)'
       ];
       
       const brand = watchBrands[idCounter % watchBrands.length];
       const design = watchDesigns[(idCounter + 2) % watchDesigns.length];
       const material = watchMaterials[(idCounter + 4) % watchMaterials.length];
       itemName = `${brand} ${design} ${material} · No.${idCounter}`;
-      itemDescription = `此款${itemName}搭载世界顶级全自动机械或精密度陀飞轮机芯，历时数千小时精雕细琢。兼具极致抗震与保值属性，是顶级制表工艺的巅峰之作。`;
+      itemDescription = `This ${itemName} is equipped with a world-class automatic mechanical movement and precise tourbillon, crafted over thousands of hours. It features exceptional anti-shock capabilities and lasting value, representing the pinnacle of horology.`;
     } else if (category === '高级珠宝') {
       const jewelryBrands = [
-        'Cartier 卡地亚重工', 'Bulgari 宝格丽经典', 'Tiffany & Co. 蒂芙尼浪漫', 
-        'Van Cleef & Arpels 梵克雅宝秘境', 'Chaumet 尚美巴黎高定', 'Harry Winston 海瑞温斯顿璀璨', 
-        'Chopard 萧邦臻选', 'Boucheron 宝诗龙复古'
+        'Cartier Signature High Jewelry', 'Bulgari B.zero1 Premium', 'Tiffany & Co. Solitaire Romantique', 
+        'Van Cleef & Arpels Alhambra Enchanted', 'Chaumet Paris Haute Joaillerie', 'Harry Winston Sparkling Cluster', 
+        'Chopard Happy Diamonds Premium', 'Boucheron Quatre Vintage Collection'
       ];
       const jewelryGems = [
-        '18K白金 满钻梨形', '18K金 满天星圆融', '南洋金珠 吊坠级', '哥伦比亚祖母绿 重工折射', 
-        '帕拉伊巴蓝碧玺 迷人切割', '天然大单克拉 钻冕级', '精雕孔雀石 18K金锁骨', '白贝母高定 月光萦绕', 
-        '重磅红宝石 灼热之爱', '皇家蓝萨菲尔 瑰丽满钻'
+        '18K White Gold Pave-Set Pear-shaped', '18K Yellow Gold Full Pave Round', 'South Sea Golden Pearl AAA Grade', 'Colombian Emerald Faceted Solitaire', 
+        'Paraiba Blue Tourmaline Dynamic Cut', 'Natural Flawless Multi-Carat Brilliant', 'Carved Malachite 18K Choker', 'Mother-of-Pearl Moonglow Luster', 
+        'Pigeon Blood Ruby Fiery Radiant', 'Royal Blue Sapphire Brilliant Pave-Set'
       ];
       const jewelryTypes = [
-        '项链', '铂金戒指', '耳环套组', '编织手链', '灵蛇手镯', '传世胸针', '婚誓对戒'
+        'Necklace', 'Platinum Ring', 'Earring Suites', 'Woven Cord Bracelet', 'Serpenti Open Bangle', 'Heritage Brooch', 'Eternity Commitment Band'
       ];
 
       const brand = jewelryBrands[idCounter % jewelryBrands.length];
       const gem = jewelryGems[(idCounter + 3) % jewelryGems.length];
       const type = jewelryTypes[(idCounter + 1) % jewelryTypes.length];
       itemName = `${brand} ${gem} ${type} · No.${idCounter}`;
-      itemDescription = `此款${itemName}由高奢定制工坊御用珠宝巨匠纯手工镶嵌而成。选用克拉级纯净彩钻与稀世矿物，线条优雅流转，是折射永恒奢光的传家之选。`;
+      itemDescription = `This ${itemName} is painstakingly handset by master jewelers in our high-end custom atelier. Featuring carat-grade flawless diamonds and rare minerals with elegantly flowing lines, it is an heirloom piece that radiates eternal luxury.`;
     } else if (category === '匠心皮具') {
       const leatherBrands = [
-        'Hermes 经典莉纳', 'Chanel 优雅唇膏', 'Louis Vuitton 经典老花', 'Gucci 奢华双G', 
-        'Dior 戴妃高定', 'Goyard 经典印饰', 'Prada 复古羊皮', 'Bottega Veneta 编织皮艺', 
-        'YSL 优雅翻盖', 'Fendi 马鞍皮具', 'Celine 凯旋门印花', 'Loewe 大师拼皮', 'Balenciaga 褶皱机车'
+        'Hermes Birkin Premium', 'Chanel Classic Double Flap', 'Louis Vuitton Monogram Sourcing', 'Gucci GG Marmont Luxurious', 
+        'Dior Lady Dior Splendeur', 'Goyard Saint Louis Classic', 'Prada Re-Edition Vintage Nappa', 'Bottega Weave Custom Leather', 
+        'YSL Monogram Envelope', 'Fendi Peekaboo Saddle Sourcing', 'Celine Triomphe Iconic Scent', 'Loewe Puzzle Master Leather', 'Balenciaga Crinkled City Moto'
       ];
       const leatherTypes = [
-        '手提皮包 (Handbag)', '双肩皮包 (Backpack)', '水桶皮包 (Bucket Bag)', '手拿皮包 (Clutch Bag)', 
-        '金扣链条皮包 (Flap Bag)', '高定大容量托特包 (Tote Bag)', '经典风琴公文包 (Briefcase)', 
-        '复古马鞍皮包 (Saddle Bag)', '法棍腋下皮包 (Baguette Bag)', '重工波士顿手袋 (Boston Bag)', 
-        '休闲邮差斜挎包 (Messenger Bag)', '信封皮夹卡包 (Accordion Wallet)'
+        'Handbag', 'Backpack', 'Bucket Bag', 'Clutch Bag', 
+        'Flap Bag with Gold Hardware', 'Large Capacity Tote Bag', 'Classic Leather Attache Briefcase', 
+        'Saddle Shoulder Bag', 'Baguette Underarm Bag', 'Boston Travel Duffle Bag', 
+        'Casual Messenger Crossbody Bag', 'Accordion Wallet'
       ];
       const leatherColors = [
-        '极夜黑', '经典象牙白', '波尔多红', '青瓷暗绿', '太妃金棕', '冰川浅蓝', '玫瑰深粉', '日落暖橘'
+        'Midnight Noir Black', 'Classic Ivory Alabaster', 'Deep Bordeaux Burgundy', 'Celadon Sage Green', 'Toffee Gold Tan', 'Glacier Ice Blue', 'Deep Rose Pink', 'Warm Sunset Tangerine'
       ];
 
       const brand = leatherBrands[idCounter % leatherBrands.length];
       const color = leatherColors[(idCounter + 2) % leatherColors.length];
       const type = leatherTypes[(idCounter + 5) % leatherTypes.length];
       itemName = `${brand} ${color} ${type} · No.${idCounter}`;
-      itemDescription = `此款${itemName}甄选全球最优质皮革拼皮材质，融合大师级纯手工缝线工艺，容量合理，完美搭衬先锋奢尚，彰显极致法式优雅风情。`;
+      itemDescription = `This ${itemName} is made from globally sourced premier leathers and masterfully stitched by hand. Engineered with smart storage capacity, it perfectly balances modern high-fashion statement with timeless French elegance.`;
     } else if (category === '大师器物') {
       const utensilStyles = [
-        '景德镇手制 青花缠枝', '宜兴名窑 手作朱泥', '龙泉官窑 仿宋粉青', '柴烧粗陶 冰裂流釉', 
-        '掐丝珐琅 御用宫廷手工', '大漆螺钿 雕填描金', '手工吹制 极光琉璃', '大师制 纯铜手锤纹'
+        'Jingdezhen Handcrafted Blue & White Floral', 'Yixing Famous Kiln Vermilion Clay', 'Longquan Celadon Pale Green-Glazed', 'Wood-Fired Cracked Glaze Stoneware', 
+        'Cloisonne Imperial Hand-Enameled', 'Mother-of-Pearl Inlaid Gilded Lacquerware', 'Hand-Blown Aurora Crystal Vitreous', 'Master-Forged Hammered Pure Copper'
       ];
       const utensilObjects = [
-        '茶盏套组', '公道提梁杯', '玄关迎宾花器', '禅意双耳香炉', '温酒高足执壶', '多功能干泡盘', 
-        '博古架山水陈设摆件', '极简插花瓷瓶', '琢面随手茶杯'
+        'Tea Cup Set', 'Fairness Pitcher with Handle', 'Foyer Welcoming Vase', 'Zen Two-Eared Censer', 'Wine Warming Stemmed Ewer', 'Multifunctional Dry Brewing Tray', 
+        'Curio Shelf Landscape Ornamental', 'Minimalist Flower Arrangement Porcelain Bottle', 'Faceted Daily Tea Mug'
       ];
       const utensilDescriptors = [
-        '【大师传世之作】', '【限量窑变孤品】', '【古法非遗传承】', '【一砂一界禅定版】', '【重磅精修典藏】'
+        '(Craftsman Heritage Masterpiece)', '(Rare Kiln-Altered Unique Artwork)', '(Ancient Intangible Cultural Heritage)', '(Zen Mind Serene Edition)', '(Heavyweight Exquisite Collector Item)'
       ];
 
       const styleSel = utensilStyles[idCounter % utensilStyles.length];
       const obj = utensilObjects[(idCounter + 4) % utensilObjects.length];
       const desc = utensilDescriptors[(idCounter + 1) % utensilDescriptors.length];
       itemName = `${styleSel} ${obj} ${desc} · No.${idCounter}`;
-      itemDescription = `此款${itemName}完美凝聚非物质文化遗产传承工艺。一触一抚皆能感受到手工制作的人文温度与至真之美，是高阶收藏家书房茶台上的绝佳雅器。`;
+      itemDescription = `This ${itemName} is an exquisite embodiment of intangible cultural heritage craftsmanship. Hand-forged to evoke human warmth and pristine beauty, it is a magnificent centerpiece for esteemed collectors.`;
     } else if (category === '化妆品') {
       const cosmeticsNames = [
-        '极光至臻焕颜亮面霜', '鎏金奢华复活逆龄精粹水', '黑曜石至臻控油哑光粉底液',
-        '大马士革玫瑰精萃补水面膜', '香槟金致雅哑光丝绒唇膏', '羊脂白玉高阶舒缓润肤乳',
-        '琥珀精粹至臻奢华抗皱眼霜', '火山灰深层温和净洁慕斯', '雪松白茶赋活微粒修护肌底液',
-        '黑檀木致臻丰盈滋润修护精华油', '磨砂玫瑰高显色持久定妆散粉', '极光奇迹焕颜修护安瓶',
-        '冰川急救密集透润水光蚕丝面膜', '法国皇家橙花清爽精萃爽肤水', '黑曜石奢金鱼子酱密集淡褶霜',
-        '至尊御用鱼子精华璀璨臻白眼部啫喱', '鎏金缎光持久润透隔离防护乳', '深海复活草极致水光爆水乳',
-        '清晨薄荷柔和净爽矿物洁面泥', '逆转时光酵母重塑丰盈夜间修护霜'
+        'Aurora Radiant Ultimate Skin Brightening Cream', 'Gilded Luxury Youth Restoring Treatment Essence', 'Obsidian Ultimate Matte Oil-Control Foundation',
+        'Damask Rose Deep Hydrating Extract Facial Mask', 'Champagne Gold Satin Silk Moisture Lip Liquid', 'Goat Milk High-End Soothing Body Lotion',
+        'Amber Extract Ultimate Luxury Anti-Aging Eye Serum', 'Volcanic Ash Deep Pore Refreshing Cleansing Mousse', 'Cedarwood White Tea Restoring Micro-Peel Fluid',
+        'Blackwood Ultimate Nourishing Repair Essence Oil', 'Frosted Rose High-Pigment Cushion Face Powder', 'Aurora Miracle Face Restoring Ampoules Kit',
+        'Glacier Intensive Moisture Treatment Silk Sheet Mask', 'Royal Orange Blossom Refreshing Balance Toner', 'Obsidian Gilded Caviar Ultra wrinkle Cream',
+        'Imperial White Caviar Brilliant Illuminating Eye Gel', 'Gilded Satin Glow Lasting Multi-Defense Sun Primer', 'Deep Sea Resurrection Herb Hydro Moisture Emulsion',
+        'Morning Mint Purifying Deep Cleanser Clay Pack', 'Time Reverse Yeast Overnight Energizing Repair Cream'
       ];
       itemName = `${cosmeticsNames[idCounter % cosmeticsNames.length]} · No.${idCounter}`;
-      itemDescription = `此款${itemName}由高奢美容与彩妆研发实验室潜心研制。蕴含天然珍稀植物精萃与高科技促吸收活肤微粒，质地如珍珠般温软细腻，层层沁润修护肌底，为您呈现无瑕凝脂之美，彰显专属的高阶精致生活品位。`;
+      itemDescription = `This ${itemName} is developed by our premier beauty and skincare laboratory. Enriched with rare botanical extracts and advanced micro-penetrating nutrients, it delivers flawless velvet hydration for timeless aging care.`;
     } else if (category === '香水') {
       const perfumeNames = [
-        '荒野玫瑰沙龙高定香水', '蔚蓝深海极境男士古龙水', '无人区午后乌木沙龙香',
-        '极光白麝香私享淡香氛', '薄荷森林清晨秘境冷香', '鎏金琥珀高阶无香精沙龙香',
-        '尼罗河雨后风铃高阶古龙', '雪松之吻温暖木质中性香', '黑色大丽花冷冽禁忌感沙龙香',
-        '冥府之路深邃木质沙龙香', '无极乌龙澄澈古龙精粹', '银色山泉冷冽矿物中性香氛',
-        '檀香木33私属高阶木质香', '杜桑晚香玉浪漫花香淡香水', '牧羊少年皮革琥珀沙龙古龙水',
-        '加州盛夏柑橘清新沙龙古龙精萃', '英国梨与小苍兰高奢手工香薰蜡烛', '晚香玉与无花果纯植物室内香氛喷雾',
-        '皇家琥珀香草极致私享大豆香薰蜡烛', '极致黑檀与重熏木高定工艺雕刻香薰蜡烛'
+        'Wild Rose Haute Couture Salon Perfume', 'Deep Blue Abyssal Oceanic Men Scent Cologne', 'Desert Rose Oud Afternoon Premium Scent',
+        'Aurora White Musk Private Reserve Scent Mist', 'Peppermint Forest Morning Solitude Crisp Parfum', 'Gilded Amber Advanced Organic Essence Extract',
+        'Nile Bellflower Rainfall High-End Unisex Cologne', 'Cedarwood Kiss Warm Organic Woody Eau de Scent', 'Black Dahlia Cool Forbidden Mystic Scent',
+        'Passage of Underworld Mystical Woody Salon Parfum', 'Infinite Oolong Clear Fine Botanical Scent Cologne', 'Silver Mountain Spring Cold Mineral Scent Fragrance',
+        'Sandalwood 33 Signature Private Reserve Scent', 'Do Son Tuberose Romantic Flower Scent Parfum', 'L\'artisan Leather Amber High-End Salon Cologne',
+        'California Summer Crisp Citrus Fresh Cologne Extract', 'English Pear & Freesia Luxury Scented Soy Candle', 'Tuberose & Fig Natural Organic Home Spray Mist',
+        'Royal Amber Vanilla Ultimate Private Soy Scented Candle', 'Rich Ebony & Smoky Wood Carved Luxury Candle'
       ];
       itemName = `${perfumeNames[idCounter % perfumeNames.length]} · No.${idCounter}`;
-      itemDescription = `此款${itemName}由法国顶尖沙龙香氛调香大师潜心研制。融合天然花果植物精萃与贵重木质香油，前中后调层次鲜明过渡谐和，持久安神缱绻，彰显居住者专属的不凡生活品位。`;
+      itemDescription = `This ${itemName} is curated by master French perfumers. Blending premium organic botanical oils and rich woody essential notes, it reveals layered olfactory transitions that are calming, sophisticated, and memorable.`;
     } else if (category === '家用电器') {
       const applianceNames = [
-        'Dyson Supersonic Ionic 戴森智能复古红控温吹风机',
-        'La Pavoni Gold Professional 皇家拉霸金意式咖啡机',
-        'Devialet Phantom Reactor 帝瓦雷高保真奢享蓝牙音响',
-        'SMEG Retro Matte Mint 斯麦格复古马卡龙复古多士炉',
-        'Balmuda The Toaster 百慕达蒸汽微波环保烤箱',
-        'Dyson Pure Cool Link 戴森空气净化冷暖无叶风扇',
-        'B&O Beoplay A9 Golden 铂傲重磅奢华圆形艺术音响',
-        'Keurig K-Elite Special 特纯不锈钢多胶囊臻选咖啡机',
-        'iRobot Roomba Combo 艾罗伯特双效全能智能扫拖机器人',
-        'Breville Barista Pro 铂富全能大师研磨半自动咖啡机',
-        'SMEG Pastel Blue Kettle 斯麦格复古温柔蓝温控电热水壶',
-        'Vitamix Professional 维他密斯大容量全营养破壁料理机',
-        'Marshall Stanmore III 马歇尔复古摇滚金高保真蓝牙音箱',
-        'Blueair HealthProtect 布鲁雅尔高阶智能消毒净化防护仪',
-        'Thermomix TM6 Special 美善品重磅全能触控多功能料理机',
-        'Miele Generation C5 米勒嵌入式全自动温感咖啡中心',
-        'Dyson v15 Detect Slim 戴森智能激光探层无绳吸尘器',
-        'Philips Sonicare Diamond 飞利浦钻石极光智能声波牙刷',
-        'Panasonic Cuble Deluxe 松下奢享滚筒洗烘一体全能护理机',
-        'Laurastar Lift Premium 萝拉之星高压智能免烫蒸汽熨烫机',
-        'Balmuda The GreenFan 百慕达自然风智能高效静音风扇',
-        'Waterpik Aqua Deluxe 洁碧高奢脉冲温水极净高阶冲牙器',
-        'Nespresso Lattissima 奈斯派索一键花式轻奢胶囊咖啡机',
-        'Krups Silent Grind 克鲁伯无噪音精细研磨智能咖啡豆机',
-        'Tiger Double-Heated 虎牌双重压差微电脑顶级IH电饭煲',
-        'Zojirushi Supreme 象牌奢享高端微电脑恒温真空电热水瓶',
-        'Delonghi Dedica Style 德龙经典轻奢复古泵压式咖啡机',
-        'De’Longhi Icona Vintage 德龙复古橄榄绿不锈钢多士炉',
-        'Morphy Richards Retro 摩飞复古英伦黑晶多功能料理锅',
-        'Cuisinart Core Precision 美膳雅极真不锈钢双槽多士炉',
-        'Bruno Retro Pastel Mint 布鲁诺复古轻排无烟不粘电烤盘',
-        'Zojirushi Micom Special 象牌至尊微电脑温控IH电压力煲',
-        'KitchenAid Artisan 凯膳怡经典复古厨师揉面机',
-        'SMEG Citrus Juicer 斯麦格复古摩登风高膳食纤维榨汁机',
-        'Hamilton Beach Elite 汉美驰至臻高真空电热养生蒸煮锅',
-        'Panasonic Premium Flat 松下奢享变频镜面触控防辐射微波炉',
-        'Kenwood Chef Titanium 凯伍德钛金台式多功能专业厨师机',
-        'Miele Compact Airpur 米勒至真无菌级智能除醛负离子净化器',
-        'Breville Smart Oven 铂富智幕控温多焦专业级空气炸箱',
-        'Laurastar Smart U 萝拉之星至尊系统高定挂烫熨平一体机',
-        'Barisieur Tea Coffee Alarm 创艺清晨咖啡冲泡自动闹钟茶机',
-        'Geneva Touring Luxury 杰涅瓦便携奢华小牛皮复古全频音箱',
-        'Anova Precision Pro 阿诺瓦高精密真空低温慢煮恒温机',
-        'Liebherr Vintage Red 利勃海尔奢光单门复古尊享小冰箱',
-        'Jura E8 Platinum 优瑞全自动铂金智能大尺寸触控咖啡机',
-        'Elica NikolaTesla 艾利卡顶级吸油烟电磁双能集成灶',
-        'SMEG Drip Filter 斯麦格复古奶白色美式滴滤式咖啡机',
-        'Sub-Zero Classic Cellar 萨博顶级精控恒温恒湿避震红酒柜',
-        'Vintec Single Zone 温特克奢享单温区精锐高静音壁饰酒吧柜',
-        'LG Styler Mirror 乐金镜面奢享蒸汽喷雾衣物塑形蒸汽护理柜'
+        'Dyson Supersonic Ionic Intelligent Thermal Hair Dryer',
+        'La Pavoni Gold Professional Royal Lever Espresso Machine',
+        'Devialet Phantom Premier High-Fidelity Bluetooth Speaker',
+        'SMEG Retro Matte Mint Double-Slice Classic Toaster',
+        'Balmuda The Toaster Steam Environmentally Oven',
+        'Dyson Pure Cool Link Air Purifying & Heating Fan',
+        'B&O Beoplay A9 Golden Luxury Artistic Speaker System',
+        'Keurig K-Elite Special Stainless Steel Multi-Capsule Brewer',
+        'iRobot Roomba Combo Dual-Action Smart Mapping Vacuum',
+        'Breville Barista Pro Conical Burr Grinder Espresso Hub',
+        'SMEG Pastel Blue Vintage Temperature Kettle',
+        'Vitamix Professional Series High-Speed Smart Blender',
+        'Marshall Stanmore III Retro Classic Bluetooth Speaker',
+        'Blueair HealthProtect High-End Smart Disinfection Air Purifier',
+        'Thermomix TM6 All-In-One Smart Multicooker Cooking Machine',
+        'Miele Generation C5 Built-In Touchsensor Coffee Center',
+        'Dyson V15 Detect Slim Cordless Vacuum Cleaner',
+        'Philips Sonicare DiamondClean Smart Electric Toothbrush',
+        'Panasonic Cuble Deluxe High-End Washer-Dryer Care Unit',
+        'Laurastar Lift Premium High-Pressure Steam Iron Station',
+        'Balmuda The GreenFan Ultra-Quiet Dynamic Standing Fan',
+        'Waterpik Aqua Deluxe Hydro-Pulse Professional Flosser',
+        'Nespresso Lattissima Touch Capsule Espresso Maker',
+        'Krups Silent Grind Silent Precision Conical Burr Miller',
+        'Tiger Double-Heated Microcomputer Premium IH Rice Cooker',
+        'Zojirushi Supreme Microcomputer Lifetime Vacuum Water Boiler',
+        'Delonghi Dedica Style Retro Pump Espresso Machine',
+        'De’Longhi Icona Vintage Toasting Machine Olive Green',
+        'Morphy Richards Retro Engraved Versatile Cooking Pot',
+        'Cuisinart Core Precision Dual-Slot Stainless Solid Toaster',
+        'Bruno Retro Pastel Mint Smokeless Electric Griddle',
+        'Zojirushi Micom Special Deluxe IH Microcomputer Pressure Cooker',
+        'KitchenAid Artisan Series Retro Stand Dough Mixer',
+        'SMEG Citrus Juicer Vintage Style Squeezer Pink',
+        'Hamilton Beach Elite Precision Multi-Use Stewing Cooker',
+        'Panasonic Premium Flat Inverter Electromagnetic Microwave Oven',
+        'Kenwood Chef Titanium Professional Grade Kitchen Stand Mixer',
+        'Miele Compact Airpur Intelligently Anion Air Purifier Filter',
+        'Breville Smart Oven Convection Element IQ Air Fryer Boiler',
+        'Laurastar Smart U Advanced Vacuum Ironing System Center',
+        'Barisieur Tea Coffee Alarm Smart Mornings Automatic Brewing Station',
+        'Geneva Touring Luxury Portable Calf Leather Retro Speaker',
+        'Anova Precision Pro Culinary Low Temperature Sous Vide Circulator',
+        'Liebherr Vintage Red Classic Luxury Single-Door Refrigerator',
+        'Jura E8 Platinum Touchscreen Automatic Espresso Center',
+        'Elica NikolaTesla Master Induction Downdraft Cooktop Combo',
+        'SMEG Drip Filter Retro Cream Stainless Steel Coffee Drip Maker',
+        'Sub-Zero Classic Cellar Smart Double-Zone Undercounter Wine Fridge',
+        'Vintec Single Zone Low Noise Premium Cabinet Wine Bar',
+        'LG Styler Mirror Luxury Steam Clothing Care Closet Pod'
       ];
       itemName = `${applianceNames[idCounter % applianceNames.length]} · No.${idCounter}`;
-      itemDescription = `此款${itemName}是智能科技与现代奢华生活美学深度融合之作。配置先进 of 芯片调控与精研工艺材质，在日常的每一次起居交互中提供极致无瑕的生活享受。`;
+      itemDescription = `This ${itemName} is a perfect integration of smart technologies and luxury home aesthetics. Featuring advanced chip regulations and polished materials, it provides a seamless and pristine daily experience.`;
     }
 
     // Get guaranteed unique, beautifully matching color/zoom classic product photo via Lorem Flickr URL
@@ -1044,81 +1044,81 @@ function generate1000Products(): Product[] {
 
   // Generate 200 high-end adult wellness, lingerie, and silk stocking luxury items from LP-1501 to LP-1700
   const adultToys = [
-    'Pulse Wave Pro 智能声波吸吮按摩器', 'Silk Touch II 奢华变频恒温震动棒', 
-    'Aero Air-Pulse 拟真智能声波气流按摩仪', 'Pleasure Ring Pro 钛金温控变频智能环',
-    'Velvet Sensation 极软硅胶无线遥控跳蛋', 'Luminous Aura 智能声控恒温御手跳蛋',
-    'Whisper Silk 智能超静音硅胶脉冲棒', 'Aria Sensual Touch 极奢声波吸吮理疗仪',
-    'Saffron Glow 舒缓按摩温热香薰精油', 'Elysian Wave 奢享双向脉冲无线振动仪'
+    'Pulse Wave Pro Intelligent Sonic Suction Massager', 'Silk Touch II Luxury Variable Frequency Warming Wand', 
+    'Aero Air-Pulse Advanced Sonic Pulse Atmospheric Simulator', 'Pleasure Ring Pro Titanium Smart Thermo Control Band',
+    'Velvet Sensation Ultra-Soft Medical Silicone Wireless Egg', 'Luminous Aura Smart Voice-Activated Deep Wand',
+    'Whisper Silk Ultra-Quiet Surgical Silicone Pulse Wand', 'Aria Sensual Touch Premium Wave Resonance Stimulator',
+    'Saffron Glow Soothing Heating Organic Massage Essential Oil', 'Elysian Wave Dual-Core Wireless Pulsing Wand'
   ];
   const adultToysDesc = [
-    '采用医疗级抗菌硅胶与高频共振电机，独有声波吸吮科技迅速唤醒多重感官，带来无可比拟的奢华私密愉悦。',
-    '极静低噪变频微震设计，配备智能精准恒温加热系统，温润触感如影随行，细滑如丝般温柔呵护。',
-    '创新脉冲气流科技配合智能感应芯片，温柔包裹并产生有节奏的多频微压按摩，为高端生活家定制私密欢愉。',
-    '精湛合金钢一体铸造，搭载双核智能自适应压力变频，有效优化血液流动与持久体验，高奢尊贵。'
+    'Engineered with premium medical-grade antibacterial silicone and dual-frequency pulsating motors, featuring patented sonic suction technology that stimulates multiple senses for ultimate private comfort and luxury.',
+    'Whisper-quiet motor utilizing multi-vibrational modes, integrated with continuous smart thermo heating technology. Offers premium velvet feel for delicate and soothing play.',
+    'Innovative pulse air-wave technology backed by intelligent sensor chips. Gently wraps with rhythmic atmospheric pressure to deliver custom-made private euphoria.',
+    'Finely cast high-grade titanium steel combined with responsive dual-core variable pressure engines to elevate focus and provide long-lasting, elite experiences.'
   ];
 
   const lingerieBrands = ['La Perla', 'Agent Provocateur', 'Aubade', 'Bordelle', 'Fleur du Mal', 'Coco de Mer', 'Carine Gilson', 'I.D. Sarrieri'];
   const lingerieStyles = [
-    '高定法式印饰水溶蕾丝透视胸衣', '真丝缎面深V刺绣奢华温柔吊带裙', 
-    '极夜禁忌金属搭扣绑带连体胸衣', '宫廷复古奢华半杯提拢内衣套组',
-    '无痕轻薄流沙蚕丝优雅束身衣', '法国奢华纯手工蕾丝私享睡袍',
-    '暮光之城极奢镂空刺绣透视内衣', '魅影极奢天鹅绒绑带性感内衣'
+    'Haute Couture French Soluble Lace Corset', 'Pure Mulberry Silk Camisole Slip Dress With Embroidery', 
+    'Midnight Crux Strapy Bodysuit With Golden Hardware', 'Vintage Palace Half-Cup Lifting Premium Underwear Set',
+    'Seamless Ultra-Thin Flowing Silk Elegant Body Shaper', 'Authentic French Hand-Stitched Dentelle Robe',
+    'Twilight Realm Extreme Cutout Embroidered Lace Bra Set', 'Velvet Noir Extreme Satin Ribbon Sexy Teddies Lingerie'
   ];
   const lingerieDesc = [
-    '选用最珍稀的法式里昂手工蕾丝与19姆米重磅天然蚕丝，由高定礼服工坊专属匠师纯手工缝制，贴合身形，绽放性感魅力。',
-    '精美立体的重工刺绣图案镶嵌在极细透视薄纱之上，极致奢华深V剪裁，散发极致魅惑与不可方物的尊贵感。',
-    '前卫而极其奢华的交叉绑带设计，巧妙搭配镀金金属配件，挺拔身形的同时，极致衬托神秘禁忌的高阶质感。',
-    '古典宫廷风与现代审美的神级融合，杯面铺满细密水溶蕾丝，具有完美的托高与线条雕琢效果，令人沉醉。'
+    'Handcrafted from French Soluble Dentelle Lace and 19-momme pure mulberry silk. Exquisitely stitched by luxury atelier tailors for a perfect contour that exudes romantic French style.',
+    'Elaborate embroidery delicately set on ultra-soft sheer tulle, featuring an elegant plunge V-neckline to deliver ultimate mystique, luxury, and unmatched grace.',
+    'Avant-garde design featuring delicate crossing ribbons and polished gold-plated metallic clasps to beautifully sculpt the body in high-end seductive silhouettes.',
+    'A majestic fusion of royalty elegance and modern contouring. Finely detailed cup with soluble lace overlay for superb natural lifting and a charming silhouette.'
   ];
 
   const stockingsBrands = ['Wolford', 'Falke', 'Gerbe', 'Fogal', 'Cervin', 'Pierre Mantoux', 'Trasparenze'];
   const stockingsStyles = [
-    'Satin Touch 哑光莹润极薄连裤丝袜', 'Classic Lace Top 硅胶防滑蕾丝大腿袜', 
-    'Ultra-Sheer 10D 晨曦微光极薄裤袜', 'Vintage Back-Seam 复古针织后缝线丝袜',
-    'Silk-Blend Extreme 极其细软高比例真丝混纺袜', 'Premium Honeycomb 细密微光镂空网袜',
-    'Shiny Glossy 尊享艳丽高光泽连裤袜', 'Classy Suspension 极简蕾丝无痕裤袜'
+    'Satin Touch Matte Flawless Superfine Panty-Hose', 'Classic Lace Top Anti-Slip Premium Thigh-High Stockings', 
+    'Ultra-Sheer 10D Early Sunrise Shimmering Tights', 'Vintage Back-Seam Classic Knitted Retro Backseam stockings',
+    'Silk-Blend Extreme Exceptionally Delicate Pure Silk Blend Stockings', 'Premium Honeycomb Sheer Shimmer Net Tights',
+    'Shiny Glossy Ultimate Lustrous High-Gloss Pantyhose', 'Classy Garterless Seamless Invisible Lace Hold-Ups'
   ];
   const stockingsDesc = [
-    '奥地利顶奢面料织造工艺，带来第二层肌肤般的丝滑顺服。极清透10D厚度散发着朦胧微光，修饰双腿完美轮廓。',
-    '采用医用级防滑硅胶条双层加固，结合古典而绝美的水溶蕾丝阔边，精弹耐磨，极致演绎经典法式浪漫。',
-    '融合天然昂贵真丝纤维与高弹氨纶，呈现独一无二的高级亚光色泽与顺滑质感，轻盈透气抗勾丝。',
-    '传承半个世纪的经典工艺，采用后置手工缝合线设计，视觉上无限延伸双腿线条，彰显低调复古的神秘奢华。'
+    'Woven with Austrian premier fabrics for a flawless second-skin silk sensation. The incredibly sheer 10D weight delivers elegant matte shimmer for beautiful leg outlines.',
+    'Engineered with double-ring medical-grade anti-slip silicone band and classic soluble lace trim. Heavy-duty elasticity that withstands wear while emitting French romance.',
+    'Crafted with premium natural silk fibers blended with ultra-stretch elastane for exceptional matte texture and lightweight, run-resistant luxury touch.',
+    'Inheriting over five decades of fine knitting legacy, featuring hand-crafted retro rear backseams that visually lengthen the legs with timeless, subtle luxury.'
   ];
 
   for (let id = 1501; id <= 1700; id++) {
     let itemName = '';
     let itemDescription = '';
-    let costPrice = 8000;
+    let costPrice = 80;
     
     if (id % 3 === 0) {
       const toyName = adultToys[id % adultToys.length];
       const desc = adultToysDesc[id % adultToysDesc.length];
       const prefix = ['LELO', 'SVAKOM', 'Satisfyer', 'We-Vibe', 'Womanizer'][(id + 1) % 5];
       itemName = `${prefix} ${toyName}`;
-      itemDescription = `此款 ${itemName} ${desc}`;
-      costPrice = 8500 + (id * 150) % 18000;
+      itemDescription = `This ${itemName} ${desc}`;
+      costPrice = 80 + (id * 3) % 150;
     } else if (id % 3 === 1) {
       const brand = lingerieBrands[id % lingerieBrands.length];
       const style = lingerieStyles[(id + 2) % lingerieStyles.length];
       const desc = lingerieDesc[id % lingerieDesc.length];
       itemName = `${brand} ${style}`;
-      itemDescription = `此款 ${itemName} ${desc}`;
-      costPrice = 12000 + (id * 230) % 36000;
+      itemDescription = `This ${itemName} ${desc}`;
+      costPrice = 110 + (id * 5) % 240;
     } else {
       const brand = stockingsBrands[id % stockingsBrands.length];
       const style = stockingsStyles[(id + 1) % stockingsStyles.length];
       const desc = stockingsDesc[id % stockingsDesc.length];
       itemName = `${brand} ${style}`;
-      itemDescription = `此款 ${itemName} ${desc}`;
-      costPrice = 1800 + (id * 40) % 5500;
+      itemDescription = `This ${itemName} ${desc}`;
+      costPrice = 18 + (id * 2) % 65;
     }
 
-    const materials = ['限量版', '尊享款', '极奢系列', '幻影黑', '玫瑰金', '波尔多红', '蕾丝白', '深夜蓝'];
+    const materials = ['Limited Edition', 'Premium Sourced', 'Haute Couture Series', 'Obsidian Noir', 'Rose Gold', 'Bordeaux Red', 'Lace White', 'Midnight Blue'];
     const material = materials[id % materials.length];
     itemName = `${itemName} (${material}) · No.${id}`;
     
     const markup = 1.10 + ((id % 4) * 0.015);
-    const retailPrice = Math.max(costPrice + 100, Math.round(costPrice * markup / 100) * 100);
+    const retailPrice = Math.max(costPrice + 5, Math.round(costPrice * markup));
     const profit = retailPrice - costPrice;
 
     const image = getUniqueImageForProduct('情趣用品', id, itemName);
@@ -1159,43 +1159,43 @@ export const DEFAULT_ORDERS = [
   {
     id: 'ORD-20260528-001',
     shopId: 'master-shop-888',
-    customerName: '宋晓阳',
+    customerName: 'Alex Song',
     customerPhone: '13812345678',
-    shippingAddress: '上海市徐汇区龙腾大道 2555号 滨江艺术大厦 A座 22楼',
+    shippingAddress: 'Suite 2201, Tower A, Riverside Plaza, Shanghai',
     orderDate: '2026-05-28 08:30',
     items: [
       {
         productId: 'LP-0001',
-        productName: 'Cartier Bordeaux Classic 卡地亚经典勃艮第红机械表',
+        productName: 'Cartier Bordeaux Classic Automatic Mechanical Watch',
         quantity: 1,
-        retailPrice: 920000,
-        costPrice: 850000,
+        retailPrice: 6200,
+        costPrice: 5800,
         image: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg'
       }
     ],
-    totalPrice: 920000,
-    totalProfit: 70000,
+    totalPrice: 6200,
+    totalProfit: 400,
     status: 'pending' as const
   },
   {
     id: 'ORD-20260528-002',
     shopId: 'master-shop-888',
-    customerName: '季雨桐',
+    customerName: 'Chloe Ji',
     customerPhone: '15988889911',
-    shippingAddress: '北京市朝阳区三里屯路 19号院 三里屯太古里北区 N4-30号',
+    shippingAddress: 'No. 19 Sanlitun Road, Chaoyang District, Beijing',
     orderDate: '2026-05-28 07:15',
     items: [
       {
         productId: 'LP-0002',
-        productName: 'Gilded Amber Niche Perfume 鎏金琥珀沙龙高定香水',
+        productName: 'Gilded Amber Niche Luxury Perfume',
         quantity: 2,
-        retailPrice: 19800,
-        costPrice: 17805,
+        retailPrice: 135,
+        costPrice: 120,
         image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg'
       }
     ],
-    totalPrice: 39600,
-    totalProfit: 3990,
+    totalPrice: 270,
+    totalProfit: 30,
     status: 'shipped' as const
   }
 ];
