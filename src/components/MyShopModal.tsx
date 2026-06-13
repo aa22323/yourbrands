@@ -28,17 +28,17 @@ const MODAL_LOCALES: Record<string, Record<string, string>> = {
     
     errNoProducts: "❌ 请先上架至少一件商品进行推广！",
     errBudgetZero: "❌ 推广预算必须大于 0！",
-    errNoBalance: "❌ 您的账户可用余额不足 (当前: ¥{balance})！请调整推广投流金额。",
+    errNoBalance: "❌ 您的账户可用余额不足 (当前: ${balance})！请调整推广投流金额。",
     
     shareTitle: "✨【{shopName}】官方特惠精选专属商城✨",
-    shareBudgetBonus: "🔥 本期店铺特向总部追加投流 ¥{budget}，官方正品保障，支持顺丰返点！",
+    shareBudgetBonus: "🔥 本期店铺特向总部追加投流 ${budget}，官方正品保障，支持顺丰返点！",
     sharePrice: "特奢入手价",
     shareMainShowroom: "👉 点击主推橱窗，直享最惠出厂价：",
     sharePostal: "🎁 顺丰极速包邮 · 一物一卡正品检测 · 贴心售后保障",
-    shareSuccessMsg: "🎉 推广投流成功！已从账户余额中扣除 ¥{budget}。您的专属商场网址是：\n{link}",
+    shareSuccessMsg: "🎉 推广投流成功！已从账户余额中扣除 ${budget}。您的专属商场网址是：\n{link}",
     
     successAlertTitle: "🎉 投流推广启动成功！",
-    successAlertDesc: "已从您的可用余额中扣减 ¥{budget}！该资金已成功作为曝光权重加权！",
+    successAlertDesc: "已从您的可用余额中扣减 ${budget}！该资金已成功作为曝光权重加权！",
     successAlertCopied: "带有本期真实返点参数的【专属推广客流文案与链接】已成功复制到您的系统剪切板。可直接分享至各大社群或朋友圈！",
     gotItBtn: "我知道了"
   },
@@ -64,17 +64,17 @@ const MODAL_LOCALES: Record<string, Record<string, string>> = {
     
     errNoProducts: "❌ Please list at least one product before promoting!",
     errBudgetZero: "❌ Promotion budget must be greater than 0!",
-    errNoBalance: "❌ Insufficient store account balance (Current: ¥{balance})! Please customize your promotion budget.",
+    errNoBalance: "❌ Insufficient store account balance (Current: ${balance})! Please customize your promotion budget.",
     
     shareTitle: "✨【{shopName}】Official Premier Curated Storefront✨",
-    shareBudgetBonus: "🔥 This round of shop promotion added ¥{budget} in direct traffic funding. Official authenticity guaranteed with mail-in rebates!",
+    shareBudgetBonus: "🔥 This round of shop promotion added ${budget} in direct traffic funding. Official authenticity guaranteed with mail-in rebates!",
     sharePrice: "Special Promo Cost",
     shareMainShowroom: "👉 Open our main catalog to access wholesale rates directly:",
     sharePostal: "🎁 Speed Postal Shipping · Certified Authenticity Box · Devoted Post-Sales Guard",
-    shareSuccessMsg: "🎉 Traffic setup success! Deducted ¥{budget} from your storefront. Your exclusive retail link is:\n{link}",
+    shareSuccessMsg: "🎉 Traffic setup success! Deducted ${budget} from your storefront. Your exclusive retail link is:\n{link}",
     
     successAlertTitle: "🎉 Traffic Launch Successful!",
-    successAlertDesc: "Successfully debited ¥{budget} from your account balance as smart exposure points expansion!",
+    successAlertDesc: "Successfully debited ${budget} from your account balance as smart exposure points expansion!",
     successAlertCopied: "Your promotional content copy and shopping links featuring realistic commissions tracking parameters have been copied to your clipboard!",
     gotItBtn: "Got it"
   },
@@ -100,17 +100,17 @@ const MODAL_LOCALES: Record<string, Record<string, string>> = {
     
     errNoProducts: "❌ ¡Sincronice al menos un producto antes de promocionar!",
     errBudgetZero: "❌ ¡El presupuesto de promoción debe ser mayor que 0!",
-    errNoBalance: "❌ ¡Saldo insuficiente (Actual: ¥{balance})! Por favor ajuste el presupuesto.",
+    errNoBalance: "❌ ¡Saldo insuficiente (Actual: ${balance})! Por favor ajuste el presupuesto.",
     
     shareTitle: "✨ Tienda Exclusiva de Selección Oficial de 【{shopName}】✨",
-    shareBudgetBonus: "🔥 ¡Agregamos ¥{budget} en inversión de tráfico para esta campaña. Autenticidad oficial garantizada!",
+    shareBudgetBonus: "🔥 ¡Agregamos ${budget} en inversión de tráfico para esta campaña. Autenticidad oficial garantizada!",
     sharePrice: "Precio de Oferta",
     shareMainShowroom: "👉 Acceda a nuestro catálogo principal para tarifas de fábrica:",
     sharePostal: "🎁 Envío Express Asegurado · Tarjeta de Autenticidad Oficial · Garantía Post-venta",
-    shareSuccessMsg: "🎉 ¡Promoción exitosa! Se han deducido ¥{budget}. Su enlace comercial exclusivo es:\n{link}",
+    shareSuccessMsg: "🎉 ¡Promoción exitosa! Se han deducido ${budget}. Su enlace comercial exclusivo es:\n{link}",
     
     successAlertTitle: "🎉 ¡Campaña de Tráfico Iniciada con Éxito!",
-    successAlertDesc: "¡Se descontaron ¥{budget} de su saldo para aumentar la visibilidad de su tienda!",
+    successAlertDesc: "¡Se descontaron ${budget} de su saldo para aumentar la visibilidad de su tienda!",
     successAlertCopied: "¡El texto promocional con su enlace exclusivo de afiliado ha sido copiado al portapapeles con éxito!",
     gotItBtn: "Entendido"
   },
@@ -136,18 +136,18 @@ const MODAL_LOCALES: Record<string, Record<string, string>> = {
     
     errNoProducts: "❌ プロモーションを開始する前に、商品を掲載してください！",
     errBudgetZero: "❌ 空のプロモーション予算は設定できません！",
-    errNoBalance: "❌ 店舗残高が不足しています (現在残高: ¥{balance})。プロモーション投資額を調整してください。",
+    errNoBalance: "❌ 店舗残高が不足しています (現在残高: ${balance})。プロモーション投資額を調整してください。",
     
     shareTitle: "✨【{shopName}】公式ラグジュアリー特別セレクトモール✨",
-    shareBudgetBonus: "🔥 今期は公式プロモーション予算 ¥{budget} を追加投入！100%正規品保証・スピード配送！",
+    shareBudgetBonus: "🔥 今期は公式プロモーション予算 ${budget} を追加投入！100%正規品保証・スピード配送！",
     sharePrice: "特選特別提供価格",
     shareMainShowroom: "👉 プレミアム展示ウィンドウはこちら。工場直送最安値：",
     sharePostal: "🎁 スピード対応全国送料無料 · 正規品個別鑑定証明付 · 安心アフターセグメント保証",
-    shareSuccessMsg: "🎉 プロモーション設定完了！店舗残高から ¥{budget} を差し引きました。店舗URL：\n{link}",
+    shareSuccessMsg: "🎉 プロモーション設定完了！店舗残高から ${budget} を差し引きました。店舗URL：\n{link}",
     
     successAlertTitle: "🎉 トラフィックの追加買い付けに成功！",
-    successAlertDesc: "店舗残高からプロモーション枠 ¥{budget} 分の枠支払いを実行し、お薦め度加給が完了しました。",
-    successAlertCopied: "本期の販売紹介キートラック引数を持つ【特定宣伝リンク付のセールスコピータグ】をシステムクリップボードにコピーしました！",
+    successAlertDesc: "店舗残高からプロモーション枠 ${budget} 分の枠支払いを実行し、お薦め度加給が完了しました。",
+    successAlertCopied: "本期の販売紹介キートラック引数を持つ【特定宣真リンク付のセールスコピータグ】をシステムクリップボードにコピーしました！",
     gotItBtn: "了解しました"
   },
   ko: {
@@ -172,17 +172,17 @@ const MODAL_LOCALES: Record<string, Record<string, string>> = {
     
     errNoProducts: "❌ 프로모션을 시작하기 전에 최소 1개 상품을 상점에 올리세요!",
     errBudgetZero: "❌ 프로모션 예산은 0보다 커야 합니다!",
-    errNoBalance: "❌ 보유한 가용 잔액이 부족합니다 (현재: ¥{balance}). 금액을 재설정해 주세요.",
+    errNoBalance: "❌ 보유한 가용 잔액이 부족합니다 (현재: ${balance}). 금액을 재설정해 주세요.",
     
     shareTitle: "✨【{shopName}】공식 인증 특별 셀렉트 스토어✨",
-    shareBudgetBonus: "🔥 이번 특별 캠페인으로 광고 예산 ¥{budget}이 추가로 투입되었습니다. 안심 품질 보장!",
+    shareBudgetBonus: "🔥 이번 특별 캠페인으로 광고 예산 ${budget}이 추가로 투입되었습니다. 안심 품질 보장!",
     sharePrice: "최종 특별 혜택가",
     shareMainShowroom: "👉 메인 컬렉션을 확인하고 최저 유통가로 바로 진입하세요:",
     sharePostal: "🎁 안전 신속 우편 배송 · 일대일 감정 인증 카드 제공 · 특별 사후 지원 혜택",
-    shareSuccessMsg: "🎉 광고 캠페인 가동 완료! 가용 잔액에서 ¥{budget}이 차감되었습니다. 스토어 주소는:\n{link}",
+    shareSuccessMsg: "🎉 광고 캠페인 가동 완료! 가용 잔액에서 ${budget}이 차감되었습니다. 스토어 주소는:\n{link}",
     
     successAlertTitle: "🎉 스마트 광고 트래픽 증량 성공!",
-    successAlertDesc: "가용 잔액에서 ¥{budget}만큼 차감되었으며 해당 금액이 노출 지수로 전환되었습니다!",
+    successAlertDesc: "가용 잔액에서 ${budget}만큼 차감되었으며 해당 금액이 노출 지수로 전환되었습니다!",
     successAlertCopied: "추적 파라미터가 적용된 [스페셜 홍보 문안과 공유 쇼핑 URL]이 고객님의 클립보드에 바로 복사되었습니다!",
     gotItBtn: "확인 완료"
   },
@@ -208,17 +208,17 @@ const MODAL_LOCALES: Record<string, Record<string, string>> = {
     
     errNoProducts: "❌ Vui lòng có ít nhất một sản phẩm để quảng cáo!",
     errBudgetZero: "❌ Ngân sách quảng cáo phải lớn hơn 0!",
-    errNoBalance: "❌ Số dư tài khoản không đủ (Hiện tại: ¥{balance})! Vui lòng điều chỉnh ngân sách.",
+    errNoBalance: "❌ Số dư tài khoản không đủ (Hiện tại: ${balance})! Vui lòng điều chỉnh ngân sách.",
     
     shareTitle: "✨ Cửa Hàng Tuyển Chọn Chính Hãng 【{shopName}】✨",
-    shareBudgetBonus: "🔥 Đợt này cửa hàng hỗ trợ thêm ngân sách quảng cáo ¥{budget}, đảm bảo chính hãng 100%!",
+    shareBudgetBonus: "🔥 Đợt này cửa hàng hỗ trợ thêm ngân sách quảng cáo ${budget}, đảm bảo chính hãng 100%!",
     sharePrice: "Giá Sốc Ưu Đãi",
     shareMainShowroom: "👉 Nhấp vào tủ kính trưng bày để mua lẻ với giá gốc cực rẻ:",
     sharePostal: "🎁 Giao Hàng Miễn Phí Hoả Tốc · Thẻ Kiểm Định Chính Hãng · Chăm Sóc Hậu Mãi Chu Đáo",
-    shareSuccessMsg: "🎉 Thiết lập thành công! Đã trừ số dư ¥{budget}. Link cửa hàng chuyên dụng là:\n{link}",
+    shareSuccessMsg: "🎉 Thiết lập thành công! Đã trừ số dư ${budget}. Link cửa hàng chuyên dụng là:\n{link}",
     
     successAlertTitle: "🎉 Kích Hoạt Chiến Dịch Thành Công!",
-    successAlertDesc: "Đã khấu trừ ¥{budget} từ số dư của bạn để nâng cao mức độ tiếp cận khách hàng!",
+    successAlertDesc: "Đã khấu trừ ${budget} từ số dư của bạn để nâng cao mức độ tiếp cận khách hàng!",
     successAlertCopied: "Nội dung quảng cáo chứa liên kết độc quyền chính xác của cửa hàng đã được sao chép vào bộ nhớ tạm!",
     gotItBtn: "Đã hiểu"
   }
@@ -264,7 +264,7 @@ export default function MyShopModal({
   const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
   
   // Promotion budget state input
-  const [promoBudget, setPromoBudget] = useState<number>(200);
+  const [promoBudget, setPromoBudget] = useState<number>(50);
   
   // Success feedback state
   const [copied, setCopied] = useState(false);
@@ -310,7 +310,7 @@ export default function MyShopModal({
     let textToCopy = t('shareTitle', { shopName: shop.name }) + '\n';
     textToCopy += t('shareBudgetBonus', { budget: promoBudget.toLocaleString() }) + '\n\n';
     activeProducts.forEach((p, idx) => {
-      textToCopy += `${idx + 1}. 💎 ${p.name}\n   ✦ ${t('sharePrice')}: ¥${p.retailPrice.toLocaleString()}\n\n`;
+      textToCopy += `${idx + 1}. 💎 ${p.name}\n   ✦ ${t('sharePrice')}: $${p.retailPrice.toLocaleString()}\n\n`;
     });
     textToCopy += t('shareMainShowroom') + `\n🔗 ${promoLink}\n\n`;
     textToCopy += t('sharePostal');
@@ -394,8 +394,8 @@ export default function MyShopModal({
                     <span className="text-sm">💰</span>
                     <span className="text-[11px] text-zinc-700 font-extrabold font-sans">{t('balanceLabel')}</span>
                   </div>
-                  <span className="font-mono text-xs font-black text-amber-700 bg-white border border-amber-200/65 px-2.5 py-0.5 rounded-lg shadow-2xs">
-                    ¥{userBalance.toLocaleString()}
+                  <span className="font-mono text-xs font-black text-amber-700 bg-white border border-amber-200/65 px-2.5 py-0.5 rounded-lg shadow-2xl">
+                    ${userBalance.toLocaleString()}
                   </span>
                 </div>
                 
@@ -409,7 +409,7 @@ export default function MyShopModal({
 
                   <div className="flex items-center gap-2">
                     <div className="relative flex-1 min-w-0">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-bold font-mono text-xs">¥</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-bold font-mono text-xs">$</span>
                       <input 
                         type="number" 
                         value={promoBudget === 0 ? '' : promoBudget}
@@ -432,7 +432,7 @@ export default function MyShopModal({
                   
                   {/* Preset Real Cash Quick Chips */}
                   <div className="flex gap-2 justify-between">
-                    {[5000, 10000, 25000, 50000].map((preset) => (
+                    {[50, 100, 250, 500].map((preset) => (
                       <button
                         key={preset}
                         type="button"
@@ -449,7 +449,7 @@ export default function MyShopModal({
                             : 'bg-white border-zinc-200 text-zinc-550 hover:bg-zinc-50'
                         }`}
                       >
-                        ¥{preset.toLocaleString()}
+                        ${preset.toLocaleString()}
                       </button>
                     ))}
                   </div>
@@ -501,7 +501,7 @@ export default function MyShopModal({
                           {/* Product Price */}
                           <div className="text-right shrink-0">
                             <span className="font-mono text-zinc-800 font-extrabold text-[11.5px] block">
-                              ¥{p.retailPrice.toLocaleString()}
+                              ${p.retailPrice.toLocaleString()}
                             </span>
                             <span className="text-[9px] text-zinc-400 font-semibold block scale-90 origin-right font-sans">
                               {t('suggestedRetail')}
@@ -522,11 +522,11 @@ export default function MyShopModal({
                               <div className="p-3 grid grid-cols-3 gap-2 text-center">
                                 <div className="bg-white p-2 rounded-xl border border-zinc-150 flex flex-col justify-center items-center shadow-3xs">
                                   <span className="text-[9px] text-zinc-400 font-black mb-0.5 font-sans">{t('costPrice')}</span>
-                                  <span className="font-mono text-[10.5px] text-zinc-600 font-bold">¥{p.costPrice.toLocaleString()}</span>
+                                  <span className="font-mono text-[10.5px] text-zinc-600 font-bold">${p.costPrice.toLocaleString()}</span>
                                 </div>
                                 <div className="bg-white p-2 rounded-xl border border-zinc-150 flex flex-col justify-center items-center shadow-3xs">
                                   <span className="text-[9px] text-zinc-400 font-black mb-0.5 font-sans">{t('merchantProfit')}</span>
-                                  <span className="font-mono text-[10.5px] text-emerald-600 font-black">¥{p.profit.toLocaleString()}</span>
+                                  <span className="font-mono text-[10.5px] text-emerald-600 font-black">${p.profit.toLocaleString()}</span>
                                 </div>
                                 <div className="bg-white p-2 rounded-xl border border-zinc-150 flex flex-col justify-center items-center shadow-3xs">
                                   <span className="text-[9px] text-zinc-400 font-black mb-0.5 font-sans">{t('profitMargin')}</span>

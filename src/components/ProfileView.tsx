@@ -270,7 +270,7 @@ export default function ProfileView({
         '店铺账户充值',
         amount,
         '已提交',
-        `通过外部结算账户申请注资 ¥${amount.toLocaleString()}，等待超级管理员复核确认`
+        `通过外部结算账户申请注资 $${amount.toLocaleString()}，等待超级管理员复核确认`
       );
     }
     setTransactionSuccess(true);
@@ -472,7 +472,7 @@ export default function ProfileView({
       text += `收货姓名：${o.customerName}\n`;
       text += `联系电话：${o.customerPhone}\n`;
       text += `收货地址：${o.shippingAddress}\n`;
-      text += `款项合计：¥${o.totalPrice.toLocaleString()}\n`;
+      text += `款项合计：$${o.totalPrice.toLocaleString()}\n`;
       text += `明细包含：\n`;
       o.items.forEach(it => {
         const translatedName = getTranslatedProductName(it.productId, it.productName);

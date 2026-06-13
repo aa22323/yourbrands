@@ -258,7 +258,7 @@ export default function CartView({
                   
                   <div className="flex items-end justify-between mt-1">
                     <div className="text-xs font-mono font-bold text-[#e51923]">
-                      ¥{item.product.retailPrice.toLocaleString()}
+                      ${item.product.retailPrice.toLocaleString()}
                     </div>
                     
                     {/* Quantity modifier */}
