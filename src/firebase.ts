@@ -1,18 +1,18 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// 默认备用配置（若用户在自己的独立云服务器/本地部署，将连接至此项目）
+// 默认备用配置（连接至用户新建的独立高额度 Firebase 项目）
 const fallbackConfig = {
   projectId: "yourbrands-34ccb",
-  appId: "1:86958122631:web:8f6d411ae642b3dda99982",
-  apiKey: "AIzaSyBd6hvBI74m0IEoOVrkfzDRdHYOOkxEgY",
+  appId: "1:869581822631:web:8f6d411ae642b3dda99982",
+  apiKey: "AIzaSyBd6hvBI74m0IEoOVrkfszDRdHYOOkxEgY",
   authDomain: "yourbrands-34ccb.firebaseapp.com",
   storageBucket: "yourbrands-34ccb.firebasestorage.app",
-  messagingSenderId: "86958122631",
+  messagingSenderId: "869581822631",
   measurementId: "G-41H44MQC8F"
 };
 
-// 自动连接到 AI Studio 活动数据库（如果是预览环境，保证商户和历史图片的永久性与无损迁移）
+// 自动连接到 AI Studio 活动数据库
 let firebaseConfig: any = fallbackConfig;
 
 try {
@@ -30,4 +30,3 @@ const app = initializeApp(firebaseConfig);
 export const db = firebaseConfig.firestoreDatabaseId 
   ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
   : getFirestore(app);
-

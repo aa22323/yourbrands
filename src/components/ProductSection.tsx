@@ -320,35 +320,35 @@ export default function ProductSection({
                       <div className="flex flex-col justify-center">
                         <span className="text-[7.5px] sm:text-[8px] text-zinc-500 font-medium font-sans">{t('cardSuggestedPrice')}</span>
                         <span className="text-[9.5px] sm:text-[11px] md:text-xs font-mono text-zinc-900 font-bold flex items-center justify-center gap-px">
-                          <span className="text-[7.5px] sm:text-[9px] font-sans font-semibold">¥</span>
+                          <span className="text-[7.5px] sm:text-[9px] font-sans font-semibold">$</span>
                           <span>{product.retailPrice.toLocaleString()}</span>
                         </span>
                       </div>
                       <div className="flex flex-col justify-center border-x border-zinc-200">
                         <span className="text-[7.5px] sm:text-[8px] text-zinc-400">{t('cardCost')}</span>
                         <span className="text-[9.5px] sm:text-[11px] md:text-xs font-mono text-zinc-500 font-medium flex items-center justify-center gap-px">
-                          <span className="text-[7.5px] sm:text-[9px] font-sans">¥</span>
+                          <span className="text-[7.5px] sm:text-[9px] font-sans">$</span>
                           <span>{product.costPrice.toLocaleString()}</span>
                         </span>
                       </div>
                       <div className="flex flex-col justify-center">
                         <span className="text-[7.5px] sm:text-[8px] text-[#e51923] font-bold">{t('cardProfit')}</span>
                         <span className="text-[9.5px] sm:text-[11px] md:text-xs font-mono text-[#e51923] font-black flex items-center justify-center gap-px">
-                          <span className="text-[7.5px] sm:text-[9px] font-sans">¥</span>
+                          <span className="text-[7.5px] sm:text-[9px] font-sans">$</span>
                           <span>{(product.retailPrice - product.costPrice).toLocaleString()}</span>
                         </span>
                       </div>
                     </div>
                   ) : (
-                    /* 顾客模式: 优雅大方的单一大标价 */
+                    /* 顾客模式: 优雅大方的单一标价 */
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 py-0.5 bg-transparent">
                       <div className="flex flex-col">
                         <span className="text-[7.5px] sm:text-[9px] text-zinc-400 font-medium leading-none">{t('cardCustomerPriceLabel')}</span>
                         <div className="text-xs sm:text-base font-mono text-[#e51923] font-black flex items-baseline gap-px mt-0.5">
-                          <span className="text-[8px] sm:text-[10px] font-sans">¥</span>
+                          <span className="text-[8px] sm:text-[10px] font-sans">$</span>
                           <span>{product.retailPrice.toLocaleString()}</span>
                           <span className="text-[8px] sm:text-[9px] font-sans text-zinc-400 font-light ml-1 line-through">
-                            ¥{Math.round(product.retailPrice * 1.5).toLocaleString()}
+                            ${Math.round(product.retailPrice * 1.5).toLocaleString()}
                           </span>
                         </div>
                       </div>
@@ -504,7 +504,7 @@ export default function ProductSection({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-mono text-[#e51923] font-bold">
-                            ¥{checkoutProduct.retailPrice.toLocaleString()}
+                            ${checkoutProduct.retailPrice.toLocaleString()}
                           </span>
                           {/* Qty changer */}
                           <div className="flex items-center gap-2 border border-zinc-300 rounded-lg p-0.5 bg-white scale-90">
@@ -588,7 +588,7 @@ export default function ProductSection({
                     <div className="bg-zinc-50 p-3.5 rounded-xl border border-zinc-200 flex justify-between items-center text-xs shadow-xs">
                       <span className="text-zinc-500 font-medium">{t('totalCheckoutAmount')}</span>
                       <span className="text-base font-mono text-[#e51923] font-black">
-                        ¥{(checkoutProduct.retailPrice * qty).toLocaleString()}
+                        ${(checkoutProduct.retailPrice * qty).toLocaleString()}
                       </span>
                     </div>
 

@@ -63,10 +63,12 @@ export default function CartView({
   const totalItemsCount = localizedCartItems.reduce((acc, item) => acc + item.quantity, 0);
   const totalPrice = localizedCartItems.reduce((acc, item) => acc + (item.product.retailPrice * item.quantity), 0);
   
-  // 1 coin = 1 yuan discount, max 20%
-  const maxCoinDiscount = Math.floor(totalPrice * 0.2);
-  const coinsToDeduct = Math.min(userCoins, maxCoinDiscount);
-  const finalPrice = useCoinsDiscount ? totalPrice - coinsToDeduct : totalPrice;
+  // 100 coins = 1 USD discount, max 20% discount
+  const maxCoinDiscountInDollars = Math.floor(totalPrice * 0.2);
+  const maxCoinDiscountInCoins = maxCoinDiscountInDollars * 100;
+  const coinsToDeduct = Math.min(userCoins, maxCoinDiscountInCoins);
+  const coinDiscountInDollars = coinsToDeduct / 100;
+  const finalPrice = useCoinsDiscount ? totalPrice - coinDiscountInDollars : totalPrice;
 
   const totalProfit = localizedCartItems.reduce(
     (acc, item) => acc + ((item.product.retailPrice - item.product.costPrice) * item.quantity), 
@@ -110,7 +112,7 @@ export default function CartView({
       orderDate: new Date().toISOString().replace('T', ' ').substring(0, 16),
       items: orderItems,
       totalPrice: finalPrice,
-      totalProfit: totalProfit - (useCoinsDiscount ? coinsToDeduct : 0),
+      totalProfit: totalProfit - (useCoinsDiscount ? coinDiscountInDollars : 0),
       status: 'pending',
       isSelfOrder: viewRole === 'merchant'
     };
@@ -361,13 +363,13 @@ export default function CartView({
                     <span className="font-bold text-[11px] text-amber-950">
                       {t('coinDeductionTitle').replace('{state}', useCoinsDiscount ? t('coinDeductionActive') : t('coinDeductionInactive'))}
                     </span>
-                    <span className="text-[10px] text-zinc-500 font-semibold" dangerouslySetInnerHTML={{ __html: t('coinDeductionStatusText').replace('{balance}', String(userCoins)).replace('{deduct}', String(coinsToDeduct)) }} />
+                    <span className="text-[10px] text-zinc-500 font-semibold" dangerouslySetInnerHTML={{ __html: t('coinDeductionStatusText').replace('{balance}', String(userCoins)).replace('{deduct}', String(coinDiscountInDollars)) }} />
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5">
                   {useCoinsDiscount && coinsToDeduct > 0 && (
                     <span className="text-[10px] text-amber-950 bg-amber-100 border border-amber-250 font-bold p-0.5 px-2 rounded-lg font-mono animate-pulse">
-                      -¥{coinsToDeduct.toLocaleString()}
+                      -${coinDiscountInDollars.toLocaleString()}
                     </span>
                   )}
                   <button
@@ -392,7 +394,7 @@ export default function CartView({
               {viewRole === 'merchant' && (
                 <div className="flex justify-between items-center text-[10px] text-zinc-400 font-mono font-semibold px-1">
                   <span>{t('merchantCostLabel').replace('{cost}', (totalPrice - totalProfit).toLocaleString())}</span>
-                  <span className="text-[#e51923]">{t('merchantProfitLabel').replace('{profit}', (totalProfit - (useCoinsDiscount ? coinsToDeduct : 0)).toLocaleString())}</span>
+                  <span className="text-[#e51923]">{t('merchantProfitLabel').replace('{profit}', (totalProfit - (useCoinsDiscount ? coinDiscountInDollars : 0)).toLocaleString())}</span>
                 </div>
               )}
               <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-205 flex justify-between items-center text-xs shadow-xs">
@@ -403,7 +405,7 @@ export default function CartView({
                   </span>
                 </div>
                 <span className="text-lg font-mono text-[#e51923] font-black">
-                  ¥{finalPrice.toLocaleString()}
+                  ${finalPrice.toLocaleString()}
                 </span>
               </div>
             </div>

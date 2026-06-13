@@ -478,7 +478,7 @@ export default function AdminDashboardView({
       typeLabel: '海外客单签收获利',
       amount: settleAmount,
       status: '已到账',
-      description: `客户签收商品完结（派发单 ${orderId}），结算商品返还垫本（¥${(orderToSettle.totalPrice - orderToSettle.totalProfit).toLocaleString()}）及差额利润（¥${orderToSettle.totalProfit.toLocaleString()}）实时全额分账汇入余额`,
+      description: `客户签收商品完结（派发单 ${orderId}），结算商品返还垫本（$${(orderToSettle.totalPrice - orderToSettle.totalProfit).toLocaleString()}）及差额利润（$${orderToSettle.totalProfit.toLocaleString()}）实时全额分账汇入余额`,
       createdAt: `${dateStr} ${timeStr}`
     };
 
@@ -565,7 +565,7 @@ export default function AdminDashboardView({
     // 1. Update status to '成功' or '已到账'
     const nextLogs = (merchant.financialLogs || []).map((t: any) => {
       if (t.id === txId) {
-        return { ...t, status: '成功' as const, description: `通过外部结算账户注资 ¥${t.amount.toLocaleString()}，资金已由超级主管复核获批确认入账可用` };
+        return { ...t, status: '成功' as const, description: `通过外部结算账户注资 $${t.amount.toLocaleString()}，资金已由超级主管复核获批确认入账可用` };
       }
       return t;
     });
@@ -578,7 +578,7 @@ export default function AdminDashboardView({
       balance: nextBalance
     });
 
-    triggerSuccess(`💰 充值交易 ${txId} 已核准批准入账！JPY ¥${tx.amount.toLocaleString()} 成功注入该店家可用余额中。`);
+    triggerSuccess(`💰 充值交易 ${txId} 已核准批准入账！USD $${tx.amount.toLocaleString()} 成功注入该店家可用余额中。`);
   };
 
   // Recharge flow Audit: Reject (驳回/拒绝充值)
@@ -597,7 +597,7 @@ export default function AdminDashboardView({
     // Update status to '已拒绝'
     const nextLogs = (merchant.financialLogs || []).map((t: any) => {
       if (t.id === txId) {
-        return { ...t, status: '已拒绝' as const, description: `通过外部结算账户注资 ¥${t.amount.toLocaleString()}的申请，由于财务复核不通过已被驳回拒绝` };
+        return { ...t, status: '已拒绝' as const, description: `通过外部结算账户注资 $${t.amount.toLocaleString()}的申请，由于财务复核不通过已被驳回拒绝` };
       }
       return t;
     });
@@ -692,7 +692,7 @@ export default function AdminDashboardView({
       financialLogs: nextLogs
     });
 
-    triggerSuccess(`❌ 提现申请 ${withdrawId} 被拒绝！退款本金 JPY ¥${amountToRefund.toLocaleString()} 已原路退回店铺余额。`);
+    triggerSuccess(`❌ 提现申请 ${withdrawId} 被拒绝！退款本金 USD $${amountToRefund.toLocaleString()} 已原路退回店铺余额。`);
   };
 
   // Edit details of withdrawal payee bank account (修改结算银行卡)
@@ -1062,7 +1062,7 @@ export default function AdminDashboardView({
                 <span>商端沉淀可用累计总余额</span>
               </span>
               <span className="text-sm sm:text-base font-black text-zinc-900 font-mono mt-1 break-all truncate">
-                ¥{grandTotalBalance.toLocaleString()}
+                ${grandTotalBalance.toLocaleString()}
               </span>
             </div>
 
@@ -1072,7 +1072,7 @@ export default function AdminDashboardView({
                 <span>所有店家已赚提成利润额</span>
               </span>
               <span className="text-sm sm:text-base font-black text-[#e51923] font-mono mt-1 break-all truncate">
-                ¥{grandTotalProfit.toLocaleString()}
+                ${grandTotalProfit.toLocaleString()}
               </span>
             </div>
           </div>
@@ -1318,14 +1318,14 @@ export default function AdminDashboardView({
                         <div className="flex flex-col">
                            <span className="text-[9px] text-zinc-500 font-bold tracking-wider">可用店铺余额</span>
                            <span className="text-sm font-black text-zinc-900 font-mono">
-                             ¥{(merchant.balance || 0).toLocaleString()}
+                             ${(merchant.balance || 0).toLocaleString()}
                            </span>
                         </div>
                         <div className="w-px h-7 bg-zinc-200 mx-1.5 self-center"></div>
                         <div className="flex flex-col">
                            <span className="text-[9px] text-[#e51923] font-bold tracking-wider">商定累计利润</span>
                            <span className="text-sm font-black text-[#e51923] font-mono">
-                             ¥{itemProfits.toLocaleString()}
+                             ${itemProfits.toLocaleString()}
                            </span>
                         </div>
                         <div className="w-px h-7 bg-zinc-200 mx-1.5 self-center"></div>
@@ -1428,12 +1428,12 @@ export default function AdminDashboardView({
 
                           <div className="flex flex-col gap-1">
                             <label className="text-[10px] text-[#e51923] font-bold uppercase flex items-center gap-1.5">
-                              调整可用账户余额 Set Balance (JPY)
+                              调整可用账户余额 Set Balance (USD)
                               {isSalesman && <span className="text-[8px] font-black text-red-600 bg-red-50 border border-red-200 px-1 py-0.5 rounded leading-none">业务员无权修改金额</span>}
                             </label>
                             <input
                               type="text"
-                              value={isSalesman ? `¥${(merchant.balance || 0).toLocaleString()} (仅限总后台管理员修改)` : editBalanceInput}
+                              value={isSalesman ? `$${(merchant.balance || 0).toLocaleString()} (仅限总后台管理员修改)` : editBalanceInput}
                               onChange={(e) => {
                                 if (!isSalesman) {
                                   setEditBalanceInput(e.target.value);
@@ -1751,9 +1751,9 @@ export default function AdminDashboardView({
                           <span className="text-xs font-black text-zinc-900 line-clamp-1">{selectedProduct.name}</span>
                           <span className="text-[8px] font-mono bg-zinc-100 border border-zinc-200 text-zinc-500 px-1.5 py-0.5 rounded mr-auto leading-none text-left">{selectedProduct.sku}</span>
                           <div className="flex items-center justify-between text-[11px] font-mono mt-0.5">
-                            <span className="text-zinc-550">进价: ¥{selectedProduct.costPrice.toLocaleString()}</span>
-                            <span className="text-zinc-550">售价: ¥{selectedProduct.retailPrice.toLocaleString()}</span>
-                            <span className="text-[#e51923] font-bold">单件利润: ¥{selectedProduct.profit.toLocaleString()}</span>
+                            <span className="text-zinc-550">进价: ${selectedProduct.costPrice.toLocaleString()}</span>
+                            <span className="text-zinc-550">售价: ${selectedProduct.retailPrice.toLocaleString()}</span>
+                            <span className="text-[#e51923] font-bold">单件利润: ${selectedProduct.profit.toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
@@ -1766,15 +1766,15 @@ export default function AdminDashboardView({
                     <div className="border-t border-zinc-200 pt-3 flex flex-col gap-1 text-[11.5px] text-zinc-650 font-medium font-sans">
                       <div className="flex justify-between items-center">
                         <span>首付代扣成本 (店家垫付):</span>
-                        <span className="font-mono text-zinc-900 font-bold">¥{((selectedProduct?.costPrice || 0) * dispatchQty).toLocaleString()} JPY</span>
+                        <span className="font-mono text-zinc-900 font-bold">${((selectedProduct?.costPrice || 0) * dispatchQty).toLocaleString()} USD</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>客户最终清算结算价 (GMV):</span>
-                        <span className="font-mono text-zinc-900 font-bold">¥{((selectedProduct?.retailPrice || 0) * dispatchQty).toLocaleString()} JPY</span>
+                        <span className="font-mono text-zinc-900 font-bold">${((selectedProduct?.retailPrice || 0) * dispatchQty).toLocaleString()} USD</span>
                       </div>
                       <div className="flex justify-between items-center text-[#e51923]">
                         <span>店家完成结算后到账纯利润:</span>
-                        <span className="font-mono font-black text-sm text-[#e51923]">¥{((selectedProduct?.profit || 0) * dispatchQty).toLocaleString()} JPY</span>
+                        <span className="font-mono font-black text-sm text-[#e51923]">${((selectedProduct?.profit || 0) * dispatchQty).toLocaleString()} USD</span>
                       </div>
                     </div>
                   </div>
@@ -1866,8 +1866,8 @@ export default function AdminDashboardView({
                         <span className="text-xs font-bold text-zinc-900 line-clamp-1">{p.name}</span>
                         <span className="text-[9px] font-mono bg-zinc-200 text-zinc-650 px-1.5 py-0.5 rounded mr-auto leading-none">{p.sku}</span>
                         <div className="flex items-center justify-between text-[10px] font-semibold text-zinc-500 mt-1">
-                          <span>成本价: ¥{p.costPrice.toLocaleString()}</span>
-                          <span className="text-emerald-600 font-bold">利润: ¥{p.profit.toLocaleString()}</span>
+                          <span>成本价: ${p.costPrice.toLocaleString()}</span>
+                          <span className="text-emerald-600 font-bold">利润: ${p.profit.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -2280,7 +2280,7 @@ export default function AdminDashboardView({
                           <div className="flex items-baseline gap-1">
                             <span className="text-[10px] text-zinc-500 font-bold">申请注资金额 amount：</span>
                             <span className="text-xl font-black text-emerald-600 font-mono">
-                              +¥{transaction.amount.toLocaleString()} <span className="text-xs text-zinc-500">JPY</span>
+                              +${transaction.amount.toLocaleString()} <span className="text-xs text-zinc-500">USD</span>
                             </span>
                           </div>
 
@@ -2437,7 +2437,7 @@ export default function AdminDashboardView({
                             <div className="flex items-baseline gap-1">
                               <span className="text-[10px] text-zinc-500 font-bold">提现净值 amount：</span>
                               <span className="text-xl font-black text-zinc-900 font-mono">
-                                ¥{record.amount.toLocaleString()} <span className="text-xs text-zinc-550">JPY</span>
+                                ${record.amount.toLocaleString()} <span className="text-xs text-zinc-550">USD</span>
                               </span>
                             </div>
 
@@ -2881,8 +2881,8 @@ export default function AdminDashboardView({
                                   <span>SKU: <span className="font-mono text-zinc-700">{p.sku}</span></span>
                                 </div>
                                 <div className="flex justify-between items-center text-[10.5px] font-mono">
-                                  <span className="text-zinc-500">进价: ¥{p.costPrice.toLocaleString()}</span>
-                                  <span className="text-[#e51923] font-bold">零售价: ¥{p.retailPrice.toLocaleString()}</span>
+                                  <span className="text-zinc-500">进价: ${p.costPrice.toLocaleString()}</span>
+                                  <span className="text-[#e51923] font-bold">零售价: ${p.retailPrice.toLocaleString()}</span>
                                 </div>
                               </div>
                             </div>

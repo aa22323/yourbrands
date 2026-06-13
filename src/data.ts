@@ -21,9 +21,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0001',
     name: 'Cartier Bordeaux Classic 卡地亚经典勃艮第红机械表',
     category: '臻选腕表',
-    costPrice: 850000,
-    retailPrice: 920000,
-    profit: 70000,
+    costPrice: 5800,
+    retailPrice: 6200,
+    profit: 400,
     description: '承袭法式浪漫，酒红色深邃表盘搭配复古鳄鱼皮表带，瑞士自动上链机芯，彰显无上尊贵。',
     sku: 'WT-CART-8892',
     image: 'https://images.unsplash.com/photo-1522337360788-5b1a1b1b11b1?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -32,9 +32,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0002',
     name: 'Gilded Amber Niche Perfume 鎏金琥珀沙龙高定香水',
     category: '化妆品',
-    costPrice: 17805,
-    retailPrice: 19800,
-    profit: 1995,
+    costPrice: 120,
+    retailPrice: 135,
+    profit: 15,
     description: '前调乌木与大马士革玫瑰，后调鎏金琥珀与雪松，木质香调神秘而绵长，独居一格的高阶气场。',
     sku: 'PF-AMB-4029',
     image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -43,9 +43,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0003',
     name: 'Pure Gold Handcrafted Ring 18K香槟金手工掐丝戒',
     category: '高级珠宝',
-    costPrice: 220000,
-    retailPrice: 250000,
-    profit: 30000,
+    costPrice: 1500,
+    retailPrice: 1750,
+    profit: 250,
     description: '18K香槟金精工打磨，手工大马士革掐丝纹路，内敛中闪烁着极致的匠人情怀与时光印记。',
     sku: 'JW-RING-9951',
     image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -54,9 +54,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0004',
     name: 'Vintage Master leather Tote 复古意式大容量马鞍皮托特包',
     category: '匠心皮具',
-    costPrice: 320000,
-    retailPrice: 360000,
-    profit: 40000,
+    costPrice: 2100,
+    retailPrice: 2400,
+    profit: 300,
     description: '托斯卡纳顶级植鞣牛皮，全手工油边缝线，随岁月沉淀愈发温润剔透。奢华大容量设计。',
     sku: 'BG-TOTE-1102',
     image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -65,9 +65,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0005',
     name: 'Obsidian Noir Acetate Sunglasses 黑曜石复古醋酸纤维墨镜',
     category: '大师器物',
-    costPrice: 48000,
-    retailPrice: 54000,
-    profit: 6000,
+    costPrice: 320,
+    retailPrice: 360,
+    profit: 40,
     description: '采用日本高密度醋酸纤维，黑曜石纯粹质感，全遮光防紫外线，兼顾问鼎美感与先锋设计。',
     sku: 'EY-OBS-5531',
     image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0084?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -76,9 +76,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0006',
     name: 'Celadon Glazed Ceramic Vase 秘境青瓷大师手作艺术插花瓶',
     category: '大师器物',
-    costPrice: 68000,
-    retailPrice: 76000,
-    profit: 8000,
+    costPrice: 450,
+    retailPrice: 500,
+    profit: 50,
     description: '非遗传承大师亲制，高温窑变秘色青釉，造型敦厚典雅，光影之下温润如碧玉。',
     sku: 'VA-CEL-9022',
     image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -87,9 +87,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0007',
     name: 'Imperial Jadeite Diamond Pendant 极光帝王绿翡翠18K金豪镶吊坠',
     category: '高级珠宝',
-    costPrice: 2850000,
-    retailPrice: 3180000,
-    profit: 330000,
+    costPrice: 19000,
+    retailPrice: 21000,
+    profit: 2000,
     description: '臻选老坑冰种帝王绿翡翠，水头极足，满绿莹润。18K白金搭配重磅南非足反钻石群镶执手，极具典藏价值。',
     sku: 'JW-JAD-0283',
     image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -98,9 +98,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0008',
     name: 'Imperial Sandalwood Soy Candle 帝王之木黑檀大豆香薰蜡烛',
     category: '化妆品',
-    costPrice: 6100,
-    retailPrice: 6800,
-    profit: 700,
+    costPrice: 40,
+    retailPrice: 45,
+    profit: 5,
     description: '手工灌装纯天然大豆蜡，奢华黑檀木与烟草皮革香，于暗夜中燃起微弱光芒，静宜而辽远。',
     sku: 'AC-CAN-3382',
     image: 'https://images.unsplash.com/photo-1603006905503-be475563bc59?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -109,9 +109,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0009',
     name: 'Chanel No.5 Paris Vintage 香奈儿五号经典高定香水',
     category: '香水',
-    costPrice: 23200,
-    retailPrice: 26000,
-    profit: 2800,
+    costPrice: 155,
+    retailPrice: 180,
+    profit: 25,
     description: '永恒经典的女性芬芳，高端醛香与花香的完美邂逅，彰显独立、优雅与摩登。',
     sku: 'PF-CHN-5501',
     image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -120,9 +120,9 @@ const CORE_PRODUCTS = [
     id: 'LP-0010',
     name: 'Dyson Supersonic Ionic 戴森智能复古红控温吹风机',
     category: '家用电器',
-    costPrice: 43800,
-    retailPrice: 48800,
-    profit: 5000,
+    costPrice: 290,
+    retailPrice: 325,
+    profit: 35,
     description: '智能控温技术，高倍气流倍增，复古绯红限定配色，护发气流与沙龙造型的完美平衡。',
     sku: 'AP-DYS-8012',
     image: 'https://images.unsplash.com/photo-1522337360788-5b1a1b1b11b1?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -824,31 +824,31 @@ function generate1000Products(): Product[] {
     const style = STYLES[(idCounter + 2) % STYLES.length];
     const adj = ADJECTIVES[(idCounter + 4) % ADJECTIVES.length];
     
-    // Determine plausible price ranges based on luxury categories in Japanese Yen (JPY)
-    let costPrice = 20000;
+    // Determine plausible price ranges based on luxury categories in US Dollars (USD)
+    let costPrice = 150;
     let markup = 1.12;
     
     if (category === '臻选腕表') {
-      costPrice = 850000 + (idCounter * 12500) % 9500000; // Realistic range: 850,000 to 10,350,000 JPY
+      costPrice = 5500 + (idCounter * 120) % 60000; // Realistic range: $5,500 to $65,500 USD
       markup = 1.08 + ((idCounter % 5) * 0.01); // 8% to 12% commission
     } else if (category === '高级珠宝') {
-      costPrice = 180000 + (idCounter * 7500) % 3500000; // Realistic range: 180,000 to 3,680,000 JPY
+      costPrice = 1200 + (idCounter * 75) % 24000; // Realistic range: $1,200 to $25,200 USD
       markup = 1.10 + ((idCounter % 3) * 0.015); // 10% to 14.5% commission
     } else if (category === '匠心皮具') {
-      costPrice = 220000 + (idCounter * 5000) % 2500000; // Realistic range: 220,000 to 2,720,000 JPY
+      costPrice = 1500 + (idCounter * 50) % 16500; // Realistic range: $1,500 to $18,000 USD
       markup = 1.09 + ((idCounter % 4) * 0.01); // 9% to 12% commission
     } else if (category === '化妆品' || category === '香水') {
-      costPrice = 16000 + (idCounter * 120) % 45000; // Realistic range: 16,000 to 61,000 JPY
+      costPrice = 110 + (idCounter * 2) % 300; // Realistic range: $110 to $410 USD
       markup = 1.11; // 11% flat
     } else if (category === '家用电器') {
-      costPrice = 38000 + (idCounter * 1500) % 450000; // Realistic range: 38,000 to 488,000 JPY
+      costPrice = 250 + (idCounter * 15) % 3000; // Realistic range: $250 to $3,250 USD
       markup = 1.10 + ((idCounter % 4) * 0.01); // 10% to 13% commission
     } else { // 大师器物
-      costPrice = 18000 + (idCounter * 550) % 150000; // Realistic range: 18,000 to 168,000 JPY
+      costPrice = 120 + (idCounter * 5) % 1000; // Realistic range: $120 to $1,120 USD
       markup = 1.12; // 12% flat
     }
 
-    const retailPrice = Math.max(costPrice + 100, Math.round(costPrice * markup / 100) * 100);
+    const retailPrice = Math.max(costPrice + 1, Math.round(costPrice * markup));
     const profit = retailPrice - costPrice;
     
     let itemName = '';

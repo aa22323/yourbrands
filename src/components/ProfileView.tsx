@@ -1190,7 +1190,7 @@ export default function ProfileView({
               <span className="w-1 h-3 bg-[#e51923]"></span>
             </span>
             <div className="text-2.5xl font-mono text-[#e51923] font-black mt-1 tracking-tight">
-              <span className="text-sm font-sans mr-1 font-extrabold">¥</span>
+              <span className="text-sm font-sans mr-1 font-extrabold">$</span>
               {totalGmv.toLocaleString()}
             </div>
           </div>
@@ -1221,7 +1221,7 @@ export default function ProfileView({
               <span className="w-1 h-3 bg-amber-500"></span>
             </span>
             <div className="text-2.5xl font-mono text-amber-600 font-black mt-1 tracking-tight flex items-baseline gap-1">
-              <span className="text-xs font-sans mr-1 font-extrabold">¥</span>
+              <span className="text-xs font-sans mr-1 font-extrabold">$</span>
               <span>{userBalance.toLocaleString()}</span>
             </div>
           </div>
@@ -1259,7 +1259,7 @@ export default function ProfileView({
               <span className="w-1 h-3 bg-emerald-500"></span>
             </span>
             <div className="text-2.5xl font-mono text-emerald-600 font-black mt-1 tracking-tight flex items-baseline gap-1">
-              <span className="text-xs font-sans mr-1 font-extrabold">¥</span>
+              <span className="text-xs font-sans mr-1 font-extrabold">$</span>
               <span>{totalProfit.toLocaleString()}</span>
               {totalProfit > 0 && (
                 <span className="text-[8px] text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded-sm border border-emerald-100 uppercase scale-90">
@@ -1285,7 +1285,7 @@ export default function ProfileView({
               <span className="w-1 h-3 bg-zinc-400"></span>
             </span>
             <div className="text-2.5xl font-mono text-zinc-700 font-black mt-1 tracking-tight flex items-baseline gap-1">
-              <span className="text-xs font-sans mr-1 font-extrabold">¥</span>
+              <span className="text-xs font-sans mr-1 font-extrabold">$</span>
               <span>{totalCostOfShipped.toLocaleString()}</span>
             </div>
           </div>
@@ -1424,7 +1424,7 @@ export default function ProfileView({
                       <p className="text-zinc-500 text-[10px]">{t('quantityLabelCount').replace('{count}', String(order.items[0]?.quantity))}</p>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="font-mono text-zinc-900 font-bold">¥{order.totalPrice.toLocaleString()}</span>
+                      <span className="font-mono text-zinc-900 font-bold">${order.totalPrice.toLocaleString()}</span>
                       <span className="text-[9px] text-[#e51923] font-mono font-bold">{t('netProfitLabel')}{order.totalProfit.toLocaleString()}</span>
                     </div>
                   </div>
@@ -1485,7 +1485,7 @@ export default function ProfileView({
                       <p className="text-zinc-500 text-[10px] font-medium mt-0.5">{t('quantityLabelCount').replace('{count}', String(order.items[0]?.quantity))}</p>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="font-mono text-zinc-900 font-bold">¥{order.totalPrice.toLocaleString()}</span>
+                      <span className="font-mono text-zinc-900 font-bold">${order.totalPrice.toLocaleString()}</span>
                       <span className="text-[10px] text-zinc-400 font-bold mt-0.5">{t('estProfitAmtLabel')}{order.totalProfit.toLocaleString()}</span>
                     </div>
                   </div>
@@ -1542,7 +1542,7 @@ export default function ProfileView({
                       <p className="text-zinc-500 text-[10px] font-medium mt-0.5">{t('quantityLabelCount').replace('{count}', String(order.items[0]?.quantity))}</p>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="font-mono text-zinc-900 font-bold">¥{order.totalPrice.toLocaleString()}</span>
+                      <span className="font-mono text-zinc-900 font-bold">${order.totalPrice.toLocaleString()}</span>
                       <span className="text-[10px] text-emerald-600 font-bold mt-0.5">{t('selfBenefitLabel')}{order.totalProfit.toLocaleString()}</span>
                     </div>
                   </div>
@@ -1661,7 +1661,7 @@ export default function ProfileView({
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="text-[9px] text-zinc-400 font-medium whitespace-nowrap font-sans">{t('selfStockLabelDesc')}</span>
-                      <span className="font-mono text-zinc-900 font-black text-xs sm:text-sm">¥{order.totalPrice.toLocaleString()}</span>
+                      <span className="font-mono text-zinc-900 font-black text-xs sm:text-sm">${order.totalPrice.toLocaleString()}</span>
                       <span className="text-[9px] text-zinc-450 font-bold mt-0.5 select-none text-emerald-600 font-sans">{t('selfAirFreight')}</span>
                     </div>
                   </div>
@@ -1846,7 +1846,7 @@ export default function ProfileView({
                     <div className="flex flex-col gap-1.5 text-left">
                       <span className="text-[9.5px] text-zinc-400 font-bold uppercase tracking-wide">{t('quickPresetTitle')}</span>
                       <div className="grid grid-cols-4 gap-2">
-                        {[10000, 50000, 100000, 300000].map(val => (
+                        {[100, 500, 1000, 3000].map(val => (
                           <button
                             type="button"
                             key={val}
@@ -1856,7 +1856,7 @@ export default function ProfileView({
                             }}
                             className="bg-zinc-50 hover:bg-zinc-100/80 active:scale-95 text-zinc-650 hover:text-zinc-850 py-2 rounded-xl text-xs font-mono font-bold border border-zinc-200 transition-all cursor-pointer"
                           >
-                            ¥{val.toLocaleString()}
+                            ${val.toLocaleString()}
                           </button>
                         ))}
                       </div>
@@ -1938,7 +1938,7 @@ export default function ProfileView({
                           
                           <div className="flex items-baseline justify-between">
                             <span className="text-base font-mono font-black text-amber-600">
-                              - ¥{record.amount.toLocaleString()}
+                              - ${record.amount.toLocaleString()}
                             </span>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold border shadow-3xs ${
                               record.status === '已提交' 
@@ -2015,7 +2015,7 @@ export default function ProfileView({
                       <div className="flex flex-col gap-1.5 text-left">
                         <span className="text-[9.5px] text-zinc-400 font-bold uppercase tracking-wide">{t('quickPresetWithdrawTitle')}</span>
                         <div className="grid grid-cols-4 gap-2">
-                          {[10000, 50000, 100000].map(val => (
+                          {[100, 500, 1000].map(val => (
                             <button
                               type="button"
                               key={val}
@@ -2025,7 +2025,7 @@ export default function ProfileView({
                               }}
                               className="bg-zinc-50 hover:bg-zinc-100/80 active:scale-95 text-zinc-650 hover:text-zinc-850 py-2 rounded-xl text-xs font-mono font-bold border border-zinc-200 transition-all cursor-pointer"
                             >
-                              ¥{val.toLocaleString()}
+                              ${val.toLocaleString()}
                             </button>
                           ))}
                           <button

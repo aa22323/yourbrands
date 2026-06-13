@@ -265,8 +265,8 @@ export default function HomeView({
     {
       id: "P1",
       name: "百达翡丽 Nautilus Ref. 5711 经典钢王蓝盘",
-      originalPrice: "¥ 16,500,000",
-      promoPrice: "¥ 9,800,000",
+      originalPrice: "$165,000",
+      promoPrice: "$98,000",
       discount: "40% OFF",
       rating: "5.0",
       reviewsCount: "420",
@@ -276,8 +276,8 @@ export default function HomeView({
     {
       id: "P2",
       name: "Cartier 卡地亚 Panthère 18K猎豹密镶手镯",
-      originalPrice: "¥ 7,600,000",
-      promoPrice: "¥ 4,980,000",
+      originalPrice: "$76,000",
+      promoPrice: "$49,800",
       discount: "34% OFF",
       rating: "4.9",
       reviewsCount: "135",
@@ -287,8 +287,8 @@ export default function HomeView({
     {
       id: "P3",
       name: "Hermes 爱马仕 Connaître 限量金扣鸵鸟皮 Birkin",
-      originalPrice: "¥ 6,200,000",
-      promoPrice: "¥ 4,150,000",
+      originalPrice: "$62,000",
+      promoPrice: "$41,500",
       discount: "33% OFF",
       rating: "5.0",
       reviewsCount: "98",
@@ -298,8 +298,8 @@ export default function HomeView({
     {
       id: "P4",
       name: "Rolex Daytona Ref.116508 18K黄金 经典绿金迪",
-      originalPrice: "¥ 11,500,000",
-      promoPrice: "¥ 7,850,000",
+      originalPrice: "$115,000",
+      promoPrice: "$78,500",
       discount: "31% OFF",
       rating: "4.9",
       reviewsCount: "310",
@@ -309,8 +309,8 @@ export default function HomeView({
     {
       id: "P5",
       name: "VCA 梵克雅宝 四叶草中号红玉髓项链 18K金镶嵌",
-      originalPrice: "¥ 488,000",
-      promoPrice: "¥ 398,000",
+      originalPrice: "$4,880",
+      promoPrice: "$3,980",
       discount: "18% OFF",
       rating: "4.8",
       reviewsCount: "256",
@@ -320,8 +320,8 @@ export default function HomeView({
     {
       id: "P6",
       name: "Chanel 19系列 经典黑金亮面重磅小羊皮手提袋",
-      originalPrice: "¥ 1,150,000",
-      promoPrice: "¥ 860,000",
+      originalPrice: "$11,500",
+      promoPrice: "$8,600",
       discount: "25% OFF",
       rating: "5.0",
       reviewsCount: "188",
@@ -331,8 +331,8 @@ export default function HomeView({
     {
       id: "P7",
       name: "Audemars Piguet Royal Oak 八角皇家橡树自动表",
-      originalPrice: "¥ 7,500,000",
-      promoPrice: "¥ 4,950,000",
+      originalPrice: "$75,000",
+      promoPrice: "$49,500",
       discount: "34% OFF",
       rating: "4.9",
       reviewsCount: "142",
@@ -342,8 +342,8 @@ export default function HomeView({
     {
       id: "P8",
       name: "BYREDO 百瑞德 荒漠孤魂 顶级沙龙限定香氛 100ml",
-      originalPrice: "¥ 38,500",
-      promoPrice: "¥ 28,000",
+      originalPrice: "$385",
+      promoPrice: "$280",
       discount: "27% OFF",
       rating: "4.7",
       reviewsCount: "389",
@@ -353,8 +353,8 @@ export default function HomeView({
     {
       id: "P9",
       name: "Louis Vuitton KEEPALL 全黑皮独行旅行箱包 50号",
-      originalPrice: "¥ 465,000",
-      promoPrice: "¥ 325,000",
+      originalPrice: "$4,650",
+      promoPrice: "$3,250",
       discount: "30% OFF",
       rating: "4.9",
       reviewsCount: "215",
@@ -809,8 +809,8 @@ export default function HomeView({
               <div className="flex flex-col text-left">
                 <div className="flex items-baseline gap-1 flex-wrap">
                   <span className="text-[10px] text-zinc-400 font-bold">{t('clearanceSpecialPrice')}</span>
-                  <span className="text-sm font-black font-mono text-[#e51923]">¥{Math.round(clearanceProduct.retailPrice * 0.75).toLocaleString()}</span>
-                  <span className="text-[9px] text-zinc-400 line-through">¥{clearanceProduct.retailPrice.toLocaleString()}</span>
+                  <span className="text-sm font-black font-mono text-[#e51923]">${Math.round(clearanceProduct.retailPrice * 0.75).toLocaleString()}</span>
+                  <span className="text-[9px] text-zinc-400 line-through">${clearanceProduct.retailPrice.toLocaleString()}</span>
                 </div>
                 <span className="text-[9px] text-green-600 font-bold mt-0.5">
                   {t('clearanceSaving').replace('{saving}', Math.round(clearanceProduct.retailPrice * 0.25).toLocaleString())}
@@ -894,7 +894,7 @@ export default function HomeView({
                   <div className="flex-grow min-w-0 flex flex-col justify-center">
                     <h5 className="font-sans text-[11.5px] font-bold text-zinc-800 truncate">{p.name}</h5>
                     <div className="flex items-center gap-1.5 mt-1">
-                      <span className="text-[10.5px] font-bold text-[#e51923] font-mono">¥{p.retailPrice.toLocaleString()}</span>
+                      <span className="text-[10.5px] font-bold text-[#e51923] font-mono">${p.retailPrice.toLocaleString()}</span>
                       <span className="text-[9px] bg-red-50 border border-red-100 text-[#e51923] font-bold px-1 rounded scale-90">
                         {t('rankingRatio').replace('{num}', (9 - idx).toString())}
                       </span>
@@ -982,10 +982,10 @@ export default function HomeView({
                     </span>
                     <div className="flex items-baseline gap-1.5">
                       <span className="font-mono text-xs font-black text-[#e51923]">
-                        ¥{translatedP.retailPrice.toLocaleString()}
+                        ${translatedP.retailPrice.toLocaleString()}
                       </span>
                       <span className="text-[9px] text-zinc-400 line-through font-mono">
-                        ¥{Math.round(translatedP.retailPrice * 1.6 / 10) * 10}
+                        ${Math.round(translatedP.retailPrice * 1.6)}
                       </span>
                     </div>
                   </div>
@@ -1328,10 +1328,10 @@ export default function HomeView({
                           <div className="flex justify-between items-end mt-1">
                             <div className="flex items-baseline gap-1">
                               <span className="text-[#e51923] font-mono font-black text-xs">
-                                ¥{translatedP.retailPrice.toLocaleString()}
+                                ${translatedP.retailPrice.toLocaleString()}
                               </span>
                               <span className="text-[9px] text-zinc-450 line-through font-mono">
-                                ¥{originalMockPrice.toLocaleString()}
+                                ${originalMockPrice.toLocaleString()}
                               </span>
                             </div>
 
@@ -1450,7 +1450,7 @@ export default function HomeView({
                     </span>
                   </div>
                   <div className="border-l border-white/20 pl-3 font-mono font-black text-sm tracking-tight shrink-0 text-yellow-101">
-                    {claimedExclusiveCoupon ? t('luxuryBrandsCouponClaimedBtn') : "¥500"}
+                    {claimedExclusiveCoupon ? t('luxuryBrandsCouponClaimedBtn') : "$5"}
                   </div>
                 </motion.div>
               </div>
@@ -1498,10 +1498,10 @@ export default function HomeView({
                           <div className="flex justify-between items-end mt-1">
                             <div className="flex items-baseline gap-1">
                               <span className="text-[#e51923] font-mono font-black text-xs">
-                                ¥{translatedP.retailPrice.toLocaleString()}
+                                ${translatedP.retailPrice.toLocaleString()}
                               </span>
                               <span className="text-[9px] text-zinc-400 line-through font-mono scale-95">
-                                ¥{brandOriginalPrice.toLocaleString()}
+                                ${brandOriginalPrice.toLocaleString()}
                               </span>
                             </div>
 
@@ -1676,7 +1676,7 @@ export default function HomeView({
 
                           <div className="flex justify-between items-end mt-0.5">
                             <span className="text-[#e51923] font-mono font-black text-xs leading-none">
-                              ¥{translatedP.retailPrice.toLocaleString()}
+                              ${translatedP.retailPrice.toLocaleString()}
                             </span>
                             
                             <div className="flex gap-1">
@@ -1842,7 +1842,7 @@ export default function HomeView({
                       <div className="flex flex-col text-left">
                         <span className="text-zinc-400 text-[8.5px] leading-none">{t('liveShotsInspectLabel')}</span>
                         <span className="text-lg font-mono font-black text-[#e51923] mt-1 leading-none">
-                          ¥{correlatedProduct ? correlatedProduct.retailPrice.toLocaleString() : "9,980"}
+                          ${correlatedProduct ? correlatedProduct.retailPrice.toLocaleString() : "99"}
                         </span>
                       </div>
 

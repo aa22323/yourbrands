@@ -1645,7 +1645,7 @@ export default function App() {
         '订单分帐到账',
         order.totalPrice,
         '已到账',
-        `奢选商铺完成交割，订单序列号: ${order.id}，含回笼采购采购垫付本金 (¥${(order.totalPrice - order.totalProfit).toLocaleString()}) 与出货利润 (¥${order.totalProfit.toLocaleString()}) 全额到账`
+        `奢选商铺完成交割，订单序列号: ${order.id}，含回笼采购采购垫付本金 ($${(order.totalPrice - order.totalProfit).toLocaleString()}) 与出货利润 ($${order.totalProfit.toLocaleString()}) 全额到账`
       );
     }
   };
@@ -2318,7 +2318,7 @@ export default function App() {
                 '推广追加投流',
                 -amount,
                 '已扣除',
-                `对店铺商品橱窗追加推广宣发投流预算: ¥${amount.toLocaleString()}`
+                `对店铺商品橱窗追加推广宣发投流预算: $${amount.toLocaleString()}`
               );
             }}
             language={appLanguage}

@@ -4,24 +4,45 @@ import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "firebase/firestore";
+import { initializeApp as initializeAdminApp, cert } from "firebase-admin";
+import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
 
 const PORT = 3000;
 const DB_FILE = path.join(process.cwd(), "database.json");
 const CONFIG_FILE = path.join(process.cwd(), "firebase-applet-config.json");
+const SERVICE_ACCOUNT_FILE = path.join(process.cwd(), "firebase-service-account.json");
 
 let db: any = null;
+let adminDb: any = null;
 
+// 1. Initialize Firebase Admin SDK (with Service Account Credentials)
+try {
+  if (fs.existsSync(SERVICE_ACCOUNT_FILE)) {
+    const serviceAccount = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_FILE, "utf-8"));
+    const adminApp = initializeAdminApp({
+      credential: cert(serviceAccount)
+    });
+    adminDb = getAdminFirestore(adminApp);
+    console.log("Firebase Admin SDK successfully initialized for project:", serviceAccount.project_id);
+  } else {
+    console.warn("firebase-service-account.json not found on backend. Falling back to Client SDK.");
+  }
+} catch (e) {
+  console.error("Failed to initialize Firebase Admin SDK", e);
+}
+
+// 2. Initialize Firebase Web Client SDK fallback
 try {
   if (fs.existsSync(CONFIG_FILE)) {
     const config = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"));
     const firebaseApp = initializeApp(config);
     db = getFirestore(firebaseApp, config.firestoreDatabaseId);
-    console.log("Firebase initialized successfully with project ID:", config.projectId);
+    console.log("Firebase Client SDK initialized with project ID:", config.projectId);
   } else {
-    console.warn("firebase-applet-config.json not found. Falling back to local filesystem.");
+    console.warn("firebase-applet-config.json not found. Falling back to local filesystem cache.");
   }
 } catch (e) {
-  console.error("Failed to initialize Firebase", e);
+  console.error("Failed to initialize Firebase Client SDK fallback", e);
 }
 
 const DEFAULT_SHOP = {
@@ -49,7 +70,7 @@ const INITIAL_DB = {
       name: 'admin',
       password: '123456',
       id: '28401',
-      balance: 4800000,
+      balance: 48000,
       shop: DEFAULT_SHOP,
       orders: DEFAULT_ORDERS,
       financialLogs: [
@@ -57,7 +78,7 @@ const INITIAL_DB = {
           id: 'TX-20260529-1025',
           type: 'settlement',
           typeLabel: '订单交割分润',
-          amount: 140000,
+          amount: 1400,
           status: '已到账',
           description: '卡地亚经典勃艮第红机械表 [LP-0001] 交割出货秒级分佣入账',
           createdAt: '2026-05-29 11:15:32'
@@ -65,19 +86,19 @@ const INITIAL_DB = {
         {
           id: 'TX-20260528-0955',
           type: 'withdraw',
-          typeLabel: '三井住友提现',
-          amount: -30000,
+          typeLabel: '银行账户提现',
+          amount: -300,
           status: '成功',
-          description: '提现至三井住友银行 (渋谷支店 尾号8899)',
+          description: '提现至银行账户 (尾号8899)',
           createdAt: '2026-05-28 14:24:12'
         }
       ],
       withdrawHistory: [
         {
           id: 'WD-20260528-085',
-          amount: 30000,
-          bankName: '三井住友银行',
-          branchName: '渋谷支店',
+          amount: 300,
+          bankName: '银行账户',
+          branchName: '总行',
           branchNo: '232',
           fullName: '雅领高奢美学',
           bankCard: '622202******8899',
@@ -105,13 +126,69 @@ const INITIAL_DB = {
   }
 };
 
+function migrateDatabaseToUsd(db: any) {
+  if (!db) return db;
+  if (db.currency === "USD") {
+    return db;
+  }
+  
+  db.currency = "USD";
+  
+  if (db.merchantsDb) {
+    for (const key of Object.keys(db.merchantsDb)) {
+      const m = db.merchantsDb[key];
+      if (m) {
+        if (typeof m.balance === "number") {
+          // If the balance is JPY, divide by 100 to convert to reasonable USD
+          m.balance = Math.round((m.balance / 100) * 100) / 100;
+        }
+        
+        if (Array.isArray(m.orders)) {
+          m.orders.forEach((o: any) => {
+            if (typeof o.totalPrice === "number") o.totalPrice = Math.round((o.totalPrice / 100) * 100) / 100;
+            if (typeof o.totalProfit === "number") o.totalProfit = Math.round((o.totalProfit / 100) * 100) / 100;
+            if (Array.isArray(o.items)) {
+              o.items.forEach((item: any) => {
+                if (typeof item.retailPrice === "number") item.retailPrice = Math.round((item.retailPrice / 100) * 100) / 100;
+                if (typeof item.costPrice === "number") item.costPrice = Math.round((item.costPrice / 100) * 100) / 100;
+              });
+            }
+          });
+        }
+        
+        if (Array.isArray(m.financialLogs)) {
+          m.financialLogs.forEach((log: any) => {
+            if (typeof log.amount === "number") log.amount = Math.round((log.amount / 100) * 100) / 100;
+            if (log.description) {
+              log.description = log.description.replace(/¥/g, "$");
+            }
+          });
+        }
+        
+        if (Array.isArray(m.withdrawHistory)) {
+          m.withdrawHistory.forEach((w: any) => {
+            if (typeof w.amount === "number") w.amount = Math.round((w.amount / 100) * 100) / 100;
+            if (w.bankName === '三井住友银行') {
+              w.bankName = '银行账户';
+              w.branchName = '总行';
+            }
+          });
+        }
+      }
+    }
+  }
+  return db;
+}
+
 let cachedDb = INITIAL_DB;
 
 // Load local cache on startup synchronously
 try {
   if (fs.existsSync(DB_FILE)) {
     const content = fs.readFileSync(DB_FILE, "utf-8");
-    cachedDb = JSON.parse(content);
+    cachedDb = migrateDatabaseToUsd(JSON.parse(content));
+    // Immediately write back migrated structure locally
+    fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
   } else {
     fs.writeFileSync(DB_FILE, JSON.stringify(INITIAL_DB, null, 2), "utf-8");
     cachedDb = INITIAL_DB;
@@ -121,27 +198,62 @@ try {
 }
 
 async function getDbFromFirebase() {
-  if (!db) {
+  if (!adminDb && !db) {
     return { ...cachedDb, _isFallback: true };
   }
   try {
-    const docRef = doc(db, "system_data", "aliexpress_database");
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      cachedDb = {
-        registeredUsers: data.registeredUsers || cachedDb.registeredUsers || [],
-        merchantsDb: data.merchantsDb || cachedDb.merchantsDb || {}
-      };
-      // Async backup
-      fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
-        if (err) console.error("Error backing up file-system cache:", err);
-      });
-      return { ...cachedDb, _isFallback: false };
+    if (adminDb) {
+      // Use Firebase Admin SDK
+      const docSnap = await adminDb.collection("system_data").doc("aliexpress_database").get();
+      if (docSnap.exists) {
+        const data = docSnap.data();
+        let loadedDb = {
+          registeredUsers: data.registeredUsers || cachedDb.registeredUsers || [],
+          merchantsDb: data.merchantsDb || cachedDb.merchantsDb || {},
+          currency: data.currency
+        };
+        const needsRemoteSave = loadedDb.currency !== "USD";
+        cachedDb = migrateDatabaseToUsd(loadedDb);
+        // Async backup to local json
+        fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
+          if (err) console.error("Error backing up file-system cache:", err);
+        });
+        if (needsRemoteSave) {
+          console.log("Saving migrated USD database back to Admin Firebase...");
+          await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+        }
+        return { ...cachedDb, _isFallback: false };
+      } else {
+        console.log("No database document found in Admin Firestore. Seeding database state...");
+        await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+        return { ...cachedDb, _isFallback: false };
+      }
     } else {
-      console.log("No database document found in Firestore. Seeding database state...");
-      await setDoc(docRef, cachedDb);
-      return { ...cachedDb, _isFallback: false };
+      // Use Client SDK fallback
+      const docRef = doc(db, "system_data", "aliexpress_database");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        let loadedDb = {
+          registeredUsers: data.registeredUsers || cachedDb.registeredUsers || [],
+          merchantsDb: data.merchantsDb || cachedDb.merchantsDb || {},
+          currency: data.currency
+        };
+        const needsRemoteSave = loadedDb.currency !== "USD";
+        cachedDb = migrateDatabaseToUsd(loadedDb);
+        fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
+          if (err) console.error("Error backing up file-system cache:", err);
+        });
+        if (needsRemoteSave) {
+          console.log("Saving migrated USD database back to Client Firebase...");
+          await setDoc(docRef, cachedDb);
+        }
+        return { ...cachedDb, _isFallback: false };
+      } else {
+        console.log("No database document found in Client Firestore. Seeding database state...");
+        await setDoc(docRef, cachedDb);
+        return { ...cachedDb, _isFallback: false };
+      }
     }
   } catch (e) {
     console.error("Failed to fetch from Firebase, using current cache:", e);
@@ -157,12 +269,17 @@ async function saveDbToFirebase(incomingUsers: any, incomingMerchants: any) {
     if (err) console.error("Error backing up file-system cache during save:", err);
   });
 
-  if (!db) return;
+  if (!adminDb && !db) return;
 
   try {
-    const docRef = doc(db, "system_data", "aliexpress_database");
-    await setDoc(docRef, cachedDb);
-    console.log("Successfully synchronized state to cloud Firebase Firestore.");
+    if (adminDb) {
+      await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+      console.log("Successfully synchronized state to cloud Firestore using Admin SDK.");
+    } else {
+      const docRef = doc(db, "system_data", "aliexpress_database");
+      await setDoc(docRef, cachedDb);
+      console.log("Successfully synchronized state to cloud Firestore using Client SDK fallback.");
+    }
   } catch (e) {
     console.error("Failed to save state to Firebase Firestore:", e);
   }
@@ -180,20 +297,34 @@ async function startServer() {
 
   // Diagnostic Endpoint
   app.get("/api/check-firestore", async (req, res) => {
-    if (!db) {
-      return res.status(500).json({ error: "Firestore is not initialized." });
+    if (!adminDb && !db) {
+      return res.status(500).json({ error: "Firestore is not initialized on backend." });
     }
     try {
-      const colRef = collection(db, "system_data");
-      const snap = await getDocs(colRef);
-      const docsList = snap.docs.map(doc => ({
-        id: doc.id,
-        keys: doc.data() ? Object.keys(doc.data()) : []
-      }));
-      res.json({
-        totalDocuments: docsList.length,
-        documents: docsList
-      });
+      if (adminDb) {
+        const snap = await adminDb.collection("system_data").get();
+        const docsList = snap.docs.map((doc: any) => ({
+          id: doc.id,
+          keys: doc.data() ? Object.keys(doc.data()) : []
+        }));
+        res.json({
+          initializedBy: "Firebase Admin SDK",
+          totalDocuments: docsList.length,
+          documents: docsList
+        });
+      } else {
+        const colRef = collection(db, "system_data");
+        const snap = await getDocs(colRef);
+        const docsList = snap.docs.map(doc => ({
+          id: doc.id,
+          keys: doc.data() ? Object.keys(doc.data()) : []
+        }));
+        res.json({
+          initializedBy: "Firebase Client SDK Fallback",
+          totalDocuments: docsList.length,
+          documents: docsList
+        });
+      }
     } catch (err: any) {
       res.status(500).json({ error: err.message || err.toString() });
     }
