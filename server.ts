@@ -180,7 +180,7 @@ function migrateDatabaseToUsd(db: any) {
   return db;
 }
 
-let cachedDb = INITIAL_DB;
+let cachedDb: any = INITIAL_DB;
 
 // Load local cache on startup synchronously
 try {
@@ -206,11 +206,24 @@ async function getDbFromFirebase() {
       // Use Firebase Admin SDK
       const docSnap = await adminDb.collection("system_data").doc("aliexpress_database").get();
       if (docSnap.exists) {
-        const data = docSnap.data();
+        const data = docSnap.data() || {};
+        
+        // COLLISION RESOLUTION: If remote firestore data is OLDER than our local cached write, do not discard our local writes!
+        const remoteTime = data.updatedAt || 0;
+        const localTime = cachedDb.updatedAt || 0;
+        if (localTime > remoteTime) {
+          console.log(`[Admin] Local filesystem cache is newer (${localTime}) than Firestore remote data (${remoteTime}). Keeping local cache and sync-pushing to Firestore in background.`);
+          adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb).catch((err: any) => {
+            console.error("Failed background-push to Admin Firestore:", err);
+          });
+          return { ...cachedDb, _isFallback: false };
+        }
+
         let loadedDb = {
           registeredUsers: data.registeredUsers || cachedDb.registeredUsers || [],
           merchantsDb: data.merchantsDb || cachedDb.merchantsDb || {},
-          currency: data.currency
+          currency: data.currency,
+          updatedAt: data.updatedAt || 0
         };
         const needsRemoteSave = loadedDb.currency !== "USD";
         cachedDb = migrateDatabaseToUsd(loadedDb);
@@ -225,6 +238,7 @@ async function getDbFromFirebase() {
         return { ...cachedDb, _isFallback: false };
       } else {
         console.log("No database document found in Admin Firestore. Seeding database state...");
+        cachedDb.updatedAt = Date.now();
         await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
         return { ...cachedDb, _isFallback: false };
       }
@@ -233,11 +247,24 @@ async function getDbFromFirebase() {
       const docRef = doc(db, "system_data", "aliexpress_database");
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        const data = docSnap.data();
+        const data = docSnap.data() || {};
+        
+        // COLLISION RESOLUTION: If remote firestore data is OLDER than our local cached write, do not discard our local writes!
+        const remoteTime = data.updatedAt || 0;
+        const localTime = cachedDb.updatedAt || 0;
+        if (localTime > remoteTime) {
+          console.log(`[Client Fallback] Local filesystem cache is newer (${localTime}) than Firestore remote data (${remoteTime}). Keeping local cache and sync-pushing to Firestore in background.`);
+          setDoc(docRef, cachedDb).catch((err: any) => {
+            console.error("Failed background-push to Client Firestore:", err);
+          });
+          return { ...cachedDb, _isFallback: false };
+        }
+
         let loadedDb = {
           registeredUsers: data.registeredUsers || cachedDb.registeredUsers || [],
           merchantsDb: data.merchantsDb || cachedDb.merchantsDb || {},
-          currency: data.currency
+          currency: data.currency,
+          updatedAt: data.updatedAt || 0
         };
         const needsRemoteSave = loadedDb.currency !== "USD";
         cachedDb = migrateDatabaseToUsd(loadedDb);
@@ -251,6 +278,7 @@ async function getDbFromFirebase() {
         return { ...cachedDb, _isFallback: false };
       } else {
         console.log("No database document found in Client Firestore. Seeding database state...");
+        cachedDb.updatedAt = Date.now();
         await setDoc(docRef, cachedDb);
         return { ...cachedDb, _isFallback: false };
       }
@@ -264,6 +292,7 @@ async function getDbFromFirebase() {
 async function saveDbToFirebase(incomingUsers: any, incomingMerchants: any) {
   if (incomingUsers) cachedDb.registeredUsers = incomingUsers;
   if (incomingMerchants) cachedDb.merchantsDb = incomingMerchants;
+  cachedDb.updatedAt = Date.now(); // SET Newer write timestamp!
 
   fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
     if (err) console.error("Error backing up file-system cache during save:", err);

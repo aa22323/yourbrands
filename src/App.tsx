@@ -651,11 +651,14 @@ export default function App() {
     // Set last mutation time to locked to prevent pulling older state from server during propagation
     lastMutationTimeRef.current = Date.now();
 
+    const nowTime = Date.now();
+
     // To prevent QuotaExceededError (which halts React execution with a white screen),
     // we must sanitize merchantsDb to strip the heavy Base64 image strings before saving to localStorage!
     // These heavy images are already backed up in individual system_data Firestore documents anyway,
     // and are loaded and merged dynamically on page boot.
     const localSanitizedDb = { ...merchantsDb };
+    localSanitizedDb.updatedAt = nowTime;
     if (localSanitizedDb.system_config) {
       const lightImages: Record<string, number | boolean> = {};
       const currentImages = localSanitizedDb.system_config.customProductImages || {};
@@ -691,6 +694,9 @@ export default function App() {
 
     // Build highly optimized update arguments using FieldPath to prevent dot nesting issues inside emails!
     const updateArgs: any[] = [];
+
+    // Always include updatedAt in direct Firestore updates to keep database timestamp fresh
+    updateArgs.push('updatedAt', nowTime);
 
     // 1. If registeredUsers changed, synchronize the array
     if (!lastFetchedDataRef.current || JSON.stringify(registeredUsers) !== JSON.stringify(lastFetchedDataRef.current.registeredUsers)) {
@@ -760,6 +766,7 @@ export default function App() {
 
       // Extract sanitized merchantsDb for both local setDoc fallback and Express backend POST payload
       const sanitizedMerchantsDb = { ...merchantsDb };
+      sanitizedMerchantsDb.updatedAt = nowTime;
       if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
         sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
       } else if (sanitizedMerchantsDb.system_config) {
