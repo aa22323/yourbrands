@@ -359,6 +359,10 @@ export default function App() {
       };
       
       let finalMerchants = { ...incomingMerchants };
+      // Permanently strip legacy non-merchant metadata keys from the merchants dictionary
+      delete finalMerchants.updatedAt;
+      delete finalMerchants.currency;
+
       Object.keys(finalMerchants).forEach(k => {
         if (k === 'system_config') {
           normalizedMerchants[k] = finalMerchants[k];
@@ -554,7 +558,12 @@ export default function App() {
     try {
       const stored = localStorage.getItem('aliexpress_merchants_database_v2');
       if (stored) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') {
+          delete parsed.updatedAt;
+          delete parsed.currency;
+        }
+        return parsed;
       }
     } catch (e) {
       console.error(e);
@@ -658,7 +667,9 @@ export default function App() {
     // These heavy images are already backed up in individual system_data Firestore documents anyway,
     // and are loaded and merged dynamically on page boot.
     const localSanitizedDb = { ...merchantsDb };
-    localSanitizedDb.updatedAt = nowTime;
+    // Track the updatedAt metadata in local storage independently, not inside the merchants map itself!
+    localStorage.setItem('aliexpress_merchants_database_updated_at', String(nowTime));
+    
     if (localSanitizedDb.system_config) {
       const lightImages: Record<string, number | boolean> = {};
       const currentImages = localSanitizedDb.system_config.customProductImages || {};
@@ -766,7 +777,6 @@ export default function App() {
 
       // Extract sanitized merchantsDb for both local setDoc fallback and Express backend POST payload
       const sanitizedMerchantsDb = { ...merchantsDb };
-      sanitizedMerchantsDb.updatedAt = nowTime;
       if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
         sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
       } else if (sanitizedMerchantsDb.system_config) {

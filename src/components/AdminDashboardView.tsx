@@ -119,17 +119,18 @@ export default function AdminDashboardView({
 
   // Get keys of all merchants in DB (Memoized and Filtered by Salesman with Self-shop Support)
   const merchantKeys = useMemo(() => {
-    const keys = Object.keys(merchantsDb).filter(k => k !== 'system_config');
+    const keys = Object.keys(merchantsDb || {}).filter(k => k !== 'system_config' && k !== 'updatedAt' && k !== 'currency');
+    const userKeyLower = (currentUser || '').toLowerCase();
     if (!isSalesman) return keys;
-    const match = registeredUsers.find(u => u.name.toLowerCase() === currentUser.toLowerCase());
+    const match = registeredUsers.find(u => u.name.toLowerCase() === userKeyLower);
     const salesmanId = match?.id;
     return keys.filter(k => {
       const m = merchantsDb[k];
-      if (!m) return false;
+      if (!m || typeof m !== 'object') return false;
       const promotedBy = m.promotedBy?.toLowerCase() || '';
       return (
-        k === currentUser.toLowerCase() ||
-        promotedBy === currentUser.toLowerCase() ||
+        k === userKeyLower ||
+        promotedBy === userKeyLower ||
         (salesmanId && promotedBy === salesmanId.toLowerCase())
       );
     });
@@ -139,8 +140,9 @@ export default function AdminDashboardView({
   const filteredMerchantKeys = useMemo(() => {
     return merchantKeys.filter(key => {
       const merchant = merchantsDb[key];
-      const matchName = merchant.name.toLowerCase().includes(merchantSearch.toLowerCase());
-      const matchId = merchant.id?.includes(merchantSearch);
+      if (!merchant || typeof merchant !== 'object' || !merchant.name) return false;
+      const matchName = (merchant.name || '').toLowerCase().includes((merchantSearch || '').toLowerCase());
+      const matchId = (merchant.id || '').includes(merchantSearch || '');
       return matchName || matchId;
     });
   }, [merchantKeys, merchantsDb, merchantSearch]);
@@ -174,10 +176,10 @@ export default function AdminDashboardView({
   // Count stores per promoter / referral
   const promoterStoreCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    Object.keys(merchantsDb).forEach(k => {
-      if (k === 'system_config') return;
+    Object.keys(merchantsDb || {}).forEach(k => {
+      if (k === 'system_config' || k === 'updatedAt' || k === 'currency') return;
       const m = merchantsDb[k];
-      if (m && m.promotedBy) {
+      if (m && typeof m === 'object' && m.promotedBy) {
         const p = m.promotedBy.toLowerCase();
         counts[p] = (counts[p] || 0) + 1;
       }
@@ -190,7 +192,7 @@ export default function AdminDashboardView({
   const grandTotalBalance = useMemo(() => {
     return merchantKeys.reduce((sum, k) => {
       const m = merchantsDb[k];
-      return sum + (m ? m.balance || 0 : 0);
+      return sum + (m && typeof m === 'object' ? m.balance || 0 : 0);
     }, 0);
   }, [merchantKeys, merchantsDb]);
   
@@ -198,8 +200,8 @@ export default function AdminDashboardView({
   const grandTotalProfit = useMemo(() => {
     return merchantKeys.reduce((sum, key) => {
       const m = merchantsDb[key];
-      if (!m) return sum;
-      const completedOrders = (m.orders || []).filter((o: any) => o.status === 'completed' && !o.isSelfOrder);
+      if (!m || typeof m !== 'object') return sum;
+      const completedOrders = (m.orders || []).filter((o: any) => o && o.status === 'completed' && !o.isSelfOrder);
       return sum + completedOrders.reduce((acc: number, o: any) => acc + (o.totalProfit || 0), 0);
     }, 0);
   }, [merchantKeys, merchantsDb]);
@@ -751,18 +753,20 @@ export default function AdminDashboardView({
     const list: AggregateOrder[] = [];
     merchantKeys.forEach(mKey => {
       const merchant = merchantsDb[mKey];
-      if (merchant && Array.isArray(merchant.orders)) {
+      if (merchant && typeof merchant === 'object' && Array.isArray(merchant.orders)) {
         merchant.orders.forEach((o: Order) => {
-          list.push({
-            merchantKey: mKey,
-            merchantName: merchant.shop?.name || merchant.name,
-            order: o,
-            promotedBy: merchant.promotedBy
-          });
+          if (o && o.id) {
+            list.push({
+              merchantKey: mKey,
+              merchantName: merchant.shop?.name || merchant.name || mKey,
+              order: o,
+              promotedBy: merchant.promotedBy
+            });
+          }
         });
       }
     });
-    return list.sort((a, b) => b.order.id.localeCompare(a.order.id));
+    return list.sort((a, b) => (b.order.id || '').localeCompare(a.order.id || ''));
   }, [merchantKeys, merchantsDb]);
 
   // Collect all withdrawals from all merchants in the system (Memoized and Sorted)
@@ -785,17 +789,19 @@ export default function AdminDashboardView({
     const list: AggregateWithdraw[] = [];
     merchantKeys.forEach(mKey => {
       const merchant = merchantsDb[mKey];
-      if (merchant && Array.isArray(merchant.withdrawHistory)) {
+      if (merchant && typeof merchant === 'object' && Array.isArray(merchant.withdrawHistory)) {
         merchant.withdrawHistory.forEach((rec: any) => {
-          list.push({
-            merchantKey: mKey,
-            merchantName: merchant.shop?.name || merchant.name,
-            record: rec
-          });
+          if (rec && rec.createdAt) {
+            list.push({
+              merchantKey: mKey,
+              merchantName: merchant.shop?.name || merchant.name || mKey,
+              record: rec
+            });
+          }
         });
       }
     });
-    return list.sort((a, b) => b.record.createdAt.localeCompare(a.record.createdAt));
+    return list.sort((a, b) => (b.record.createdAt || '').localeCompare(a.record.createdAt || ''));
   }, [merchantKeys, merchantsDb]);
 
   // Collect all recharges from all merchants in the system (Memoized and Sorted)
@@ -816,19 +822,19 @@ export default function AdminDashboardView({
     const list: AggregateRecharge[] = [];
     merchantKeys.forEach(mKey => {
       const merchant = merchantsDb[mKey];
-      if (merchant && Array.isArray(merchant.financialLogs)) {
+      if (merchant && typeof merchant === 'object' && Array.isArray(merchant.financialLogs)) {
         merchant.financialLogs.forEach((tx: any) => {
-          if (tx.type === 'recharge' && (tx.typeLabel.includes('充值') || tx.typeLabel.includes('注资'))) {
+          if (tx && tx.type === 'recharge' && (tx.typeLabel?.includes('充值') || tx.typeLabel?.includes('注资'))) {
             list.push({
               merchantKey: mKey,
-              merchantName: merchant.shop?.name || merchant.name,
+              merchantName: merchant.shop?.name || merchant.name || mKey,
               transaction: tx
             });
           }
         });
       }
     });
-    return list.sort((a, b) => b.transaction.createdAt.localeCompare(a.transaction.createdAt));
+    return list.sort((a, b) => (b.transaction.createdAt || '').localeCompare(a.transaction.createdAt || ''));
   }, [merchantKeys, merchantsDb]);
 
   // Product Filter for dispatching (Memoized to prevent lag during form typing and support sorting)
