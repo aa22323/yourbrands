@@ -3443,139 +3443,58 @@ const COSMETICS_TRANSLATIONS: Record<string, Record<Exclude<AppLanguage, 'zh'>, 
     ko: { name: '화산재 딥 젠틀 클렌징 무스', desc: '미세다공성 화산재 공법을 활용해 자극 없이 모공 속 침투한 잔여 노폐물과 초미세 먼지를 자석처럼 끌어당기는 모공 세안제.' },
     vi: { name: 'Sữa Rửa Mặt Tạo Bọt Tro Núi Lửa Sâu Dịu Nhẹ', desc: 'Lớp bọt mịn như bông chứa tro núi lửa xốp siêu vi hút hạt bụi bẩn bã nhờn ẩn sâu dưới da một cách cực kỳ dịu nhẹ.' }
   },
-  '雪松白茶赋活微粒修护肌底液': {
+    '雪松白茶赋活微粒修护肌底液': {
     en: { name: 'Cedarwood & White Tea Revitalizing Serum Pre-Essence', desc: 'Combining protective white tea antioxidants with soothing alpine cedar oils. Restores natural clarity and dynamic cellular self-repair.' },
     es: { name: 'Suero Reparador de Té Blanco y Cedro', desc: 'Sinergia antioxidante de té blanco y aceite de cedro alpino que promueve la autoreparación celular natural.' },
-    ja: { name: 'シダーウッド＆ホワイトティー リバイタライジング プレ美容液', desc: '白茶（ホワイトティー）の抗酸化力とアルプスシダーの治癒力。バリア機能をサポートし、透明感のある肌的土台をつくる美容液。' },
-    ko: { name: '시다우드 & 화이트티 리바이탈라이징 에센스 세럼', desc: '백차의 풍부한 항산화 에너지와 시다우드의 보습막이 세포 자생을 부스팅하여 투명하게 다스리는 퍼스트 세럼.' },
-    vi: { name: 'Tinh Chất Nền Phục Hồi Tuyết Tùng Trà Trắng', desc: 'Hợp chất trà trắng chống oxy hóa kết hợp tinh dầu tuyết tùng xoa dịu làn da mệt mỏi, thúc đẩy phục hồi sâu khỏe đẹp tự nhiên.' }
-  },
-  '黑檀木致臻丰盈滋润修护精华油': {
-    en: { name: 'Ebony Wood Ultimate Nourishing Restorative Oil', desc: 'A bespoke botanical lipid oil complex containing rare ebony seed essences. Floods dry membranes with structural elasticity without greasy residue.' },
-    es: { name: 'Aceite Facial Restaurador de Ébano', desc: 'Lípidos botánicos infundidos con semilla de ébano que restauran la elasticidad cutánea con una textura seca y aterciopelada.' },
-    ja: { name: 'エボニーウッド アルティメット ヌーリッシング フェイシャルオイル', desc: '希少なエボニー（黒檀）種子エキスをブレンド。べたつかず肌に溶け込み、豊かなうるおいと上質なハリを与えるフェイシャルオイル。' },
-    ko: { name: '에보니 우드 얼티메이트 너리싱 페이셜 오일', desc: '희소한 에보니 씨드 추출물과 프리미엄 식물성 지질 처방으로 건조함에 치우친 영양막을 신속히 융해하고 탄성을 회복시키는 힐링 오일.' },
-    vi: { name: 'Dầu Dưỡng Phục Hồi Da Gỗ Mun Quý Hiếm', desc: 'Chiết xuất từ hạt gỗ mun cô đặc và chất béo tự nhiên thẩm thấu tức thì, không gây bóng nhờn mà khôi phục độ mọng đầy trẻ trung.' }
-  },
-  '磨砂玫瑰高显色持久定妆散粉': {
-    en: { name: 'Frosted Rose High-Definition Set Powder', desc: 'Extremely fine, light-refracting minerals capturing a soft-focus rosy filter. Seamlessly holds foundation blocks without dry caking.' },
-    es: { name: 'Polvos de Acabado Alta Definición Frosted Rose', desc: 'Polvos ultrafinos de contorno mineral translúcidos con tonos rosas que fijan el maquillaje dándole un difuminado sutil.' },
-    ja: { name: 'フロストローズ ルース セッティングパウダー', desc: '極微細な光反射ミネラルを贅沢に使用。テカリをコントロールし、一日中シルキーな美肌に保つフィニッシングパウダー。' },
-    ko: { name: '프로스티드 로즈 HD 루스 세팅 파우더', desc: '깃털처럼 가벼운 미세 장미 파우더 입자가 모공을 포진하고 실키한 소프트 포커스를 보장해 오래 무너지지 않는 마무리 산제.' },
-    vi: { name: 'Phấn Phủ Dạng Bột Hồng Nhung Kiềm Dầu Chụp Studio', desc: 'Hạt phấn siêu vi khúc xạ ánh sáng nhẹ nhàng như lớp kính mờ, cố định lớp nền không mốc nứt, kiềm dầu cực kỳ tinh xảo.' }
-  },
-  '极光奇迹焕颜修护安瓶': {
-    en: { name: 'Aurora Miracle Cell Renewal Rescue Ampoules', desc: 'High-concentration repair serum designed for fragile or exhausted skins. Promotes cell proliferation to quickly calm redness and irritation.' },
-    es: { name: 'Ampollas de Rescate Celular Aurora Miracle', desc: 'Fórmula de suero concentrada de choque para pieles sensibles para aliviar irritaciones promoviendo elasticidad inmediata.' },
-    ja: { name: 'オーロラ ミラクル セルリペア レスキューアンプル', desc: '外的刺激や疲労によって傷んだ肌に。濃厚セラミド処方で瞬時に赤みを抑え、若々しいふっくら肌に戻す集中ケアアンプル。' },
-    ko: { name: '오로라 미라클 셀 리페어 레스큐 앰플', desc: '외부 악조건에 노출되어 지친 피부를 즉시 보호하는 긴급 세럼. 빠른 진정과 활력 에너지를 주사하는 메이크업 스페셜 앰플.' },
-    vi: { name: 'Huyết Thanh Cứu Cánh Tế Bào Phục Hồi Cấp Tốc Aurora', desc: 'Tinh chất cô đặc nồng độ cao dành riêng cho da yếu xỉn màu mệt mỏi, làm dịu mẩn đỏ kích ứng và phục hồi hàng rào phòng ngự da.' }
-  },
-  '冰川急救密集透润水光蚕丝面膜': {
-    en: { name: 'Glacier Deep-Hydration Soothing Silk Mask', desc: 'Made from premium mulberry silk loaded with clean glacier water and triple hyaluronic block. Targets intense dehydration and tight dry discomfort.' },
-    es: { name: 'Mascarilla de Seda Hidratante Glaciar Profundo', desc: 'Elaborada con seda de morera orgánica con agua de glaciar alpino para hidratar la piel propensa a la deshidratación.' },
-    ja: { name: '氷河ウォーター ディーパハイドレーション シルクマスク', desc: '極上のシルクシートに氷河から採集したピュアな水とヒアルロン酸を浸透。ひんやり肌を引き締めながら満ちるうるおい。' },
-    ko: { name: '빙하수 고보습 집중 수분 벨벳 실크마스크', desc: '알프스 청정 빙하수와 트리플 히알루론산을 최고급 천연 누에고치 실크 시트에 침투시켜 푸석거리는 살결에 속건조를 타파합니다.' },
-    vi: { name: 'Mặt Nạ Tơ Tằm Cấp Nước Khẩn Cấp Nước Băng Glacier', desc: 'Đắp dồi dào nước khoáng sạch vùng sông băng cùng 3 lớp phân tử phân cực axit hyaluronic thẩm thấu sâu, xua tan ngay ngứa rát, khô căng.' }
-  },
-  '法国皇家橙花清爽精萃爽肤水': {
-    en: { name: 'Royal Neroli French Refreshing Toner', desc: 'Features fresh orange blossom dew from France. Gently balances natural pH, limits excess pore size, and leaves skin soft and revitalized.' },
-    es: { name: 'Tóner Equilibrante de Azahar Francés Neroli', desc: 'Tóner refrescante de destilado de flor de azahar orgánica que equilibra el pH y suaviza la textura de los poros.' },
-    ja: { name: 'ロワイヤル ネロリ フレンチ リフレッシュ トナー', desc: '南仏の澄んだ空気で育てられた天然ネロリウォーター。水分バランスを健やかに整え、肌をみずみずしく潤します。' },
-    ko: { name: '프렌치 로열 네롤리 오렌지 플라워 프레시 토너', desc: '프랑스 남부의 천연 유기농 네롤리 오렌지 꽃수 원액 처방으로 모공을 정돈하고 약산성 피부 pH 밸런스를 환원하는 스킨.' },
-    vi: { name: 'Nước Hoa Hồng Cam Pháp Hoàng Gia Sảng Khoái', desc: 'Hương hoa cam Pháp tươi mát nguyên bản giúp cân bằng lại độ pH tự nhiên, làm se khít lỗ chân lông và đánh thức sức sống rạng rỡ.' }
-  },
-  '黑曜石奢金鱼子酱密集淡褶霜': {
-    en: { name: 'Obsidian Gold Caviar Multi-Correction Wrinkle Cream', desc: 'Combining protective black caviar proteins with mineral obsidian particles. Targets deep lines, visibly smoothing away signs of chronofatigue.' },
-    es: { name: 'Crema Correctora Intensiva Obsidiana Caviar de Oro', desc: 'Lujosa crema que fusiona extracto de caviar de beluga con polvo mineral de obsidiana para tensar y rellenar líneas marcadas.' },
-    ja: { name: 'オブシディアン ゴールドキャビア プレミアムリンクルクリーム', desc: '世界極上の高濃度ゴールドキャビア蛋白質と黒曜石ミネラルを配合。深いエイジング悩みにアプローチし、ふっくらとした美肌に。' },
-    ko: { name: '옵시디언 럭셔리에스 골드 캐비어 주름 안티클 세럼크림', desc: '흑진주 캐비어 단백질과 유기 흑요석 파우더 결합으로, 오래 정착된 눈가와 목 주름 부위에 탄력을 주사해 밀착 수정합니다.' },
-    vi: { name: 'Kem Trứng Cá Tầm Vàng Đen Obsidian Đậm Đặc Giảm Nhăn', desc: 'Sự dồi dào dinh dưỡng thượng hạng từ đạm trứng cá đen và tinh chất khoáng đen giúp phục hồi tổn thương xỉn nhăn nheo mệt mỏi.' }
-  },
-  '至尊御用鱼子精华璀璨臻白眼部啫喱': {
-    en: { name: 'Aura Caviar Brightening Gel Eye Complex', desc: 'A soothing lightweight eye serum with active gold caviar particles to visibly drain puffiness, light up dark bags, and refresh.' },
-    es: { name: 'Gel Contorno de Ojos Caviar Blanco de Lujo', desc: 'Exclusiva fórmula en gel de caviar de esturión blanco que estimula la microcirculación para desinflamar bolsas y aclarar ojeras.' },
-    ja: { name: 'アウラ キャビア ブライトニング ジュエル アイジェル', desc: '目元の血行をサポートするひんやりアイケアジェル。贅沢な輝きのマイクロゴールドパールが、明るく若々しい目元を演出。' },
-    ko: { name: '제프 캐비어 브라이트닝 임페리얼 아이 젤', desc: '진귀한 철갑상어 캐비어 콜라겐 입자를 수분 아이 젤 에 탑재해 미세 림프 순환을 돕고 칙칙한 다크서클을 지워 줍니다.' },
-    vi: { name: 'Gel Mắt Trứng Cá Tầm Chạm Khắc Trắng Bừng Sức Sống', desc: 'Kem dạng thạch mát lạnh giúp thải độc, hạn chế sưng bọng mắt dồi dào sinh dưỡng, đem lại đôi mắt trong trẻo lấp lánh.' }
-  },
-  '慢速鎏金缎光持久润透隔离防护乳': {
-    en: { name: 'Gilded Satin Luminous Cushion Makeup Primer', desc: 'An ultra-light, satin-textured shielding fluid that leaves a luminous finish. Blurs imperfections while locking in day-long skin moisture.' },
-    es: { name: 'Primer de Maquillaje Iluminador Satat Gilded', desc: 'Fluido protector de textura satinada fina que difumina los poros dejando un velo perlado perfecto para fijar el maquillaje.' },
-    ja: { name: 'ギルデッド サテン ルミナス メイクアッププライマー', desc: 'サテンのように極薄くなじんで素肌を均一にカバー。メイク崩れを防ぎながら、澄んだ透明感あ微ベースをつくる化粧下地。' },
-    ko: { name: '길디드 사틴 루미너스 선 프로텍트 촉촉 메이크업 베이스', desc: '실크 사틴 텍스처로 윤기를 자아내어 투명 스킨을 연출하고 미세 주름을 메워 화장 밀착력을 끈질기게 붙잡아 주는 일조용 보호 스크림.' },
-    vi: { name: 'Kem Lót Mịn Màng Ánh Lụa Gilded Satin Bảo Vệ Chống Nắng', desc: 'Lớp màng bảo vệ nhẹ như không nâng tông nhẹ mướt, thu nhỏ lỗ chân lông giữ độ ẩm tột đỉnh cho da bóng quyến rũ suốt ngày.' }
-  },
-  '深海复活草极致水光爆水乳': {
-    en: { name: 'Deep Sea Resurrection Hydrating Aqua Cream', desc: 'Formulated with organic deep sea botanical extract. Bursts into refreshing water micro-droplets on application, delivering extreme cellular hydration.' },
-    es: { name: 'Crema de Agua Hidratante Deep Sea Resurrection', desc: 'Fórmula que se funde en ricas microgotas de agua sobre la piel infundiendo el poder hidratante del loto marino.' },
-    ja: { name: 'ディープシー レザレクション ハイドレイティング アクアクリーム', desc: '深海復活草の驚の水分吸着力を凝縮。肌に触れた瞬間にみずみずしい水滴へと弾け、乾いた乾燥肌を一気に満たす超保湿乳液。' },
-    ko: { name: '딥 씨 리저렉션 아쿠아 하이드레이팅 워터풀 크림', desc: '심해 해양 식물의 압도적인 보습 생명력을 함유하여 피부 도열 즉시 백수십 개의 물방울 입자로 해소되는 속수분 폭탄 수딩 크림.' },
-    vi: { name: 'Sữa Dưỡng Mọng Nước Phục Sinh Thủy Tinh Deep Sea', desc: 'Chứa chiết xuất thực vật biển sâu hồi phục, khi bôi liền hóa thân thành hàng triệu vi hạt nước cấp ẩm dồi dào, thu hẹp lằn nhăn tức khắc.' }
-  },
-  '清晨薄荷柔和净爽矿物洁面泥': {
-    en: { name: 'Mint Forest Morning Gentle Detox Facial Clay', desc: 'A purifying bentonite clay infused with fresh alpine mint. Lifts deep excess oil and refines skin pores.' },
-    es: { name: 'Arcilla Facial Purificante Mentol Glaciar', desc: 'Mascarilla exfoliante de bentonita alpina infundida con menta fresca para disolver espinillas y limpiar poros.' },
-    ja: { name: 'ミントフォレスト モーニング ディープクリア クレイパック', desc: '清涼なアルプスクレイとミント油を配合。古い角質や余分な皮脂を優しく取り除き、すっきりつるつるの肌に整えるクレイ洗顔料。' },
-    ko: { name: '민트 포레스트 모닝 딥 클리어 클레이 세안팩', desc: '자극 없는 화이트 벤토나이트 머드와 알래스카 야생 민트오일이 만나 모공 속에 갇힌 블랙헤드와 묵은 각질을 녹이는 청정 워시오프 팩.' },
-    vi: { name: 'Sữa Rửa Mặt Đất Sét Khoáng Thải Độc Bạc Hà Mát Lạnh', desc: 'Đất sét bentonite kết hợp bạc hà hoang dã đánh tan dầu nhờn mụn cám, đem lại cảm giác mát lịm sảng khoái và cực kỳ sạch thoáng bừng tỉnh.' }
-  },
-  '逆转时光酵母重塑丰盈夜间修护霜': {
-    en: { name: 'Time-Reverse Ferment Ultimate Night Repair Cream', desc: 'Targets deep exhaustion and micro-damage. Packed with bioactive yeast ferments working overnight during your peak sleep cycles.' },
-    es: { name: 'Crema Reparadora de Noche Time-Reverse Ferment', desc: 'Nutrición restauradora de choque nocturno con fermentos de bífidos biológicos para revertir la fatiga de la piel.' },
-    ja: { name: 'タイムリバース ファーメント ナイトリペア プレミアムクリーム', desc: '睡眠中の美肌ゴールデンタイムに働きかける高濃縮酵母培養エキスを配合。翌朝、驚くほどの弾力とハリ感へ導くナイトクリーム。' },
-    ko: { name: '타임 리버스 퍼먼트 나이트 리하이드레이트 리페어크림', desc: '밤새 숙면하는 최적의 피부 시간대에 고농축 천연 누룩 발효 유산균이 손상된 피부막을 집중 세우고 영양를 메우는 영양 탄력크림.' },
-    vi: { name: 'Kem Dưỡng Tái Tạo Đêm Men Vi Sinh Đảo Ngược Thời Gian', desc: 'Cứu cánh làn da lão hóa lúc ngủ, chứa men vi sinh hoạt tính phục hồi các vết rạn vi mô, sáng dậy mọng mướt sờ tay căng bóng.' }
+    ja: { name: 'シダーウッド＆ホワイトティー リバイタライジング プレ美容液', desc: '白茶（ホワイトティー）の抗酸化力とアルプスシダー의 치유력유치유력. 장벽 기능을 서포트해 투명함 가득한 피부로 가꾸어 줍니다.' },
+    ko: { name: '시더우드 & 화이트 티 리바이탈라이징 세럼 프리 에센스', desc: '항산화 활성 성분의 화이트 티와 피부 장벽 강화에 탁월한 시더우드 에센셜 오일이 만나 투명하고 생기 넘치는 피부 기초 체력을 길러 줍니다.' },
+    vi: { name: 'Tinh chất khởi động Cedarwood & White Tea Pre-Essence', desc: 'Sự kết hợp hoàn hảo giữa chiết xuất trà trắng chống oxy hóa mạnh mẽ và tinh dầu tuyết tùng xoa dịu làn da mệt mỏi mẫn cảm.' }
   }
 };
 
-const leatherColorsMap: Record<string, TranslationPair> = {
-  '极夜黑': { en: 'Midnight Black', es: 'Negro Absoluto', ja: 'ミッドナイトブラック（極夜黒）', ko: '극야 미드나잇 블랙', vi: 'Đen Tuyệt Đối' },
-  '经典象牙白': { en: 'Classic Ivory White', es: 'Blanco Marfil Clásico', ja: 'クラシックアイボリーホワイト', ko: '클래식 아이보리 화이트', vi: 'Trắng Ngà Cổ Điển' },
-  '波尔多红': { en: 'Bordeaux Red', es: 'Rojo Burdeos', ja: 'ボルドーレッド', ko: '보르도 와인 레드', vi: 'Đỏ Bordeaux' },
-  '青瓷暗绿': { en: 'Celadon Dark Green', es: 'Verde Oscuro Celadón', ja: '青磁ダークグリーン', ko: '셀라돈 다크 그린', vi: 'Xanh Ngọc Cổ Kính' },
-  '太妃金棕': { en: 'Toffee Gold Tan', es: 'Marrón Caramelo', ja: 'トフィーゴールドブラウン', ko: '토피 골드 터메릭 브라운', vi: 'Nâu Vàng Toffee' },
-  '冰川浅蓝': { en: 'Glacier Pale Blue', es: 'Azul Glaciar Claro', ja: 'グラシエペールブルー', ko: '글레이셔 페일 블루', vi: 'Xanh Băng Tuyết' },
-  '玫瑰深粉': { en: 'Rose Deep Pink', es: 'Rosa Profundo', ja: 'ローズディープピンク', ko: '더스티 로즈 마젠타 핑크', vi: 'Hồng Hoa Hồng Sâu' },
-  '日落暖橘': { en: 'Sunset Warm Orange', es: 'Naranja Atardecer', ja: 'サンセットウォームorange', ko: '선셋 오렌지 어텀 웜', vi: 'Cam Ấm Hoàng Hôn' }
-};
-
-const leatherTypesMap: Record<string, TranslationPair> = {
-  '手提皮包 (Handbag)': { en: 'Top Handle Handbag', es: 'Bolso de Mano Elegante', ja: 'トップハンドル ハンドバッグ', ko: '탑핸들 토트백', vi: 'Túi xách tay nữ da thật' },
-  '双肩皮包 (Backpack)': { en: 'Premium Leather Backpack', es: 'Mochila de Cuero Premium', ja: 'プレミアム本革バックパック', ko: '가죽 백팩 데일리 럭셔리', vi: 'Ba lô da bò cao cấp' },
-  '水桶皮包 (Bucket Bag)': { en: 'Bespoke Bucket Bag', es: 'Bolso de Cubo Exclusivo', ja: '本革バケット型バッグ', ko: '레더 버킷 백 스페셜 에디션', vi: 'Túi xô da rút dây' },
-  '手拿皮包 (Clutch Bag)': { en: 'Haute Evening Clutch', es: 'Bolso de Embrague de Noche', ja: 'オートクチュール イブニングクラッチ', ko: '오뜨 꾸뛰르 이브닝 레더 클러치', vi: 'Ví cầm tay tiệc tối' },
-  '金扣链条皮包 (Flap Bag)': { en: 'Gold Hardware Chain Flap Bag', es: 'Bolso de Solapa con Cadena Dorada', ja: 'ゴールド金具チェーン フラップバッグ', ko: '골드 하드웨어 체인 플랩 숄더백', vi: 'Túi xích vàng sang chảnh' },
-  '高定大容量托特包 (Tote Bag)': { en: 'Bespoke Oversized Shopping Tote', es: 'Bolso Tote Gigante de Compras', ja: '大容量ビスポーク高級レザートート', ko: '대용량 아틀리에 쇼퍼 토特백', vi: 'Túi dáng Tote cỡ lớn' },
-  '经典风琴公文包 (Briefcase)': { en: 'Classic Accordion Briefcase', es: 'Maletín Clásico de Acordeón', ja: 'アコーディオン 伝統ビジネス公文包', ko: '아코디언 파일 비즈니스 브리프케이스', vi: 'Cặp công sở khóa mã vân da bò sang trọng' },
-  '复古马鞍皮包 (Saddle Bag)': { en: 'Vintage equestrian Saddle Bag', es: 'Bolso de Silla Ecuestre Retro', ja: 'ヴィンテージ乗馬サドルバッグ', ko: '빈티지 레크리에이션 새들 백', vi: 'Túi hình móng ngựa dáng yên ngựa' },
-  '法棍腋下皮包 (Baguette Bag)': { en: 'Classic Baguette Underarm Bag', es: 'Bolso Baguette de Axila Solapa', ja: 'クラシック バゲット肩掛けショルダバッグ', ko: '클래식 바게트 레더 숄더 숄백', vi: 'Túi kẹp nách dáng Baguette kẹp sườn' },
-  '重工波士顿手袋 (Boston Bag)': { en: 'Prestige Boston Travel Bag', es: 'Bolso de Viaje Boston de Cabina', ja: 'ボストン型手袋', ko: '보스턴 트래블 다플백 레더 가방', vi: 'Túi trống du lịch Boston' },
-  '休闲邮差斜挎包 (Messenger Bag)': { en: 'Casual Leather Messenger Bag', es: 'Bolso Mensajero Casual de Piel', ja: 'カジュアル本革メッセンジャーバッグ', ko: '캐주얼 가죽 메신저 크로스백', vi: 'Túi đeo chéo dáng Messenger da bò' },
-  '信封皮夹卡包 (Accordion Wallet)': { en: 'Envelope Accordion Card Wallet', es: 'Cartera de Acordeón para Tarjetas', ja: 'アコーディオン 封筒型アコーディオン小銭入', ko: '아코디언 멀티 포켓 슬롯 지갑 카드지갑', vi: 'Ví kẹp thẻ dáng bì thư nhiều ngăn' }
-};
-
 const utensilStylesMap: Record<string, TranslationPair> = {
-  '景德镇手制 青花缠枝': { en: 'Jingdezhen Handcrafted Blue & White Floral', es: 'Azul y Blanco Hecho a Mano de Jingdezhen', ja: '景徳鎮手書き 青花唐草絵付', ko: '경덕진 수공예 청화 당초문', vi: 'Đồ gốm lam Jingdezhen vẽ tay thanh hoa' },
-  '宜兴名窑 手作朱泥': { en: 'Yixing Renowned Kiln Hand-sculpted Vermilion Clay', es: "Barro Vermell d'Yixing Moldeado a Mano", ja: '宜興名釜完全手製朱泥（紫砂）', ko: '의흥 요지 수제 홍진사 주니 자사호', vi: 'Ấm trà đất nung Chu Ni lò Yixing' },
-  '龙泉官窑 仿宋粉青': { en: 'Longquan Celadon Pale Green (Song Revival)', es: 'Celadón Gris Verdoso de Longquan estilo Song', ja: '龍泉官窯 伝統薄緑・宋代粉青青磁', ko: '용천 관요 가마터 가루청 옥색 청자', vi: 'Lò quan Long Tuyền men ngọc phấn thanh phỏng Tống' },
-  '柴烧粗陶 冰裂流釉': { en: 'Wood-fired Coarse Pottery Ice Crackle Glaze', es: 'Cerámica de Leña Esmalte Craquelado', ja: '薪窯粗陶器 貫入氷裂流釉仕上げ', ko: '참나무 장목 장작 가마 변형 빙렬유 도기', vi: 'Gốm thô nung củi men chảy rạn' },
-  '掐丝珐琅 御用宫廷手工': { en: 'Handcrafted Imperial Palace Cloisonne Enamel', es: 'Esmalte Cloisonné Imperial Hecho a Mano', ja: '手芸有線・御用宮廷传统七宝', ko: '수공예 황실 황궁 어용 법랑 칠보기', vi: 'Pháp lam khảm dây thủ công hoàng cung' },
-  '大漆螺钿 雕填描金': { en: 'Raden Mother-of-Pearl Inlaid Lacquerware Gold Leaf', es: 'Laca de Nácar con Grabados de Oro', ja: '漆塗螺鈿金箔手書き漆芸器', ko: '라전 칠기 천연 자개 조각 금칠 장식', vi: 'Sơn mài khảm trai ốc sơn thếp vàng' },
-  '手工吹制 极光琉璃': { en: 'Hand-blown Aurora Glazed Glass (Liquid Rainbow)', es: 'Vidrio Soplado de Aurora Hecho a Mano', ja: 'ハンドブロウ手吹き 虹色極光琉璃', ko: '핸드 블로운 오로라 무지개 유리 공예', vi: 'Thủy tinh lưu ly thổi thủ công cực quang' },
-  '大师制 纯铜手锤纹': { en: 'Master-forged Pure Copper Hand-hammered Texture', es: 'Cobre Puro Forjado con Textura de Martillo', ja: '純銅手打ち槌目', ko: '명장 수형 단조 순구리 전통 망치목', vi: 'Đồng đỏ nguyên chất rèn đập thủ công vân búa' }
+  '景德镇青花缠枝': { en: 'Jingdezhen Handcrafted Blue & White Floral', es: 'Porcelana Azul y Blanca de Jingdezhen', ja: '景徳鎮手描き青花唐草文', ko: '경덕진 수공예 청화 분채', vi: 'Sứ thanh hoa vẽ tay Cảnh Đức Trấn' },
+  '宜兴名窑朱泥': { en: 'Yixing Famous Kiln Vermilion Clay', es: 'Arcilla de Vermellón de Yixing', ja: '宜興名窯朱泥 急須流派', ko: '의흥 자사호 주니 명가', vi: 'Đất nung Chu Sa lò danh tiếng Nghi Hưng' },
+  '龙泉官窑薄绿': { en: 'Longquan Celadon Pale Green-Glazed', es: 'Celadón Longquan Verde Esmeralda', ja: '龍泉官窯薄緑・宋代粉青青磁', ko: '용천 관요 가마터 가루청 옥색 청자', vi: 'Lò quan Long Tuyền men ngọc phấn thanh phỏng Tống' },
+  '龙泉官窑 薄绿・宋代粉青青磁': { en: 'Longquan Celadon Pale Green Pure Glaze', es: 'Celadón Longquan Verde Esmeralda', ja: '龍泉官窯薄緑・宋代粉青青磁', ko: '용천 관요 가마터 가루청 옥색 청자', vi: 'Lò quan Long Tuyền men ngọc phấn thanh phỏng Tống' },
+  '柴烧粗陶 冰裂流釉': { en: 'Wood-fired Coarse Pottery', es: 'Cerámica Rústica de Horno de Leña', ja: '柴焼き荒陶器 氷裂貫入流し釉', ko: '가마 장작 불꽃 거친 회색 토기 빙렬 유약', vi: 'Gốm thô củi nung men rạn chảy hỏa biến' },
+  '景泰蓝御用珐琅': { en: 'Cloisonne Imperial Hand-Enameled', es: 'Esmalte Imperial de Cloisonne', ja: '七宝焼き宮廷御用エナメル', ko: '금태경태람 황실 궁중 법랑', vi: 'Khảm pháp lam ngự dụng Cảnh Thái Lam' },
+  '螺钿镶嵌大漆': { en: 'Mother-of-Pearl Inlaid Gilded Lacquerware', es: 'Laca Gilded con Incrustaciones de Nácar', ja: '螺鈿細工金箔本漆塗り', ko: '나전칠기 자개 천연 옻칠 가구', vi: 'Sơn mài khảm xà cừ dát vàng thủ công' },
+  '手吹极光玻璃': { en: 'Hand-Blown Aurora Crystal Vitreous', es: 'Cristal de Aurora Soplado a Mano', ja: '吹きガラス極光オーロラクリスタル', ko: '수공예 수블론 극광 오로라 크리스탈', vi: 'Thuỷ tinh thổi thủ công tinh thể cực quang' },
+  '手工锤纹纯铜': { en: 'Master-Forged Hammered Pure Copper', es: 'Cobre Puro Martillado Forjado', ja: '手打ち熱鍛造 鎚目純銅製', ko: '전통 단조 방짜 수작업 방짜 순구리', vi: 'Đồng đỏ nguyên chất chạm búa rèn thủ công' }
 };
 
 const utensilObjectsMap: Record<string, TranslationPair> = {
-  '茶盏套组': { en: 'Teacups Set', es: 'Juego de Tazas de Té', ja: '茶道具 茶盞セット', ko: '전통 차완 찻잔 세트', vi: 'Bộ chén thưởng trà cao cấp' },
-  '公道提梁杯': { en: 'Justice Fair Sharing Pitcher', es: 'Jarra de Té de Reparto', ja: '公道杯・提梁茶器', ko: '전통 숙우 페어 공유 찻잔 공도배', vi: 'Chén tống trà có quai xách' },
-  '玄关迎宾花器': { en: 'Entrance Lobby Welcoming Flower Vase', es: 'Jarrón de Bienvenida', ja: '玄関迎賓 花器', ko: '현관 로비 마중 꽃꽂이 항아리 화병', vi: 'Bình hoa gốm decor đại sảnh' },
-  '禅意双耳香炉': { en: 'Zen Dual-handle Fragrance Burner', es: 'Incensario de Estilo Zen de Doble Asa', ja: '禅伝統双耳香炉', ko: '심연 선종 손잡이 향로 번향기', vi: 'Lư hương đỉnh đồng hai tai thiền ý' },
-  '温酒高足执壶': { en: 'Tall-Footed Wine Warming Ewer', es: 'Jarra de Vino de Pie Alto para Calentar', ja: '高足温酒器・伝統酒注ぎ執壺', ko: '전통 온주용 높은 굽형 손잡이 주전자', vi: 'Bình rót rượu hâm nóng gót cao cổ kính' },
-  '多功能干泡盘': { en: 'Multi-functional Dry Tea Brewing Board', es: 'Tabla Lateral para Té Dry-Brew', ja: '多機能茶台・煎茶盤', ko: '다기능 건식 다도 칠판 프레이 트레이', vi: 'Khay úp ly chén trà khô đa năng' },
-  '博古架山水陈设摆件': { en: 'Curio Cabinet Landscape Ornament Display', es: 'Adorno de Paisaje de Vitrina', ja: '博古架伝統山水置物', ko: '고가구 진열장 산수 풍경 조각 전람 소품', vi: 'Vật phẩm bày phong cảnh sơn thủy' },
-  '极简插花瓷瓶': { en: 'Minimalist Ikebana Porcelain Vase', es: 'Jarrón de Porcelana Minimalista para Flores', ja: '極細磁器花瓶', ko: '미니멀 아트 도자기 꽃병 꽃꽂이용', vi: 'Bình hoa sứ cắm hoa phong cách tối giản' },
+  '极细素面瓷瓶': { en: 'Minimalist Flower Arrangement Porcelain Bottle', es: 'Jarrón de Porcelana Minimalista para Flores', ja: '極細磁器花瓶', ko: '미니멀 아트 도자기 꽃병 꽃꽂이용', vi: 'Bình hoa sứ cắm hoa phong cách tối giản' },
   '琢面随手茶杯': { en: 'Faceted Casual Tea Cup', es: 'Taza de Té Casual Facetada', ja: '琢面面取り彫刻 煎茶マイマグ', ko: '다면 컷팅 손잡이형 편안한 마이 찻잔', vi: 'Cốc trà vát cạnh đa giác cầm tay' }
+};
+
+const leatherColorsMap: Record<string, TranslationPair> = {
+  '黑色': { en: 'Noir Black', es: 'Negro Noir', ja: 'ノワールブラック', ko: '시그니처 블랙', vi: 'Đen Noir' },
+  '经典黑': { en: 'Noir Black', es: 'Negro Noir', ja: 'ノワールブラック', ko: '시그니처 블랙', vi: 'Đen Noir' },
+  '金棕': { en: 'Togo Gold', es: 'Oro Togo', ja: 'トゴゴールド', ko: '토고 골드', vi: 'Vàng Togo' },
+  '金棕色': { en: 'Togo Gold', es: 'Oro Togo', ja: 'トゴゴールド', ko: '토고 골드', vi: 'Vàng Togo' },
+  '锡器灰': { en: 'Etain Grey', es: 'Gris Etain', ja: 'エタングレー', ko: '에땅 그레이', vi: 'Xám Etain' },
+  '大象灰': { en: 'Etoupe Grey', es: 'Gris Etoupe', ja: 'エトゥープグレー', ko: '에토프 그레이', vi: 'Xám Etoupe' },
+  '奶白': { en: 'Craie Off-White', es: 'Blanco Roto Craie', ja: 'クレ オフホワイト', ko: '크레 오프화이트', vi: 'Trắng Sữa Craie' },
+  '奶白色': { en: 'Craie Off-White', es: 'Blanco Roto Craie', ja: 'クレ オフホワイト', ko: '크레 오프화이트', vi: 'Trắng Sữa Craie' },
+  '樱花粉': { en: 'Rose Sakura', es: 'Rosa Sakura', ja: 'ローズサクラ', ko: '로즈 사쿠라', vi: 'Hồng Rose Sakura' },
+  '海军蓝': { en: 'Bleu Nuit', es: 'Azul Bleu Nuit', ja: 'ブルーニュ이', ko: '블루 뉘', vi: 'Xanh Đêm Bleu Nuit' },
+  '柏树绿': { en: 'Vert Cypress', es: 'Verde Vert Cypress', ja: 'ヴェールシプレ', ko: '베르 시프레', vi: 'Xanh Vert Cypress' },
+  '橙色': { en: 'Orange H', es: 'Naranja Orange H', ja: 'オレンジ H', ko: '오렌지 H', vi: 'Cam Orange H' }
+};
+
+const leatherTypesMap: Record<string, TranslationPair> = {
+  '铂金包 30': { en: 'Birkin 30 Handbag', es: 'Bolso Birkin 30', ja: 'バーキン 30', ko: '벌킨 30 핸드백', vi: 'Túi Xách Birkin 30' },
+  '铂金包': { en: 'Birkin Handbag', es: 'Bolso Birkin', ja: 'バーキン', ko: '벌킨 핸드백', vi: 'Túi Xách Birkin' },
+  '凯莉包 25': { en: 'Kelly 25 Sellier', es: 'Kelly 25 Sellier', ja: 'ケリー 25 セリエ', ko: '켈리 25 셀리에', vi: 'Túi Kelly 25 Sellier' },
+  '凯莉包': { en: 'Kelly Sellier', es: 'Kelly Sellier', ja: 'ケリー セリエ', ko: '켈리 셀리에', vi: 'Túi Kelly Sellier' },
+  '康康包 19': { en: 'Constance 19 Shoulder Bag', es: 'Bolso de Hombro Constance 19', ja: 'コンスタンス 19', ko: '콘스탄스 19 숄더백', vi: 'Túi Đeo Vai Constance 19' },
+  '康康包': { en: 'Constance Shoulder Bag', es: 'Bolso de Hombro Constance', ja: 'コンスタンス', ko: '콘스탄스 숄더백', vi: 'Túi Đeo Vai Constance' },
+  '经典口盖包': { en: 'Classic Flap Bag', es: 'Bolso Classic Flap', ja: 'クラシック フラップ バッグ', ko: '클래식 플랩 백', vi: 'Túi Cổ Điển Classic Flap' },
+  '托特包': { en: 'Tote Bag', es: 'Bolso Tote', ja: 'トートバッグ', ko: '토트백', vi: 'Túi Tote' },
+  '马鞍包': { en: 'Saddle Bag', es: 'Bolso Saddle', ja: 'サドルバッグ', ko: '새들백', vi: 'Túi Yên Ngựa' },
+  '法棍包': { en: 'Baguette Shoulder Bag', es: 'Bolso de Hombro Baguette', ja: 'バゲット ショルダーバッグ', ko: '바게트 숄더백', vi: 'Túi Kẹp Nách Baguette' }
 };
 
 const utensilDescriptorsMap: Record<string, TranslationPair> = {
@@ -3666,13 +3585,21 @@ function translateLuxuryName(name: string, category: string, lang: Exclude<AppLa
 
 const SKU_CAT_MAP: Record<string, string> = {
   '臻选': 'WT',
+  '臻选腕表': 'WT',
   '奢享': 'SA',
   '高级': 'JW',
+  '高级珠宝': 'JW',
   '匠心': 'BG',
+  '匠心皮具': 'BG',
   '大师': 'EY',
+  '大师器物': 'EY',
   '香水': 'PF',
   '家用': 'AP',
-  '情趣': 'AD'
+  '家用电器': 'AP',
+  '情趣': 'AD',
+  '情趣用品': 'AD',
+  '化妆': 'CO',
+  '化妆品': 'CO'
 };
 
 const SKU_NOUN_MAP: Record<string, string> = {
@@ -3698,7 +3625,6 @@ const SKU_NOUN_MAP: Record<string, string> = {
 };
 
 export function translateSku(sku: string, lang: AppLanguage): string {
-  if (lang === 'zh') return sku;
   const parts = sku.split('-');
   if (parts.length === 3) {
     const catPart = parts[0];

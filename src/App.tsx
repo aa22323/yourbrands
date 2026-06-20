@@ -33,6 +33,7 @@ ALL_PRODUCTS.forEach(p => {
 
 export default function App() {
   const isPollingUpdateRef = useRef<boolean>(false);
+  const isLocalChangeRef = useRef<boolean>(false);
   const lastMutationTimeRef = useRef<number>(0);
   const lastFetchedDataRef = useRef<{ registeredUsers: any[]; merchantsDb: Record<string, any> } | null>(null);
   const hasFetchedRef = useRef<boolean>(false);
@@ -236,21 +237,7 @@ export default function App() {
 
   // Registered Users database
   const [registeredUsers, setRegisteredUsers] = useState<{ name: string; password?: string; id: string; isSalesman?: boolean }[]>(() => {
-    try {
-      const stored = localStorage.getItem('aliexpress_registered_users_list');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const hasMaster = parsed.some(u => u.name.toLowerCase() === 'oopqwe001@gmail.com');
-          if (!hasMaster) {
-            parsed.push({ name: 'oopqwe001@gmail.com', password: '888888', id: '88888', isSalesman: false });
-          }
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    // Default system seed list - Do not read from local storage to keep Firestore as single source of truth
     return [
       { name: 'admin', password: '123456', id: '28401', isSalesman: false },
       { name: 'oopqwe001@gmail.com', password: '888888', id: '88888', isSalesman: false }
@@ -555,21 +542,7 @@ export default function App() {
 
   // Master multi-merchant database state
   const [merchantsDb, setMerchantsDb] = useState<Record<string, any>>(() => {
-    try {
-      const stored = localStorage.getItem('aliexpress_merchants_database_v2');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed && typeof parsed === 'object') {
-          delete parsed.updatedAt;
-          delete parsed.currency;
-        }
-        return parsed;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    
-    // Default system seed state
+    // Default system seed state - Do not use local storage to prevent loading stale cached data
     return {
       'admin': {
         name: 'admin',
@@ -637,70 +610,19 @@ export default function App() {
   // Combine registeredUsers and merchantsDb saving into a single atomic payload to prevent write race conditions
   useEffect(() => {
     // CRITICAL: Avoid saving on initial mount before we have successfully fetched the master database from the server.
-    // If we haven't fetched yet, writing back will overwrite the server database with empty/stale local state.
     if (!hasFetchedRef.current) {
       return;
     }
 
-    // If the state was updated from a polling response, do not POST it back to the server.
-    if (isPollingUpdateRef.current) {
-      isPollingUpdateRef.current = false;
+    // Only save when there is a local user-initiated mutation (or lazy seeding on session start)
+    if (!isLocalChangeRef.current) {
       return;
     }
 
-    // Structural safe-check: if it matches the last fetched state from polling, skip writing back
-    if (lastFetchedDataRef.current) {
-      const matchUsers = JSON.stringify(registeredUsers) === JSON.stringify(lastFetchedDataRef.current.registeredUsers);
-      const matchDb = JSON.stringify(merchantsDb) === JSON.stringify(lastFetchedDataRef.current.merchantsDb);
-      if (matchUsers && matchDb) {
-        return;
-      }
-    }
-
-    // Set last mutation time to locked to prevent pulling older state from server during propagation
+    // Set last mutation time to locked to prevent polling older state from server during propagation
     lastMutationTimeRef.current = Date.now();
 
     const nowTime = Date.now();
-
-    // To prevent QuotaExceededError (which halts React execution with a white screen),
-    // we must sanitize merchantsDb to strip the heavy Base64 image strings before saving to localStorage!
-    // These heavy images are already backed up in individual system_data Firestore documents anyway,
-    // and are loaded and merged dynamically on page boot.
-    const localSanitizedDb = { ...merchantsDb };
-    // Track the updatedAt metadata in local storage independently, not inside the merchants map itself!
-    localStorage.setItem('aliexpress_merchants_database_updated_at', String(nowTime));
-    
-    if (localSanitizedDb.system_config) {
-      const lightImages: Record<string, number | boolean> = {};
-      const currentImages = localSanitizedDb.system_config.customProductImages || {};
-      Object.keys(currentImages).forEach(pId => {
-        if (currentImages[pId]) {
-          lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
-        }
-      });
-      localSanitizedDb.system_config = {
-        ...localSanitizedDb.system_config,
-        customProductImages: lightImages
-      };
-    }
-
-    try {
-      localStorage.setItem('aliexpress_registered_users_list', JSON.stringify(registeredUsers));
-      localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(localSanitizedDb));
-    } catch (localErr) {
-      console.warn('Met QuotaExceededError when saving to localStorage. Stripping non-essential state cache and retrying.', localErr);
-      try {
-        // Fallback: Clear heavy caches to prevent crashes
-        localStorage.setItem('aliexpress_registered_users_list', JSON.stringify(registeredUsers));
-        // Save without system_config completely if needed as system_config is fetched on boot anyway
-        const minimalDb = { ...localSanitizedDb };
-        delete minimalDb.system_config;
-        localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(minimalDb));
-      } catch (critErr) {
-        console.error('Critical failure saving to localStorage:', critErr);
-      }
-    }
-
     const docRef = doc(db, 'system_data', 'aliexpress_database');
 
     // Build highly optimized update arguments using FieldPath to prevent dot nesting issues inside emails!
@@ -748,7 +670,7 @@ export default function App() {
     if (isCurrentUserAdmin && merchantsDb.system_config) {
       const lastSys = lastFetchedDataRef.current?.merchantsDb?.system_config;
       if (!lastSys || JSON.stringify(merchantsDb.system_config) !== JSON.stringify(lastSys)) {
-        // Sanitize product image overrides to keep system_data lightweight (use placeholder version stamp to stay under 1MB limits)
+        // Sanitize product image overrides to keep system_data lightweight
         const lightImages: Record<string, number | boolean> = {};
         const currentImages = merchantsDb.system_config.customProductImages || {};
         Object.keys(currentImages).forEach(pId => {
@@ -769,11 +691,13 @@ export default function App() {
       return;
     }
 
-    // Debounce the Firestore write operation by 1200ms to group rapid clicks / mutations (like "One-click to store") safely
-    // and respect Firestore's 1-write-per-second single document update rate limit!
+    // Debounce the Firestore write operation by 1200ms to group rapid clicks / mutations safely
     let activeTimer = true;
     const timerId = setTimeout(() => {
       if (!activeTimer) return;
+
+      // Reset the local change flag since the write operation is now executing
+      isLocalChangeRef.current = false;
 
       // Extract sanitized merchantsDb for both local setDoc fallback and Express backend POST payload
       const sanitizedMerchantsDb = { ...merchantsDb };
@@ -819,7 +743,7 @@ export default function App() {
           if (!activeTimer) return;
           console.warn('Direct updateDoc did not complete (running full setDoc fallback):', err);
           
-          setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb })
+          setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb, updatedAt: nowTime })
             .then(() => {
               if (!activeTimer) return;
               lastFetchedDataRef.current = {
@@ -849,10 +773,6 @@ export default function App() {
     return '123456';
   });
 
-  useEffect(() => {
-    localStorage.setItem('aliexpress_user_password', userPassword);
-  }, [userPassword]);
-
   // Real account balance in actual currency (真钱余额, JPY ¥)
   const [userBalance, setUserBalance] = useState<number>(() => {
     const key = userAccountName.toLowerCase();
@@ -863,10 +783,6 @@ export default function App() {
     return key === 'admin' ? 4800000 : 0;
   });
 
-  useEffect(() => {
-    localStorage.setItem('aliexpress_user_balance', String(userBalance));
-  }, [userBalance]);
-
   // Financial Ledger Ledger
   const [financialLogs, setFinancialLogs] = useState<FinancialTransaction[]>(() => {
     const key = userAccountName.toLowerCase();
@@ -876,10 +792,6 @@ export default function App() {
     }
     return [];
   });
-
-  useEffect(() => {
-    localStorage.setItem('aliexpress_financial_logs', JSON.stringify(financialLogs));
-  }, [financialLogs]);
 
   // Load shop from active merchant record or defaults
   const [shop, setShop] = useState<Shop>(() => {
@@ -1060,6 +972,7 @@ export default function App() {
       isSalesman: false,
       isAdmin: false
     };
+    isLocalChangeRef.current = true;
 
     setRegisteredUsers(prev => [...prev, newUser]);
 
@@ -1115,6 +1028,7 @@ export default function App() {
     description: string
   ) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true; // FORCE PERSISTENCE TO DATABASE
     // 1. Update the balance (recharge with status '已提交' is pending and won't add to balance yet)
     if (!(type === 'recharge' && status === '已提交')) {
       setUserBalance(prev => {
@@ -1191,6 +1105,7 @@ export default function App() {
 
   // Load state from active merchant slot whenever user changes or database loads
   useEffect(() => {
+    if (!hasFetchedRef.current) return;
     if (!userAccountName) return;
     const key = userAccountName.toLowerCase();
     let data = merchantsDb[key];
@@ -1307,6 +1222,7 @@ export default function App() {
 
   // Synchronize active states back into the central database slot reactively
   useEffect(() => {
+    if (!hasFetchedRef.current) return;
     if (!userAccountName || !loadedUserAccount) return;
     if (userAccountName.toLowerCase() !== loadedUserAccount.toLowerCase()) {
       // Stale state: user switches or registers but local states (userBalance, shop, etc) have not updated in React yet. Block writing!
@@ -1324,6 +1240,7 @@ export default function App() {
       JSON.stringify(slot.withdrawHistory) !== JSON.stringify(withdrawHistory) ||
       slot.password !== userPassword
     ) {
+      isLocalChangeRef.current = true;
       setMerchantsDb(prev => ({
         ...prev,
         [key]: {
@@ -1345,6 +1262,7 @@ export default function App() {
     
     // Set mutation lock immediately to prevent race conditions during propagation
     lastMutationTimeRef.current = Date.now();
+    isLocalChangeRef.current = true;
 
     if (key === 'system_config') {
       setMerchantsDb(prev => {
@@ -1480,6 +1398,7 @@ export default function App() {
 
     // Set mutation lock to prevent intermediate racing or polling overwrites
     lastMutationTimeRef.current = Date.now();
+    isLocalChangeRef.current = true;
     
     // 1. Remove from registeredUsers
     setRegisteredUsers(prev => prev.filter(u => u.name.toLowerCase() !== key));
@@ -1571,6 +1490,7 @@ export default function App() {
 
   const handleUpdateShop = (updatedFields: Partial<Shop>) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true;
     setShop(prev => ({
       ...prev,
       ...updatedFields
@@ -1579,6 +1499,7 @@ export default function App() {
 
   const handleAddOrder = (newOrder: Order) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true;
     setOrders(prev => [newOrder, ...prev]);
     if (newOrder.isSelfOrder) {
       const itemsListStr = newOrder.items.map(it => `${it.productName} * ${it.quantity}`).join(', ');
@@ -1594,6 +1515,7 @@ export default function App() {
 
   const handleShipOrder = (orderId: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true;
     const pad = (num: number) => String(num).padStart(2, '0');
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
@@ -1636,6 +1558,7 @@ export default function App() {
 
   const handleConfirmReceiveOrder = (orderId: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true;
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
     if (order.status !== 'shipped') return;
@@ -1669,16 +1592,19 @@ export default function App() {
 
   const handleDeleteOrder = (orderId: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true;
     setOrders(prev => prev.filter(o => o.id !== orderId));
   };
 
   const handleUpdateBalance = (newBalance: number | ((prev: number) => number)) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true;
     setUserBalance(newBalance);
   };
 
   const handleUpdateWithdrawHistory = (newHistory: any[] | ((prev: any[]) => any[])) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true;
     setWithdrawHistory(newHistory);
   };
 

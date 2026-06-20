@@ -208,17 +208,6 @@ async function getDbFromFirebase() {
       if (docSnap.exists) {
         const data = docSnap.data() || {};
         
-        // COLLISION RESOLUTION: If remote firestore data is OLDER than our local cached write, do not discard our local writes!
-        const remoteTime = data.updatedAt || 0;
-        const localTime = cachedDb.updatedAt || 0;
-        if (localTime > remoteTime) {
-          console.log(`[Admin] Local filesystem cache is newer (${localTime}) than Firestore remote data (${remoteTime}). Keeping local cache and sync-pushing to Firestore in background.`);
-          adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb).catch((err: any) => {
-            console.error("Failed background-push to Admin Firestore:", err);
-          });
-          return { ...cachedDb, _isFallback: false };
-        }
-
         let loadedDb = {
           registeredUsers: data.registeredUsers || cachedDb.registeredUsers || [],
           merchantsDb: data.merchantsDb || cachedDb.merchantsDb || {},
@@ -249,17 +238,6 @@ async function getDbFromFirebase() {
       if (docSnap.exists()) {
         const data = docSnap.data() || {};
         
-        // COLLISION RESOLUTION: If remote firestore data is OLDER than our local cached write, do not discard our local writes!
-        const remoteTime = data.updatedAt || 0;
-        const localTime = cachedDb.updatedAt || 0;
-        if (localTime > remoteTime) {
-          console.log(`[Client Fallback] Local filesystem cache is newer (${localTime}) than Firestore remote data (${remoteTime}). Keeping local cache and sync-pushing to Firestore in background.`);
-          setDoc(docRef, cachedDb).catch((err: any) => {
-            console.error("Failed background-push to Client Firestore:", err);
-          });
-          return { ...cachedDb, _isFallback: false };
-        }
-
         let loadedDb = {
           registeredUsers: data.registeredUsers || cachedDb.registeredUsers || [],
           merchantsDb: data.merchantsDb || cachedDb.merchantsDb || {},
