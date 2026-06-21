@@ -1483,6 +1483,7 @@ export default function App() {
   // Handle addition or deletion of products on user selections
   const handleToggleProductInStore = (productId: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
+    isLocalChangeRef.current = true;
     setShop(prev => {
       const isAdded = prev.addedProductIds.includes(productId);
       const nextAddedIds = isAdded
