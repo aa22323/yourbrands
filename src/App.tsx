@@ -1228,6 +1228,14 @@ export default function App() {
       // Stale state: user switches or registers but local states (userBalance, shop, etc) have not updated in React yet. Block writing!
       return;
     }
+    
+    // CRITICAL: Only synchronize local states back to merchantsDb if we have an active, user-initiated local modification.
+    // If isLocalChangeRef.current is false, any difference is due to the central database being updated from the cloud (e.g. from admin dispatching orders),
+    // and we must let our first useEffect run to update our local state hooks. Doing a write-back here would corrupt/overwrite cloud updates!
+    if (!isLocalChangeRef.current) {
+      return;
+    }
+
     const key = userAccountName.toLowerCase();
     if (!merchantsDb[key]) return;
 
@@ -1240,7 +1248,6 @@ export default function App() {
       JSON.stringify(slot.withdrawHistory) !== JSON.stringify(withdrawHistory) ||
       slot.password !== userPassword
     ) {
-      isLocalChangeRef.current = true;
       setMerchantsDb(prev => ({
         ...prev,
         [key]: {
