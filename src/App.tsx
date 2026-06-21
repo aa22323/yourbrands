@@ -37,6 +37,7 @@ export default function App() {
   const lastMutationTimeRef = useRef<number>(0);
   const lastFetchedDataRef = useRef<{ registeredUsers: any[]; merchantsDb: Record<string, any> } | null>(null);
   const hasFetchedRef = useRef<boolean>(false);
+  const dbUpdatedAtRef = useRef<number>(0);
   const prevCustomImagesRef = useRef<Record<string, string>>({});
 
   const [customProductImages, setCustomProductImages] = useState<Record<string, string>>(() => {
@@ -450,7 +451,7 @@ export default function App() {
         let loadedFromServer = false;
 
         if (isInitial) {
-          // 1. Prioritize Express proxy load (avoids sandboxed iframe WebSocket and gRPC restrictions)
+          // 1. Prioritize Express proxy load (safe filesystem-level caching)
           try {
             const apiRes = await fetch('/api/db');
             if (apiRes.ok) {
@@ -458,12 +459,12 @@ export default function App() {
               if (apiData && apiData.registeredUsers && apiData.merchantsDb) {
                 incomingUsers = apiData.registeredUsers;
                 incomingMerchants = apiData.merchantsDb;
-                if (!apiData._isFallback) {
-                  loadedFromServer = true;
-                  console.log("Successfully connected and synchronized Aliexpress database from server proxy.");
-                } else {
-                  console.warn("Express server proxy returned safe local fallback cache. Attempting direct Firestore query but keeping local cache as active fallback.");
-                }
+                const apiUpdatedAt = apiData.updatedAt || 0;
+                dbUpdatedAtRef.current = Math.max(dbUpdatedAtRef.current, apiUpdatedAt);
+                
+                // Set loadedFromServer to true so we do not attempt direct Firestore query or overwrite
+                loadedFromServer = true;
+                console.log("Successfully loaded in-memory database from Express proxy. Timestamp:", apiUpdatedAt);
               }
             }
           } catch (apiErr) {
@@ -476,10 +477,17 @@ export default function App() {
               const docSnap = await getDoc(doc(db, 'system_data', 'aliexpress_database'));
               if (docSnap.exists() && active) {
                 const d = docSnap.data();
-                incomingUsers = d.registeredUsers || incomingUsers;
-                incomingMerchants = d.merchantsDb || incomingMerchants;
-                loadedFromServer = true;
-                console.log("Successfully retrieved latest database state directly from cloud Firestore.");
+                const cloudUpdatedAt = d.updatedAt || 0;
+                if (cloudUpdatedAt >= dbUpdatedAtRef.current) {
+                  incomingUsers = d.registeredUsers || incomingUsers;
+                  incomingMerchants = d.merchantsDb || incomingMerchants;
+                  dbUpdatedAtRef.current = cloudUpdatedAt;
+                  loadedFromServer = true;
+                  console.log("Successfully retrieved latest database state directly from cloud Firestore. Timestamp:", cloudUpdatedAt);
+                } else {
+                  console.log("Direct Firestore copy is older than current memory, skipping overwrite.");
+                  loadedFromServer = true;
+                }
               }
             } catch (fsErr) {
               console.warn("Direct Firestore fallback fetch failed (e.g. daily read quota limit exceeded). Using server filesystem-level cache:", fsErr);
@@ -496,9 +504,16 @@ export default function App() {
           if (!active) return;
           if (docSnap.exists()) {
             const d = docSnap.data();
-            const usersList = d.registeredUsers || [];
-            const merchantsData = d.merchantsDb || {};
-            await processDatabaseUpdate(usersList, merchantsData);
+            const cloudUpdatedAt = d.updatedAt || 0;
+            if (cloudUpdatedAt > dbUpdatedAtRef.current) {
+              const usersList = d.registeredUsers || [];
+              const merchantsData = d.merchantsDb || {};
+              dbUpdatedAtRef.current = cloudUpdatedAt;
+              await processDatabaseUpdate(usersList, merchantsData);
+              console.log("Successfully applied live onSnapshot cloud update with newer timestamp:", cloudUpdatedAt);
+            } else {
+              console.log("Ignored stale onSnapshot update. Cloud:", cloudUpdatedAt, "Local:", dbUpdatedAtRef.current);
+            }
           }
         }, (err) => {
           console.warn("Firestore database listener disconnected (or quota limit exceeded). Fallback system remains active.", err);
@@ -620,9 +635,10 @@ export default function App() {
     }
 
     // Set last mutation time to locked to prevent polling older state from server during propagation
-    lastMutationTimeRef.current = Date.now();
-
     const nowTime = Date.now();
+    lastMutationTimeRef.current = nowTime;
+    dbUpdatedAtRef.current = nowTime;
+
     const docRef = doc(db, 'system_data', 'aliexpress_database');
 
     // Build highly optimized update arguments using FieldPath to prevent dot nesting issues inside emails!
