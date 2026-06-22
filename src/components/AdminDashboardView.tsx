@@ -2101,13 +2101,13 @@ export default function AdminDashboardView({
                   );
                 }
 
-                return filteredOrders.map(({ merchantKey, merchantName, order, promotedBy }) => {
+                return filteredOrders.map(({ merchantKey, merchantName, order, promotedBy }, idx) => {
                   const item = order.items[0];
                   if (!item) return null;
 
                   return (
                     <div 
-                      key={order.id}
+                      key={`${merchantKey}-${order.id}-${idx}`}
                       className="bg-white border border-zinc-200 p-4 rounded-2xl hover:border-zinc-300 transition-colors flex flex-col gap-3 shadow-xs"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-150 pb-2">

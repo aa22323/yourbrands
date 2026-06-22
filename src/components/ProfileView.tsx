@@ -1384,9 +1384,9 @@ export default function ProfileView({
             </div>
           ) : (
             <div className="flex flex-col gap-2.5">
-              {pendingOrders.map((order) => (
+              {pendingOrders.map((order, idx) => (
                 <div 
-                  key={order.id}
+                  key={`${order.id}-${idx}`}
                   className="bg-white border border-zinc-200 rounded-2xl p-3 flex flex-col gap-2 hover:border-[#e51923] transition-all shadow-xs"
                 >
                   {/* Order Head */}
@@ -1455,9 +1455,9 @@ export default function ProfileView({
             </div>
           ) : (
             <div className="flex flex-col gap-2.5">
-              {shippedOrders.map((order) => (
+              {shippedOrders.map((order, idx) => (
                 <div 
-                  key={order.id}
+                  key={`${order.id}-${idx}`}
                   className="border p-3 flex flex-col gap-2 rounded-2xl transition-all shadow-xs text-left bg-indigo-50/15 border-indigo-150"
                 >
                   <div className="flex justify-between items-center text-[10px] font-mono border-b border-zinc-150 pb-1.5 font-bold">
@@ -1512,9 +1512,9 @@ export default function ProfileView({
             </div>
           ) : (
             <div className="flex flex-col gap-2.5">
-              {completedOrders.map((order) => (
+              {completedOrders.map((order, idx) => (
                 <div 
-                  key={order.id}
+                  key={`${order.id}-${idx}`}
                   className="border p-3 flex flex-col gap-2 rounded-2xl transition-all shadow-xs text-left bg-emerald-50/15 border-emerald-150"
                 >
                   <div className="flex justify-between items-center text-[10px] font-mono border-b border-zinc-150 pb-1.5 font-bold">
@@ -1579,9 +1579,9 @@ export default function ProfileView({
               <div className="text-[10.5px] bg-red-50/50 border border-red-200/50 rounded-xl p-3 text-zinc-650 leading-relaxed font-semibold text-left font-sans">
                 {t('selfPurchaseModeTip')}
               </div>
-              {selfOrders.map((order) => (
+              {selfOrders.map((order, idx) => (
                 <div 
-                  key={order.id}
+                  key={`${order.id}-${idx}`}
                   className={`bg-white border rounded-2xl p-3 flex flex-col gap-2 hover:border-[#e51923] transition-all shadow-xs text-left ${
                     order.status === 'completed'
                       ? 'border-emerald-250 bg-emerald-50/10'
