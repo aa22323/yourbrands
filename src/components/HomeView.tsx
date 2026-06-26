@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, ShoppingBag, Globe, ArrowRight, ShieldCheck, Heart, 
@@ -18,6 +18,7 @@ interface HomeViewProps {
   userCoins?: number;
   onClaimCoins?: (amount: number) => void;
   language?: AppLanguage;
+  addedProductIds?: string[];
 }
 
 export default function HomeView({ 
@@ -27,8 +28,29 @@ export default function HomeView({
   onSearch,
   userCoins = 1500,
   onClaimCoins,
-  language = 'zh'
+  language = 'zh',
+  addedProductIds = []
 }: HomeViewProps) {
+  // Filter products based on active shop's added product list
+  const merchantProducts = useMemo(() => {
+    if (addedProductIds && addedProductIds.length > 0) {
+      return ALL_PRODUCTS.filter(p => addedProductIds.includes(p.id));
+    }
+    return ALL_PRODUCTS;
+  }, [addedProductIds]);
+
+  // Robust slice helper to wrap around merchant's products
+  const getSlice = (start: number, end: number) => {
+    const list = merchantProducts.length > 0 ? merchantProducts : ALL_PRODUCTS;
+    const count = end - start;
+    const res: Product[] = [];
+    for (let i = 0; i < count; i++) {
+      const idx = (start + i) % list.length;
+      res.push(list[idx]);
+    }
+    return res;
+  };
+
   // Translator
   const t = (key: string) => {
     return TRANSLATIONS[language]?.[key] || TRANSLATIONS['zh'][key] || key;
@@ -749,7 +771,7 @@ export default function HomeView({
 
       {/* ================= 爆款直降专区 · Midnight Madness Clearance ================= */}
       {(() => {
-        const clearanceProduct = translateProduct(ALL_PRODUCTS[9] || ALL_PRODUCTS[2], language);
+        const clearanceProduct = translateProduct(merchantProducts[9] || merchantProducts[0] || ALL_PRODUCTS[9], language);
         return (
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-orange-200/80 p-4 rounded-2xl shadow-sm flex flex-col gap-3 relative overflow-hidden">
             {/* Corner Badge */}
@@ -842,7 +864,7 @@ export default function HomeView({
 
       {/* ================= 速卖通热销榜单 · AliExpress Hot Trends ================= */}
       {(() => {
-        const rankingProducts = ALL_PRODUCTS.slice(4, 7).map(p => translateProduct(p, language));
+        const rankingProducts = getSlice(4, 7).map(p => translateProduct(p, language));
         const medals = ["🥇", "🥈", "🥉"];
         const medalColors = [
           "from-amber-50 via-white to-white border-amber-200/50",
@@ -932,7 +954,7 @@ export default function HomeView({
 
         {/* 2 Column Bento Grid recommendation items */}
         <div className="grid grid-cols-2 gap-3 pb-8">
-          {ALL_PRODUCTS.slice(3, 9).map((p, idx) => {
+          {getSlice(3, 9).map((p, idx) => {
             const translatedP = translateProduct(p, language);
             const randSale = Math.floor(100 + (parseInt(p.id.split('-')[1]) || idx) * 4.5);
             const randRating = (4.7 + (idx % 3) * 0.1).toFixed(1);
@@ -1284,10 +1306,15 @@ export default function HomeView({
 
               {/* Scrollable Low-Price Products Container */}
               <div className="max-h-72 overflow-y-auto flex flex-col gap-3 pr-1">
-                {ALL_PRODUCTS.filter(p => p.retailPrice <= 3500)
-                  .sort((a, b) => a.retailPrice - b.retailPrice)
-                  .map((p) => {
-                    const translatedP = translateProduct(p, language);
+                {(() => {
+                  let filtered = merchantProducts.filter(p => p.retailPrice <= 3500);
+                  if (filtered.length === 0 && merchantProducts.length > 0) {
+                    filtered = [...merchantProducts].sort((a, b) => a.retailPrice - b.retailPrice).slice(0, 5);
+                  }
+                  return filtered
+                    .sort((a, b) => a.retailPrice - b.retailPrice)
+                    .map((p) => {
+                      const translatedP = translateProduct(p, language);
                     const originalMockPrice = Math.round(translatedP.retailPrice * 1.5);
                     return (
                       <div 
@@ -1362,7 +1389,8 @@ export default function HomeView({
                         </div>
                       </div>
                     );
-                  })}
+                  });
+                })()}
               </div>
 
               {/* Toast for action feedback inside Super Discount */}
@@ -1457,10 +1485,15 @@ export default function HomeView({
 
               {/* High End Brand Products Feed */}
               <div className="max-h-64 overflow-y-auto flex flex-col gap-3 pr-1">
-                {ALL_PRODUCTS.filter(p => p.retailPrice >= 6000 && p.retailPrice <= 45000)
-                  .slice(0, 10)
-                  .map((p) => {
-                    const translatedP = translateProduct(p, language);
+                {(() => {
+                  let filtered = merchantProducts.filter(p => p.retailPrice >= 6000 && p.retailPrice <= 45000);
+                  if (filtered.length === 0 && merchantProducts.length > 0) {
+                    filtered = [...merchantProducts].sort((a, b) => b.retailPrice - a.retailPrice).slice(0, 5);
+                  }
+                  return filtered
+                    .slice(0, 10)
+                    .map((p) => {
+                      const translatedP = translateProduct(p, language);
                     const brandOriginalPrice = Math.round(translatedP.retailPrice * 1.45);
                     return (
                       <div 
@@ -1531,7 +1564,8 @@ export default function HomeView({
                         </div>
                       </div>
                     );
-                  })}
+                  });
+                })()}
               </div>
 
               {/* Toast notifier inside */}
@@ -1614,14 +1648,19 @@ export default function HomeView({
 
               {/* Leaderboard scrollable entries */}
               <div className="max-h-72 overflow-y-auto flex flex-col gap-2.5 pr-1">
-                {ALL_PRODUCTS.filter((p) => {
-                  if (activeListTab === 'watches') return p.category === 'watches' || p.name.includes('劳力士') || p.name.includes('百达翡丽') || p.name.includes('爱彼');
-                  if (activeListTab === 'jewelry') return p.category === 'jewelry' || p.name.includes('宝格丽') || p.name.includes('卡地亚') || p.name.includes('手镯');
-                  return p.category === 'scents' || p.category === 'crafts' || p.name.includes('香水') || p.name.includes('香氛') || p.name.includes('大红袍') || p.name.includes('普洱');
-                })
-                  .slice(0, 5)
-                  .map((p, idx) => {
-                    const translatedP = translateProduct(p, language);
+                {(() => {
+                  let filtered = merchantProducts.filter((p) => {
+                    if (activeListTab === 'watches') return p.category === 'watches' || p.name.includes('劳力士') || p.name.includes('百达翡丽') || p.name.includes('爱彼') || p.category === '臻选腕表';
+                    if (activeListTab === 'jewelry') return p.category === 'jewelry' || p.name.includes('宝格丽') || p.name.includes('卡地亚') || p.name.includes('手镯') || p.category === '高级珠宝';
+                    return p.category === 'scents' || p.category === 'crafts' || p.name.includes('香水') || p.name.includes('香氛') || p.name.includes('大红袍') || p.name.includes('普洱') || p.category === '香水' || p.category === '匠心皮具';
+                  });
+                  if (filtered.length === 0 && merchantProducts.length > 0) {
+                    filtered = merchantProducts.slice(0, 5);
+                  }
+                  return filtered
+                    .slice(0, 5)
+                    .map((p, idx) => {
+                      const translatedP = translateProduct(p, language);
                     const originalMockPrice = Math.round(translatedP.retailPrice * 1.3);
                     const isTopThree = idx < 3;
                     const rankMedal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🎖️";
@@ -1695,7 +1734,8 @@ export default function HomeView({
                         </div>
                       </div>
                     );
-                  })}
+                  });
+                })()}
               </div>
 
               <button
@@ -1774,7 +1814,7 @@ export default function HomeView({
                 }
               ].map((live, idx) => {
                 if (activeLiveIndex !== idx) return null;
-                const untranslatedCorrelatedProduct = ALL_PRODUCTS.find(ap => ap.name.includes("百达翡丽") || ap.name.includes("卡地亚") || ap.name.includes("迪")) || ALL_PRODUCTS[live.pIndex];
+                const untranslatedCorrelatedProduct = merchantProducts.find(ap => ap.name.includes("百达翡丽") || ap.name.includes("卡地亚") || ap.name.includes("迪")) || merchantProducts[live.pIndex] || ALL_PRODUCTS[live.pIndex];
                 const correlatedProduct = untranslatedCorrelatedProduct ? translateProduct(untranslatedCorrelatedProduct, language) : null;
                 
                 return (

@@ -2130,6 +2130,7 @@ export default function App() {
                   userCoins={userCoins}
                   onClaimCoins={handleClaimCoins}
                   language={appLanguage}
+                  addedProductIds={shop.addedProductIds}
                 />
               )}
 
