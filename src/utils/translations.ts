@@ -4082,6 +4082,13 @@ export function setProductImageOverrides(overrides: Record<string, string>) {
   productImageOverrides = overrides;
 }
 
+export function getProductImage(productId: string, defaultImage?: string): string {
+  if (productId && productImageOverrides[productId]) {
+    return productImageOverrides[productId];
+  }
+  return defaultImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80';
+}
+
 /**
  * Translates a given product on-the-fly depending on the selected language.
  * Keeps the administrative backend strictly in Chinese, while full localized translations are returned 

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Product, Order, Shop, FinancialTransaction } from '../types';
 import { ALL_PRODUCTS, DEFAULT_SHOP, resolveAvatar } from '../data';
+import { getProductImage } from '../utils/translations';
 
 interface AdminDashboardViewProps {
   merchantsDb: Record<string, any>;
@@ -2135,7 +2136,7 @@ export default function AdminDashboardView({
                       </div>
 
                       <div className="flex gap-3">
-                        <img src={item.image} alt="" className="w-14 h-14 rounded-lg object-cover border border-zinc-200" referrerPolicy="no-referrer" />
+                        <img src={getProductImage(item.productId, item.image)} alt="" className="w-14 h-14 rounded-lg object-cover border border-zinc-200" referrerPolicy="no-referrer" />
                         <div className="flex flex-col justify-between flex-1">
                           <span className="text-xs font-bold text-zinc-900 line-clamp-1">{item.productName}</span>
                           <div className="flex flex-wrap items-center gap-2 mt-0.5">

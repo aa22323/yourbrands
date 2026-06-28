@@ -7,7 +7,7 @@ import {
 import { Shop, Order, FinancialTransaction } from '../types';
 import { resolveAvatar } from '../data';
 
-import { AppLanguage, translateProduct, TRANSLATIONS } from '../utils/translations';
+import { AppLanguage, translateProduct, TRANSLATIONS, getProductImage } from '../utils/translations';
 
 interface ProfileViewProps {
   shop: Shop;
@@ -1410,7 +1410,7 @@ export default function ProfileView({
                   {/* Order items info */}
                   <div className="bg-zinc-50 border border-zinc-200 p-2 rounded-xl flex gap-2.5 text-xs items-center shadow-xs">
                     <img 
-                      src={order.items[0]?.image} 
+                      src={getProductImage(order.items[0]?.productId, order.items[0]?.image)} 
                       alt=""
                       className="w-8.5 h-8.5 object-cover rounded-md border border-zinc-200 bg-white"
                       referrerPolicy="no-referrer"
@@ -1475,7 +1475,7 @@ export default function ProfileView({
 
                   <div className="bg-white p-2 rounded-xl flex gap-2 text-xs items-center border border-zinc-150 shadow-xxs">
                     <img 
-                      src={order.items[0]?.image} 
+                      src={getProductImage(order.items[0]?.productId, order.items[0]?.image)} 
                       alt=""
                       className="w-8.5 h-8.5 object-cover rounded-md border border-zinc-200 bg-white"
                       referrerPolicy="no-referrer"
@@ -1532,7 +1532,7 @@ export default function ProfileView({
 
                   <div className="bg-white p-2 rounded-xl flex gap-2 text-xs items-center border border-zinc-150 shadow-xxs">
                     <img 
-                      src={order.items[0]?.image} 
+                      src={getProductImage(order.items[0]?.productId, order.items[0]?.image)} 
                       alt=""
                       className="w-8.5 h-8.5 object-cover rounded-md border border-zinc-200 bg-white"
                       referrerPolicy="no-referrer"
@@ -1645,7 +1645,7 @@ export default function ProfileView({
 
                   <div className="bg-zinc-50 border border-zinc-200 p-2 rounded-xl flex gap-2.5 text-xs items-center shadow-xs">
                     <img 
-                      src={order.items[0]?.image} 
+                      src={getProductImage(order.items[0]?.productId, order.items[0]?.image)} 
                       alt=""
                       className="w-8.5 h-8.5 object-cover rounded-md border border-zinc-200 bg-white"
                       referrerPolicy="no-referrer"

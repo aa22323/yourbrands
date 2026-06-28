@@ -202,9 +202,21 @@ function pruneDatabase(db: any) {
   for (const key of Object.keys(db.merchantsDb)) {
     const m = db.merchantsDb[key];
     if (m) {
-      if (Array.isArray(m.orders) && m.orders.length > 50) {
-        console.log(`[Database Pruner] Truncating orders for ${key} from ${m.orders.length} to 50.`);
-        m.orders = m.orders.slice(0, 50);
+      if (Array.isArray(m.orders)) {
+        if (m.orders.length > 50) {
+          console.log(`[Database Pruner] Truncating orders for ${key} from ${m.orders.length} to 50.`);
+          m.orders = m.orders.slice(0, 50);
+        }
+        // Strip giant base64 images from order items to prevent Firestore document size overflow!
+        m.orders.forEach((o: any) => {
+          if (o && Array.isArray(o.items)) {
+            o.items.forEach((item: any) => {
+              if (item && item.image && item.image.startsWith("data:image/")) {
+                item.image = ""; // Clear giant base64 string
+              }
+            });
+          }
+        });
       }
       if (Array.isArray(m.financialLogs) && m.financialLogs.length > 50) {
         console.log(`[Database Pruner] Truncating financialLogs for ${key} from ${m.financialLogs.length} to 50.`);

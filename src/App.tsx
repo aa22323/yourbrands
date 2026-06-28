@@ -641,6 +641,29 @@ export default function App() {
 
     const docRef = doc(db, 'system_data', 'aliexpress_database');
 
+    // Helper to sanitize merchant profile by removing giant base64 image strings from orders
+    const sanitizeMerchantProfile = (profile: any) => {
+      if (!profile) return profile;
+      const nextProfile = { ...profile };
+      if (Array.isArray(nextProfile.orders)) {
+        nextProfile.orders = nextProfile.orders.map((o: any) => {
+          if (o && Array.isArray(o.items)) {
+            return {
+              ...o,
+              items: o.items.map((item: any) => {
+                if (item && item.image && item.image.startsWith("data:image/")) {
+                  return { ...item, image: "" };
+                }
+                return item;
+              })
+            };
+          }
+          return o;
+        });
+      }
+      return nextProfile;
+    };
+
     // Build highly optimized update arguments using FieldPath to prevent dot nesting issues inside emails!
     const updateArgs: any[] = [];
 
@@ -660,7 +683,7 @@ export default function App() {
         const currentProfile = merchantsDb[k];
         const lastProfile = lastFetchedDataRef.current?.merchantsDb[k];
         if (JSON.stringify(currentProfile) !== JSON.stringify(lastProfile)) {
-          updateArgs.push(new FieldPath('merchantsDb', k), currentProfile);
+          updateArgs.push(new FieldPath('merchantsDb', k), sanitizeMerchantProfile(currentProfile));
         }
       });
       // Find deleted merchants
@@ -674,7 +697,7 @@ export default function App() {
       // If no last fetched data is available yet, only update the active logged-in merchant to keep it extremely safe
       const userKey = userAccountName.toLowerCase();
       if (userKey && merchantsDb[userKey]) {
-        updateArgs.push(new FieldPath('merchantsDb', userKey), merchantsDb[userKey]);
+        updateArgs.push(new FieldPath('merchantsDb', userKey), sanitizeMerchantProfile(merchantsDb[userKey]));
       }
     }
 
@@ -716,7 +739,16 @@ export default function App() {
       isLocalChangeRef.current = false;
 
       // Extract sanitized merchantsDb for both local setDoc fallback and Express backend POST payload
-      const sanitizedMerchantsDb = { ...merchantsDb };
+      const sanitizedMerchantsDb: Record<string, any> = {};
+      Object.keys(merchantsDb).forEach(mKey => {
+        const m = merchantsDb[mKey];
+        if (m && mKey !== 'system_config') {
+          sanitizedMerchantsDb[mKey] = sanitizeMerchantProfile(m);
+        } else {
+          sanitizedMerchantsDb[mKey] = m;
+        }
+      });
+
       if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
         sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
       } else if (sanitizedMerchantsDb.system_config) {
