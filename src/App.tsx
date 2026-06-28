@@ -707,7 +707,7 @@ export default function App() {
       return;
     }
 
-    // Debounce the Firestore write operation by 1200ms to group rapid clicks / mutations safely
+    // Debounce the Firestore write operation by 200ms to group rapid clicks / mutations safely
     let activeTimer = true;
     const timerId = setTimeout(() => {
       if (!activeTimer) return;
@@ -771,7 +771,7 @@ export default function App() {
               console.error('Full setDoc sync fallback failed:', fallbackErr);
             });
         });
-    }, 1200);
+    }, 200);
 
     return () => {
       activeTimer = false;
