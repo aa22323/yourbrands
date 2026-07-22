@@ -60,72 +60,6 @@ const DEFAULT_SHOP = {
 
 const DEFAULT_ORDERS: any[] = [];
 
-const DEFAULT_ORDERS_FOR_STORE = [
-  {
-    id: 'ORD-20260528-001',
-    shopId: '88888',
-    customerName: 'Alex Song',
-    customerPhone: '13812345678',
-    shippingAddress: 'Suite 2201, Tower A, Riverside Plaza, Shanghai',
-    orderDate: '2026-05-28 08:30',
-    items: [
-      {
-        productId: 'LP-0001',
-        productName: 'Cartier Bordeaux Classic Automatic Mechanical Watch',
-        quantity: 1,
-        retailPrice: 6200,
-        costPrice: 5800,
-        image: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg'
-      }
-    ],
-    totalPrice: 6200,
-    totalProfit: 400,
-    status: 'pending' as const
-  },
-  {
-    id: 'ORD-20260528-002',
-    shopId: '88888',
-    customerName: 'Chloe Ji',
-    customerPhone: '15988889911',
-    shippingAddress: 'No. 19 Sanlitun Road, Chaoyang District, Beijing',
-    orderDate: '2026-05-28 07:15',
-    items: [
-      {
-        productId: 'LP-0002',
-        productName: 'Gilded Amber Niche Luxury Perfume',
-        quantity: 2,
-        retailPrice: 135,
-        costPrice: 120,
-        image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg'
-      }
-    ],
-    totalPrice: 270,
-    totalProfit: 30,
-    status: 'shipped' as const
-  },
-  {
-    id: 'ORD-20260528-003',
-    shopId: '88888',
-    customerName: 'Michael Chang',
-    customerPhone: '13900112233',
-    shippingAddress: 'Building 5, Tech Park, Nanshan, Shenzhen',
-    orderDate: '2026-05-27 16:20',
-    items: [
-      {
-        productId: 'LP-0003',
-        productName: 'Montblanc Meisterstück Gold-Coated Classique Fountain Pen',
-        quantity: 1,
-        retailPrice: 950,
-        costPrice: 880,
-        image: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg'
-      }
-    ],
-    totalPrice: 950,
-    totalProfit: 70,
-    status: 'completed' as const
-  }
-];
-
 const INITIAL_DB = {
   registeredUsers: [
     { name: 'admin', password: '123456', id: '28401', isSalesman: false },
@@ -177,48 +111,17 @@ const INITIAL_DB = {
       name: 'oopqwe001@gmail.com',
       password: '888888',
       id: '88888',
-      balance: 15800,
+      balance: 0,
       shop: {
         id: '88888',
         name: '总控旗舰奢优店',
-        avatar: "/aliexpress_seller_logo_1780316211327.png",
+        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=faces",
         qrCode: "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&h=300&fit=crop",
-        addedProductIds: ['LP-0001', 'LP-0002', 'LP-0003', 'LP-0004', 'LP-0005', 'LP-0006', 'LP-0007', 'LP-0009', 'LP-0010']
+        addedProductIds: []
       },
-      orders: DEFAULT_ORDERS_FOR_STORE,
-      financialLogs: [
-        {
-          id: 'TX-20260528-1025',
-          type: 'settlement',
-          typeLabel: '订单交割分润',
-          amount: 1400,
-          status: '已到账',
-          description: '卡地亚经典勃艮第红机械表 [LP-0001] 交割出货秒级分佣入账',
-          createdAt: '2026-05-28 11:15:32'
-        },
-        {
-          id: 'TX-20260527-0955',
-          type: 'withdraw',
-          typeLabel: '银行账户提现',
-          amount: -500,
-          status: '成功',
-          description: '提现至银行账户 (尾号8899)',
-          createdAt: '2026-05-27 14:24:12'
-        }
-      ],
-      withdrawHistory: [
-        {
-          id: 'WD-20260527-085',
-          amount: 500,
-          bankName: '银行账户',
-          branchName: '总行',
-          branchNo: '232',
-          fullName: '总控旗舰奢优店',
-          bankCard: '622202******8899',
-          status: '已到账',
-          createdAt: '2026-05-27 14:24:12'
-        }
-      ]
+      orders: [],
+      financialLogs: [],
+      withdrawHistory: []
     }
   }
 };
@@ -277,83 +180,21 @@ function migrateDatabaseToUsd(db: any) {
   return db;
 }
 
-function ensureDefaultAccounts(database: any) {
-  if (!database) database = {};
-  if (!Array.isArray(database.registeredUsers)) {
-    database.registeredUsers = [];
-  }
-  
-  const defaultUsers = [
-    { name: 'admin', password: '123456', id: '28401', isSalesman: false },
-    { name: 'oopqwe001@gmail.com', password: '888888', id: '88888', isSalesman: false }
-  ];
-
-  defaultUsers.forEach(u => {
-    if (!database.registeredUsers.some((existing: any) => existing && existing.name && existing.name.toLowerCase() === u.name.toLowerCase())) {
-      database.registeredUsers.push(u);
-    }
-  });
-
-  if (!database.merchantsDb || typeof database.merchantsDb !== 'object') {
-    database.merchantsDb = {};
-  }
-
-  // Remove test artifact if present
-  delete database.merchantsDb.test;
-
-  // Ensure admin merchant
-  if (!database.merchantsDb['admin'] || !database.merchantsDb['admin'].name) {
-    database.merchantsDb['admin'] = INITIAL_DB.merchantsDb['admin'];
-  }
-
-  // Ensure oopqwe001@gmail.com merchant
-  const oopKey = 'oopqwe001@gmail.com';
-  if (!database.merchantsDb[oopKey] || !database.merchantsDb[oopKey].name) {
-    database.merchantsDb[oopKey] = INITIAL_DB.merchantsDb[oopKey];
-  } else {
-    const m = database.merchantsDb[oopKey];
-    if (!Array.isArray(m.orders) || m.orders.length === 0) {
-      m.orders = DEFAULT_ORDERS_FOR_STORE;
-    }
-    if (typeof m.balance !== 'number' || m.balance === 0) {
-      m.balance = 15800;
-    }
-    if (!m.shop || !Array.isArray(m.shop.addedProductIds) || m.shop.addedProductIds.length === 0) {
-      m.shop = {
-        id: '88888',
-        name: '总控旗舰奢优店',
-        avatar: "/aliexpress_seller_logo_1780316211327.png",
-        qrCode: "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&h=300&fit=crop",
-        addedProductIds: ['LP-0001', 'LP-0002', 'LP-0003', 'LP-0004', 'LP-0005', 'LP-0006', 'LP-0007', 'LP-0009', 'LP-0010'],
-        ...(m.shop || {})
-      };
-    }
-    if (!Array.isArray(m.financialLogs) || m.financialLogs.length === 0) {
-      m.financialLogs = INITIAL_DB.merchantsDb[oopKey].financialLogs;
-    }
-    if (!Array.isArray(m.withdrawHistory) || m.withdrawHistory.length === 0) {
-      m.withdrawHistory = INITIAL_DB.merchantsDb[oopKey].withdrawHistory;
-    }
-  }
-
-  return database;
-}
-
 let cachedDb: any = INITIAL_DB;
 
 // Load local cache on startup synchronously
 try {
   if (fs.existsSync(DB_FILE)) {
     const content = fs.readFileSync(DB_FILE, "utf-8");
-    cachedDb = ensureDefaultAccounts(migrateDatabaseToUsd(JSON.parse(content)));
+    cachedDb = migrateDatabaseToUsd(JSON.parse(content));
+    // Immediately write back migrated structure locally
     fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
   } else {
-    cachedDb = ensureDefaultAccounts(INITIAL_DB);
-    fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
+    fs.writeFileSync(DB_FILE, JSON.stringify(INITIAL_DB, null, 2), "utf-8");
+    cachedDb = INITIAL_DB;
   }
 } catch (e) {
   console.error("Failed to read local cache on startup", e);
-  cachedDb = ensureDefaultAccounts(INITIAL_DB);
 }
 
 function pruneDatabase(db: any) {
@@ -391,63 +232,61 @@ function pruneDatabase(db: any) {
 }
 
 async function getDbFromFirebase() {
-  cachedDb = ensureDefaultAccounts(cachedDb);
-
   if (!adminDb && !db) {
     return { ...cachedDb, _isFallback: true };
   }
   try {
     if (adminDb) {
-      try {
-        const docSnap = await adminDb.collection("system_data").doc("aliexpress_database").get();
-        if (docSnap.exists) {
-          const data = docSnap.data() || {};
-          if (data && data.merchantsDb) {
-            let loadedDb = {
-              registeredUsers: data.registeredUsers || [],
-              merchantsDb: data.merchantsDb || {},
-              currency: data.currency,
-              updatedAt: data.updatedAt || Date.now()
-            };
-            loadedDb = ensureDefaultAccounts(loadedDb);
-            const needsRemoteSave = loadedDb.currency !== "USD";
-            cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
-            fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
-            if (needsRemoteSave) {
-              console.log("Saving migrated USD database back to Admin Firebase...");
-              await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
-            }
+      // Use Firebase Admin SDK
+      const docSnap = await adminDb.collection("system_data").doc("aliexpress_database").get();
+      if (docSnap.exists) {
+        const data = docSnap.data() || {};
+        if (data && data.registeredUsers && data.merchantsDb) {
+          const remoteUpdatedAt = data.updatedAt || 0;
+          let loadedDb = {
+            registeredUsers: data.registeredUsers,
+            merchantsDb: data.merchantsDb,
+            currency: data.currency,
+            updatedAt: remoteUpdatedAt
+          };
+          const needsRemoteSave = loadedDb.currency !== "USD";
+          cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
+          // Async backup to local json
+          fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
+            if (err) console.error("Error backing up file-system cache:", err);
+          });
+          if (needsRemoteSave) {
+            console.log("Saving migrated USD database back to Admin Firebase...");
+            await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
           }
-          return { ...cachedDb, _isFallback: false };
-        } else {
-          console.log("No database document found in Admin Firestore. Seeding database state...");
-          cachedDb.updatedAt = Date.now();
-          cachedDb = pruneDatabase(ensureDefaultAccounts(cachedDb));
-          await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
-          return { ...cachedDb, _isFallback: false };
         }
-      } catch (adminErr: any) {
-        console.warn("Firebase Admin SDK failed to fetch. Dynamically falling back to Client Web SDK...", adminErr.message || adminErr);
-        adminDb = null;
+        return { ...cachedDb, _isFallback: false };
+      } else {
+        console.log("No database document found in Admin Firestore. Seeding database state...");
+        cachedDb.updatedAt = Date.now();
+        cachedDb = pruneDatabase(cachedDb);
+        await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+        return { ...cachedDb, _isFallback: false };
       }
-    }
-
-    if (db) {
+    } else {
+      // Use Client SDK fallback
       const docRef = doc(db, "system_data", "aliexpress_database");
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data() || {};
-        if (data && data.merchantsDb) {
+        if (data && data.registeredUsers && data.merchantsDb) {
+          const remoteUpdatedAt = data.updatedAt || 0;
           let loadedDb = {
-            registeredUsers: data.registeredUsers || [],
-            merchantsDb: data.merchantsDb || {},
+            registeredUsers: data.registeredUsers,
+            merchantsDb: data.merchantsDb,
             currency: data.currency,
-            updatedAt: data.updatedAt || Date.now()
+            updatedAt: remoteUpdatedAt
           };
-          loadedDb = ensureDefaultAccounts(loadedDb);
           const needsRemoteSave = loadedDb.currency !== "USD";
           cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
-          fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
+          fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
+            if (err) console.error("Error backing up file-system cache:", err);
+          });
           if (needsRemoteSave) {
             console.log("Saving migrated USD database back to Client Firebase...");
             await setDoc(docRef, cachedDb);
@@ -457,13 +296,11 @@ async function getDbFromFirebase() {
       } else {
         console.log("No database document found in Client Firestore. Seeding database state...");
         cachedDb.updatedAt = Date.now();
-        cachedDb = pruneDatabase(ensureDefaultAccounts(cachedDb));
+        cachedDb = pruneDatabase(cachedDb);
         await setDoc(docRef, cachedDb);
         return { ...cachedDb, _isFallback: false };
       }
     }
-
-    return { ...cachedDb, _isFallback: true };
   } catch (e) {
     console.error("Failed to fetch from Firebase, using current cache:", e);
     return { ...cachedDb, _isFallback: true };
@@ -471,65 +308,30 @@ async function getDbFromFirebase() {
 }
 
 async function saveDbToFirebase(incomingUsers: any, incomingMerchants: any) {
-  // Merge users safely
-  if (Array.isArray(incomingUsers) && incomingUsers.length > 0) {
-    const existingUsersMap = new Map<string, any>();
-    (cachedDb.registeredUsers || []).forEach((u: any) => {
-      if (u && u.name) existingUsersMap.set(u.name.toLowerCase(), u);
-    });
-    incomingUsers.forEach((u: any) => {
-      if (u && u.name) existingUsersMap.set(u.name.toLowerCase(), u);
-    });
-    cachedDb.registeredUsers = Array.from(existingUsersMap.values());
-  }
+  if (incomingUsers) cachedDb.registeredUsers = incomingUsers;
+  if (incomingMerchants) cachedDb.merchantsDb = incomingMerchants;
+  cachedDb.updatedAt = Date.now(); // SET Newer write timestamp!
 
-  // Merge merchants safely
-  if (incomingMerchants && typeof incomingMerchants === 'object') {
-    if (!cachedDb.merchantsDb) cachedDb.merchantsDb = {};
-    Object.keys(incomingMerchants).forEach(k => {
-      if (k === 'test') return;
-      const val = incomingMerchants[k];
-      if (val && typeof val === 'object') {
-        cachedDb.merchantsDb[k] = {
-          ...(cachedDb.merchantsDb[k] || {}),
-          ...val
-        };
-      }
-    });
-  }
-
-  cachedDb = ensureDefaultAccounts(cachedDb);
-  cachedDb.updatedAt = Date.now();
+  // Perform auto-pruning to trim old historical entries so we stay well below Firestore's 1MB single-document quota limit!
   cachedDb = pruneDatabase(cachedDb);
 
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
-    console.log("[server] Wrote updated state to database.json cleanly.");
-  } catch (err) {
-    console.error("Error backing up file-system cache during save:", err);
-  }
+  fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
+    if (err) console.error("Error backing up file-system cache during save:", err);
+  });
 
   if (!adminDb && !db) return;
 
   try {
     if (adminDb) {
-      try {
-        await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
-        console.log("Successfully synchronized state to cloud Firestore using Admin SDK.");
-        return;
-      } catch (adminErr: any) {
-        console.warn("Firebase Admin SDK failed to save. Dynamically falling back to Client Web SDK...", adminErr.message || adminErr);
-        adminDb = null;
-      }
-    }
-
-    if (db) {
+      await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+      console.log("Successfully synchronized state to cloud Firestore using Admin SDK.");
+    } else {
       const docRef = doc(db, "system_data", "aliexpress_database");
       await setDoc(docRef, cachedDb);
       console.log("Successfully synchronized state to cloud Firestore using Client SDK fallback.");
     }
   } catch (e) {
-    console.error("Failed to save state to Firebase Firestore:", e);
+    console.error("Failed to save state to Firebase Firestore (Check if single-document 1MB size limit exceeded):", e);
   }
 }
 

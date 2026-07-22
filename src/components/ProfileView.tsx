@@ -13,8 +13,8 @@ interface ProfileViewProps {
   shop: Shop;
   orders: Order[];
   onUpdateShop: (updatedShop: Partial<Shop>) => void;
-  onShipOrder: (orderId: string | string[]) => void;
-  onConfirmReceiveOrder?: (orderId: string | string[]) => void;
+  onShipOrder: (orderId: string) => void;
+  onConfirmReceiveOrder?: (orderId: string) => void;
   userBalance?: number;
   onUpdateBalance?: (newBalance: number) => void;
   financialLogs?: FinancialTransaction[];
@@ -25,7 +25,7 @@ interface ProfileViewProps {
     status: '成功' | '已到账' | '已扣除' | '已提交' | '已拒绝',
     description: string
   ) => void;
-  onDeleteOrder?: (orderId: string | string[]) => void;
+  onDeleteOrder?: (orderId: string) => void;
   language?: AppLanguage;
   onChangeLanguage?: (lang: AppLanguage) => void;
   userPassword?: string;
@@ -347,8 +347,9 @@ export default function ProfileView({
 
   const handleShipAll = () => {
     if (pendingOrders.length === 0) return;
-    const allPendingIds = pendingOrders.map(o => o.id);
-    onShipOrder(allPendingIds);
+    pendingOrders.forEach(o => {
+      onShipOrder(o.id);
+    });
   };
   
   // Local states for custom editing
