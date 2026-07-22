@@ -486,11 +486,55 @@ export default function App() {
           const existing = prev[k];
 
           if (existing && incoming) {
+            // Helper to get status progression rank
+            const statusRank = (s?: string) => {
+              if (s === 'completed') return 3;
+              if (s === 'shipped') return 2;
+              return 1;
+            };
+
+            const mergeOrdersSmart = (incomingOrders: any[], existingOrders: any[]) => {
+              if (!Array.isArray(incomingOrders) || incomingOrders.length === 0) return existingOrders || [];
+              if (!Array.isArray(existingOrders) || existingOrders.length === 0) return incomingOrders;
+
+              const existingMap = new Map<string, any>();
+              existingOrders.forEach(o => {
+                if (o && o.id) existingMap.set(o.id, o);
+              });
+
+              const mergedList = incomingOrders.map(inc => {
+                if (!inc || !inc.id) return inc;
+                const ext = existingMap.get(inc.id);
+                if (!ext) return inc;
+
+                const extRank = statusRank(ext.status);
+                const incRank = statusRank(inc.status);
+
+                if (extRank > incRank) {
+                  return {
+                    ...inc,
+                    status: ext.status,
+                    shippedAt: ext.shippedAt || inc.shippedAt
+                  };
+                }
+                return inc;
+              });
+
+              const incomingIds = new Set(incomingOrders.map(o => o?.id));
+              existingOrders.forEach(ext => {
+                if (ext && ext.id && !incomingIds.has(ext.id)) {
+                  mergedList.push(ext);
+                }
+              });
+
+              return mergedList;
+            };
+
             merged[k] = {
               ...existing,
               ...incoming,
-              // Preserve non-empty orders if incoming is empty/missing
-              orders: (Array.isArray(incoming.orders) && incoming.orders.length > 0) ? incoming.orders : (existing.orders || []),
+              // Smart-merge orders to preserve local shipped/completed statuses against stale server polls
+              orders: mergeOrdersSmart(incoming.orders, existing.orders),
               // Preserve non-empty financialLogs if incoming is empty/missing
               financialLogs: (Array.isArray(incoming.financialLogs) && incoming.financialLogs.length > 0) ? incoming.financialLogs : (existing.financialLogs || []),
               // Preserve non-empty withdrawHistory if incoming is empty/missing

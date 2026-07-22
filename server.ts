@@ -442,6 +442,49 @@ function pruneDatabase(db: any) {
   return db;
 }
 
+function orderStatusRank(s?: string) {
+  if (s === 'completed') return 3;
+  if (s === 'shipped') return 2;
+  return 1;
+}
+
+function mergeOrdersSmart(localOrders: any[], remoteOrders: any[]) {
+  if (!Array.isArray(remoteOrders) || remoteOrders.length === 0) return localOrders || [];
+  if (!Array.isArray(localOrders) || localOrders.length === 0) return remoteOrders;
+
+  const localMap = new Map<string, any>();
+  localOrders.forEach(o => {
+    if (o && o.id) localMap.set(o.id, o);
+  });
+
+  const merged = remoteOrders.map(rem => {
+    if (!rem || !rem.id) return rem;
+    const loc = localMap.get(rem.id);
+    if (!loc) return rem;
+
+    const locRank = orderStatusRank(loc.status);
+    const remRank = orderStatusRank(rem.status);
+
+    if (locRank > remRank) {
+      return {
+        ...rem,
+        status: loc.status,
+        shippedAt: loc.shippedAt || rem.shippedAt
+      };
+    }
+    return rem;
+  });
+
+  const remoteIds = new Set(remoteOrders.map(o => o?.id));
+  localOrders.forEach(loc => {
+    if (loc && loc.id && !remoteIds.has(loc.id)) {
+      merged.push(loc);
+    }
+  });
+
+  return merged;
+}
+
 async function getDbFromFirebase() {
   cachedDb = ensureDefaultAccounts(cachedDb);
   await syncCustomImagesFromFirestore();
@@ -455,29 +498,46 @@ async function getDbFromFirebase() {
   if (!adminDb && !db) {
     return { ...cachedDb, _isFallback: true };
   }
+
+  const processCloudData = async (data: any) => {
+    if (!data || !data.merchantsDb) return false;
+    const cloudUpdatedAt = Number(data.updatedAt) || 0;
+    const localUpdatedAt = Number(cachedDb.updatedAt) || 0;
+
+    // If local cachedDb has a strictly newer timestamp, keep local cachedDb!
+    if (localUpdatedAt > cloudUpdatedAt) {
+      console.log(`[getDbFromFirebase] Local cache (ts: ${localUpdatedAt}) is newer than cloud Firestore (ts: ${cloudUpdatedAt}). Preserving local disk database.`);
+      return true;
+    }
+
+    let loadedDb = {
+      registeredUsers: data.registeredUsers || [],
+      merchantsDb: data.merchantsDb || {},
+      currency: data.currency,
+      updatedAt: cloudUpdatedAt || Date.now()
+    };
+    loadedDb = ensureDefaultAccounts(loadedDb);
+
+    // Smart-merge orders to ensure shipped / completed statuses from local disk are not regressed
+    Object.keys(loadedDb.merchantsDb).forEach(mKey => {
+      const cloudMerchant = loadedDb.merchantsDb[mKey];
+      const localMerchant = cachedDb.merchantsDb?.[mKey];
+      if (cloudMerchant && localMerchant && Array.isArray(localMerchant.orders)) {
+        cloudMerchant.orders = mergeOrdersSmart(localMerchant.orders, cloudMerchant.orders || []);
+      }
+    });
+
+    cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
+    fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
+    return true;
+  };
+
   try {
     if (adminDb) {
       try {
         const docSnap = await adminDb.collection("system_data").doc("aliexpress_database").get();
         if (docSnap.exists) {
-          const data = docSnap.data() || {};
-          if (data && data.merchantsDb) {
-            let loadedDb = {
-              registeredUsers: data.registeredUsers || [],
-              merchantsDb: data.merchantsDb || {},
-              currency: data.currency,
-              updatedAt: data.updatedAt || Date.now()
-            };
-            loadedDb = ensureDefaultAccounts(loadedDb);
-            const needsRemoteSave = loadedDb.currency !== "USD" || !data.merchantsDb['oopqwe001@gmail.com'] || !Array.isArray(data.merchantsDb['oopqwe001@gmail.com']?.orders) || data.merchantsDb['oopqwe001@gmail.com']?.orders.length === 0;
-            cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
-            fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
-            if (needsRemoteSave) {
-              console.log("Saving migrated USD database and restored default accounts back to Admin Firebase...");
-              cachedDb.updatedAt = Date.now();
-              await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
-            }
-          }
+          await processCloudData(docSnap.data() || {});
           return { ...cachedDb, _isFallback: false };
         } else {
           console.log("No database document found in Admin Firestore. Seeding database state...");
@@ -496,24 +556,7 @@ async function getDbFromFirebase() {
       const docRef = doc(db, "system_data", "aliexpress_database");
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        const data = docSnap.data() || {};
-        if (data && data.merchantsDb) {
-          let loadedDb = {
-            registeredUsers: data.registeredUsers || [],
-            merchantsDb: data.merchantsDb || {},
-            currency: data.currency,
-            updatedAt: data.updatedAt || Date.now()
-          };
-          loadedDb = ensureDefaultAccounts(loadedDb);
-          const needsRemoteSave = loadedDb.currency !== "USD" || !data.merchantsDb['oopqwe001@gmail.com'] || !Array.isArray(data.merchantsDb['oopqwe001@gmail.com']?.orders) || data.merchantsDb['oopqwe001@gmail.com']?.orders.length === 0;
-          cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
-          fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
-          if (needsRemoteSave) {
-            console.log("Saving migrated USD database and restored default accounts back to Client Firebase...");
-            cachedDb.updatedAt = Date.now();
-            await setDoc(docRef, cachedDb);
-          }
-        }
+        await processCloudData(docSnap.data() || {});
         return { ...cachedDb, _isFallback: false };
       } else {
         console.log("No database document found in Client Firestore. Seeding database state...");
@@ -551,9 +594,16 @@ async function saveDbToFirebase(incomingUsers: any, incomingMerchants: any) {
       if (k === 'test') return;
       const val = incomingMerchants[k];
       if (val && typeof val === 'object') {
+        const existingMerchant = cachedDb.merchantsDb[k] || {};
+        const incomingOrders = val.orders;
+        const mergedOrders = Array.isArray(incomingOrders)
+          ? mergeOrdersSmart(existingMerchant.orders || [], incomingOrders)
+          : (existingMerchant.orders || []);
+
         cachedDb.merchantsDb[k] = {
-          ...(cachedDb.merchantsDb[k] || {}),
-          ...val
+          ...existingMerchant,
+          ...val,
+          orders: mergedOrders
         };
       }
     });
@@ -565,7 +615,7 @@ async function saveDbToFirebase(incomingUsers: any, incomingMerchants: any) {
 
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
-    console.log("[server] Wrote updated state to database.json cleanly.");
+    console.log("[server] Wrote updated state to database.json cleanly. Timestamp:", cachedDb.updatedAt);
   } catch (err) {
     console.error("Error backing up file-system cache during save:", err);
   }
