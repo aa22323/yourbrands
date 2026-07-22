@@ -744,24 +744,14 @@ export default function App() {
   // Synchronize custom product image overrides to translation registry synchronously inside the render cycle
   setProductImageOverrides(customProductImages || {});
 
-  // Combine registeredUsers and merchantsDb saving into a single atomic payload to prevent write race conditions
-  useEffect(() => {
-    // CRITICAL: Avoid saving on initial mount before we have successfully fetched the master database from the server.
-    if (!hasFetchedRef.current) {
-      return;
-    }
+  // Non-cancellable, instant background persistence engine to save full atomic state to Express backend and Firestore
+  const persistStateToBackend = (nextMerchants: Record<string, any>, nextUsers: any[]) => {
+    if (!hasFetchedRef.current) return;
 
-    // Only save when there is a local user-initiated mutation (or lazy seeding on session start)
-    if (!isLocalChangeRef.current) {
-      return;
-    }
-
-    // Set last mutation time to locked to prevent polling older state from server during propagation
     const nowTime = Date.now();
     lastMutationTimeRef.current = nowTime;
     dbUpdatedAtRef.current = nowTime;
-
-    const docRef = doc(db, 'system_data', 'aliexpress_database');
+    isLocalChangeRef.current = true;
 
     // Helper to sanitize merchant profile by removing giant base64 image strings from orders
     const sanitizeMerchantProfile = (profile: any) => {
@@ -786,155 +776,85 @@ export default function App() {
       return nextProfile;
     };
 
-    // Build highly optimized update arguments using FieldPath to prevent dot nesting issues inside emails!
-    const updateArgs: any[] = [];
-
-    // Always include updatedAt in direct Firestore updates to keep database timestamp fresh
-    updateArgs.push('updatedAt', nowTime);
-
-    // 1. If registeredUsers changed, synchronize the array
-    if (!lastFetchedDataRef.current || JSON.stringify(registeredUsers) !== JSON.stringify(lastFetchedDataRef.current.registeredUsers)) {
-      updateArgs.push('registeredUsers', registeredUsers);
-    }
-
-    // 2. Identify and synchronize ONLY modified or deleted merchant profiles using FieldPath
-    if (lastFetchedDataRef.current?.merchantsDb) {
-      // Find modified or added merchants
-      Object.keys(merchantsDb).forEach(k => {
-        if (k === 'system_config') return; // system_config is handled separately with proper admin verification
-        const currentProfile = merchantsDb[k];
-        const lastProfile = lastFetchedDataRef.current?.merchantsDb[k];
-        if (JSON.stringify(currentProfile) !== JSON.stringify(lastProfile)) {
-          updateArgs.push(new FieldPath('merchantsDb', k), sanitizeMerchantProfile(currentProfile));
-        }
-      });
-      // Find deleted merchants
-      Object.keys(lastFetchedDataRef.current.merchantsDb).forEach(k => {
-        if (k === 'system_config') return;
-        if (!(k in merchantsDb)) {
-          updateArgs.push(new FieldPath('merchantsDb', k), deleteField());
-        }
-      });
-    } else {
-      // If no last fetched data is available yet, only update the active logged-in merchant to keep it extremely safe
-      const userKey = userAccountName.toLowerCase();
-      if (userKey && merchantsDb[userKey]) {
-        updateArgs.push(new FieldPath('merchantsDb', userKey), sanitizeMerchantProfile(merchantsDb[userKey]));
+    const sanitizedMerchantsDb: Record<string, any> = {};
+    Object.keys(nextMerchants).forEach(mKey => {
+      const m = nextMerchants[mKey];
+      if (m && mKey !== 'system_config') {
+        sanitizedMerchantsDb[mKey] = sanitizeMerchantProfile(m);
+      } else {
+        sanitizedMerchantsDb[mKey] = m;
       }
-    }
+    });
 
-    // 3. System Config (Admin setup, custom product images)
-    // ONLY permit the authenticated administrator to update global configurations!
     const userKeyLower = userAccountName.toLowerCase();
-    const isCurrentUserAdmin = userKeyLower === 'admin' || userKeyLower === 'oopqwe001@gmail.com' || merchantsDb[userKeyLower]?.isAdmin === true;
+    const isCurrentUserAdmin = userKeyLower === 'admin' || userKeyLower === 'oopqwe001@gmail.com' || nextMerchants[userKeyLower]?.isAdmin === true;
 
-    if (isCurrentUserAdmin && merchantsDb.system_config) {
-      const lastSys = lastFetchedDataRef.current?.merchantsDb?.system_config;
-      if (!lastSys || JSON.stringify(merchantsDb.system_config) !== JSON.stringify(lastSys)) {
-        // Sanitize product image overrides to keep system_data lightweight
-        const lightImages: Record<string, number | boolean> = {};
-        const currentImages = merchantsDb.system_config.customProductImages || {};
-        Object.keys(currentImages).forEach(pId => {
-          if (currentImages[pId]) {
-            lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
-          }
-        });
-
-        updateArgs.push(new FieldPath('merchantsDb', 'system_config'), {
-          ...merchantsDb.system_config,
-          customProductImages: lightImages
-        });
-      }
+    if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
+      sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
+    } else if (sanitizedMerchantsDb.system_config) {
+      const lightImages: Record<string, number | boolean> = {};
+      const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
+      Object.keys(currentImages).forEach(pId => {
+        if (currentImages[pId]) {
+          lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
+        }
+      });
+      sanitizedMerchantsDb.system_config = {
+        ...sanitizedMerchantsDb.system_config,
+        customProductImages: lightImages
+      };
     }
 
-    // If updateArgs is empty, skip calling Firestore altogether (efficient!)
-    if (updateArgs.length === 0) {
+    lastFetchedDataRef.current = {
+      registeredUsers: JSON.parse(JSON.stringify(nextUsers)),
+      merchantsDb: JSON.parse(JSON.stringify(sanitizedMerchantsDb))
+    };
+
+    // 1. Post to Express backend endpoint immediately (updates database.json & Firestore)
+    fetch('/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ registeredUsers: nextUsers, merchantsDb: sanitizedMerchantsDb })
+    })
+      .then(res => res.json())
+      .then(() => {
+        console.log("State synchronized securely via Express backend proxy.");
+      })
+      .catch(err => console.error("Express proxy save fallback failed:", err));
+
+    // 2. Direct setDoc write to Firestore
+    try {
+      const docRef = doc(db, 'system_data', 'aliexpress_database');
+      setDoc(docRef, { registeredUsers: nextUsers, merchantsDb: sanitizedMerchantsDb, updatedAt: nowTime })
+        .then(() => {
+          console.log("Successfully synchronized target database updates atomically in Firestore.");
+        })
+        .catch(err => {
+          console.warn('Direct setDoc cloud sync warn:', err);
+        });
+    } catch (err) {
+      console.warn('Firestore setDoc exception:', err);
+    }
+  };
+
+  // Combine registeredUsers and merchantsDb saving into a single atomic payload to prevent write race conditions
+  useEffect(() => {
+    if (!hasFetchedRef.current) {
       return;
     }
 
-    // Debounce the Firestore write operation by 200ms to group rapid clicks / mutations safely
-    let activeTimer = true;
+    if (!isLocalChangeRef.current) {
+      return;
+    }
+
+    persistStateToBackend(merchantsDb, registeredUsers);
+
+    // Keep polling locked for 2 seconds to allow full cloud roundtrip propagation
     const timerId = setTimeout(() => {
-      if (!activeTimer) return;
-
-      // Reset the local change flag since the write operation is now executing
       isLocalChangeRef.current = false;
-
-      // Extract sanitized merchantsDb for both local setDoc fallback and Express backend POST payload
-      const sanitizedMerchantsDb: Record<string, any> = {};
-      Object.keys(merchantsDb).forEach(mKey => {
-        const m = merchantsDb[mKey];
-        if (m && mKey !== 'system_config') {
-          sanitizedMerchantsDb[mKey] = sanitizeMerchantProfile(m);
-        } else {
-          sanitizedMerchantsDb[mKey] = m;
-        }
-      });
-
-      if (!isCurrentUserAdmin && lastFetchedDataRef.current?.merchantsDb?.system_config) {
-        sanitizedMerchantsDb.system_config = lastFetchedDataRef.current.merchantsDb.system_config;
-      } else if (sanitizedMerchantsDb.system_config) {
-        const lightImages: Record<string, number | boolean> = {};
-        const currentImages = sanitizedMerchantsDb.system_config.customProductImages || {};
-        Object.keys(currentImages).forEach(pId => {
-          if (currentImages[pId]) {
-            lightImages[pId] = typeof currentImages[pId] === 'number' ? currentImages[pId] : (customProductImageVersions[pId] || Date.now());
-          }
-        });
-        sanitizedMerchantsDb.system_config = {
-          ...sanitizedMerchantsDb.system_config,
-          customProductImages: lightImages
-        };
-      }
-
-      // 1. Parallel save to safe Express proxy endpoint (extremely reliable in sandboxed iframe previews)
-      fetch('/api/db', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ registeredUsers, merchantsDb: sanitizedMerchantsDb })
-      })
-        .then(res => res.json())
-        .then(() => {
-          console.log("State synchronized securely via Express backend proxy.");
-          lastFetchedDataRef.current = {
-            registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
-            merchantsDb: JSON.parse(JSON.stringify(sanitizedMerchantsDb))
-          };
-        })
-        .catch(err => console.error("Express proxy save fallback failed:", err));
-
-      // 2. Direct Firestore update write (zero-latency socket notification)
-      const [firstField, firstVal, ...restArgs] = updateArgs;
-      updateDoc(docRef, firstField, firstVal, ...restArgs)
-        .then(() => {
-          if (!activeTimer) return;
-          console.log("Successfully synchronized target database updates atomically in Firestore using FieldPath.");
-          // Keep our lastFetchedDataRef updated with our own mutated state to prevent redundant loops
-          lastFetchedDataRef.current = {
-            registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
-            merchantsDb: JSON.parse(JSON.stringify(merchantsDb))
-          };
-        })
-        .catch(err => {
-          if (!activeTimer) return;
-          console.warn('Direct updateDoc did not complete (running full setDoc fallback):', err);
-          
-          setDoc(docRef, { registeredUsers, merchantsDb: sanitizedMerchantsDb, updatedAt: nowTime })
-            .then(() => {
-              if (!activeTimer) return;
-              lastFetchedDataRef.current = {
-                registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
-                merchantsDb: JSON.parse(JSON.stringify(merchantsDb))
-              };
-            })
-            .catch(fallbackErr => {
-              console.error('Full setDoc sync fallback failed:', fallbackErr);
-            });
-        });
-    }, 200);
+    }, 2000);
 
     return () => {
-      activeTimer = false;
       clearTimeout(timerId);
     };
   }, [registeredUsers, merchantsDb]);
@@ -1475,6 +1395,8 @@ export default function App() {
       }));
     }
 
+    let latestMerchantsDb: Record<string, any> = {};
+
     setMerchantsDb(prev => {
       const existing = prev[key];
       let baseProfile = existing;
@@ -1517,11 +1439,18 @@ export default function App() {
         if (updatedFields.password !== undefined) setUserPassword(updatedFields.password);
       }
 
-      return {
+      latestMerchantsDb = {
         ...prev,
         [key]: nextProfile
       };
+      return latestMerchantsDb;
     });
+
+    setTimeout(() => {
+      if (latestMerchantsDb && Object.keys(latestMerchantsDb).length > 0) {
+        persistStateToBackend(latestMerchantsDb, registeredUsers);
+      }
+    }, 0);
   };
 
   // Master delete action to remove a merchant/shop entirely
@@ -1670,40 +1599,59 @@ export default function App() {
     });
   };
 
-  const handleShipOrder = (orderIdParam: string | string[]) => {
+  const handleShipOrder = (orderIdParam: string | string[], merchantKeyParam?: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
     const targetIds = Array.isArray(orderIdParam) ? orderIdParam : [orderIdParam];
     if (targetIds.length === 0) return;
+
+    let targetAccount = (merchantKeyParam || userAccountName || '').toLowerCase();
+    if (!merchantKeyParam && targetIds.length > 0) {
+      const targetIdSet = new Set(targetIds);
+      const foundKey = Object.keys(merchantsDb).find(k => {
+        if (k === 'system_config') return false;
+        const mOrders = merchantsDb[k]?.orders;
+        return Array.isArray(mOrders) && mOrders.some((o: any) => targetIdSet.has(o.id));
+      });
+      if (foundKey) {
+        targetAccount = foundKey;
+      }
+    }
+
+    const targetMerchant = merchantsDb[targetAccount] || {};
+    const merchantOrders: Order[] = targetMerchant.orders || (targetAccount === userAccountName.toLowerCase() ? orders : []);
+    const merchantBalance: number = targetAccount === userAccountName.toLowerCase() ? userBalance : (targetMerchant.balance ?? 0);
+    const merchantLogs: FinancialTransaction[] = targetAccount === userAccountName.toLowerCase() ? financialLogs : (targetMerchant.financialLogs ?? []);
+
+    const pendingToShip = merchantOrders.filter(o => targetIds.includes(o.id) && o.status === 'pending');
+    if (pendingToShip.length === 0) return;
 
     const pad = (num: number) => String(num).padStart(2, '0');
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-    // Filter target pending orders
-    const pendingToShip = orders.filter(o => targetIds.includes(o.id) && o.status === 'pending');
-    if (pendingToShip.length === 0) return;
-
     // Calculate total cost for non-self orders
     const nonSelfOrders = pendingToShip.filter(o => !o.isSelfOrder);
     const totalCostPrice = nonSelfOrders.reduce((sum, o) => {
-      return sum + o.items.reduce((iSum, item) => iSum + (item.costPrice * item.quantity), 0);
+      return sum + (o.items || []).reduce((iSum, item) => iSum + ((item.costPrice || 0) * (item.quantity || 1)), 0);
     }, 0);
 
     // Check balance
-    if (nonSelfOrders.length > 0 && userBalance < totalCostPrice) {
-      setShowBalanceToast(true);
-      setTimeout(() => setShowBalanceToast(false), 3000);
+    if (nonSelfOrders.length > 0 && merchantBalance < totalCostPrice) {
+      if (targetAccount === userAccountName.toLowerCase()) {
+        setShowBalanceToast(true);
+        setTimeout(() => setShowBalanceToast(false), 3000);
+      }
       return;
     }
 
-    const nextBalance = Math.max(0, userBalance - totalCostPrice);
-    let nextLogs = [...financialLogs];
+    const nextBalance = Math.max(0, merchantBalance - totalCostPrice);
+    let nextLogs = [...merchantLogs];
 
     // Generate logs for non-self orders
     nonSelfOrders.forEach(o => {
-      const costPriceSum = o.items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0);
+      const costPriceSum = (o.items || []).reduce((sum, item) => sum + ((item.costPrice || 0) * (item.quantity || 1)), 0);
       const newTx: FinancialTransaction = {
         id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
         type: 'withdraw',
@@ -1717,36 +1665,54 @@ export default function App() {
     });
 
     const pendingToShipSet = new Set(pendingToShip.map(o => o.id));
-    const nextOrders = orders.map(o => {
+    const nextOrders = merchantOrders.map(o => {
       if (pendingToShipSet.has(o.id)) {
         return { ...o, status: 'shipped' as const, shippedAt: `${dateStr} ${timeStr}` };
       }
       return o;
     });
 
-    updateMerchantDataInDb(userAccountName, {
+    updateMerchantDataInDb(targetAccount, {
       balance: nextBalance,
       financialLogs: nextLogs,
       orders: nextOrders
     });
   };
 
-  const handleConfirmReceiveOrder = (orderIdParam: string | string[]) => {
+  const handleConfirmReceiveOrder = (orderIdParam: string | string[], merchantKeyParam?: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
     const targetIds = Array.isArray(orderIdParam) ? orderIdParam : [orderIdParam];
     if (targetIds.length === 0) return;
+
+    let targetAccount = (merchantKeyParam || userAccountName || '').toLowerCase();
+    if (!merchantKeyParam && targetIds.length > 0) {
+      const targetIdSet = new Set(targetIds);
+      const foundKey = Object.keys(merchantsDb).find(k => {
+        if (k === 'system_config') return false;
+        const mOrders = merchantsDb[k]?.orders;
+        return Array.isArray(mOrders) && mOrders.some((o: any) => targetIdSet.has(o.id));
+      });
+      if (foundKey) {
+        targetAccount = foundKey;
+      }
+    }
+
+    const targetMerchant = merchantsDb[targetAccount] || {};
+    const merchantOrders: Order[] = targetMerchant.orders || (targetAccount === userAccountName.toLowerCase() ? orders : []);
+    const merchantBalance: number = targetAccount === userAccountName.toLowerCase() ? userBalance : (targetMerchant.balance ?? 0);
+    const merchantLogs: FinancialTransaction[] = targetAccount === userAccountName.toLowerCase() ? financialLogs : (targetMerchant.financialLogs ?? []);
+
+    const shippedToConfirm = merchantOrders.filter(o => targetIds.includes(o.id) && o.status === 'shipped');
+    if (shippedToConfirm.length === 0) return;
 
     const pad = (num: number) => String(num).padStart(2, '0');
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-    const shippedToConfirm = orders.filter(o => targetIds.includes(o.id) && o.status === 'shipped');
-    if (shippedToConfirm.length === 0) return;
-
-    let nextBalance = userBalance;
-    let nextLogs = [...financialLogs];
+    let nextBalance = merchantBalance;
+    let nextLogs = [...merchantLogs];
 
     shippedToConfirm.forEach(o => {
       if (o.isSelfOrder) {
@@ -1776,14 +1742,14 @@ export default function App() {
     });
 
     const shippedToConfirmSet = new Set(shippedToConfirm.map(o => o.id));
-    const nextOrders = orders.map(o => {
+    const nextOrders = merchantOrders.map(o => {
       if (shippedToConfirmSet.has(o.id)) {
         return { ...o, status: 'completed' as const };
       }
       return o;
     });
 
-    updateMerchantDataInDb(userAccountName, {
+    updateMerchantDataInDb(targetAccount, {
       balance: nextBalance,
       financialLogs: nextLogs,
       orders: nextOrders
@@ -2488,6 +2454,7 @@ export default function App() {
               merchantsDb={merchantsDb}
               onUpdateMerchantData={updateMerchantDataInDb}
               onDeleteMerchant={deleteMerchantFromDb}
+              onShipOrder={handleShipOrder}
               onClose={() => setIsAdminConsoleOpen(false)}
               currentUser={userAccountName}
               registeredUsers={registeredUsers}

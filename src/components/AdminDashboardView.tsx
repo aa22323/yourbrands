@@ -4,7 +4,7 @@ import {
   X, Shield, Landmark, Users, ShoppingBag, Clipboard, 
   RotateCw, Plus, CheckCircle2, Edit2, Search, AlertCircle, 
   TrendingUp, DollarSign, Wallet, MapPin, Phone, User, Check, ArrowLeftRight, CheckCircle, HelpCircle, XCircle,
-  Copy, UserPlus, Trash2
+  Copy, UserPlus, Trash2, Truck
 } from 'lucide-react';
 import { Product, Order, Shop, FinancialTransaction } from '../types';
 import { ALL_PRODUCTS, DEFAULT_SHOP, resolveAvatar } from '../data';
@@ -14,6 +14,7 @@ interface AdminDashboardViewProps {
   merchantsDb: Record<string, any>;
   onUpdateMerchantData: (targetAccount: string, updatedFields: Partial<any>) => void;
   onDeleteMerchant?: (targetAccount: string) => void;
+  onShipOrder?: (orderId: string | string[], merchantKey?: string) => void;
   onClose: () => void;
   currentUser?: string;
   registeredUsers?: any[];
@@ -24,6 +25,7 @@ export default function AdminDashboardView({
   merchantsDb,
   onUpdateMerchantData,
   onDeleteMerchant,
+  onShipOrder,
   onClose,
   currentUser = '',
   registeredUsers = [],
@@ -2200,7 +2202,22 @@ export default function AdminDashboardView({
                             利润已结息
                           </span>
                         ) : (
-                          <span className="text-[10px] text-zinc-500 font-semibold tracking-wide italic">等待店家执行发货...</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-zinc-500 font-semibold tracking-wide italic hidden sm:inline">等待店家发货...</span>
+                            {onShipOrder && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onShipOrder(order.id, merchantKey);
+                                  triggerSuccess(`🚀 已成功为店家【${merchantName}】执行极速发货！`);
+                                }}
+                                className="px-3 py-1 bg-[#e51923] hover:bg-red-700 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-xs cursor-pointer transition-all active:scale-[0.97]"
+                              >
+                                <Truck className="w-3.5 h-3.5" />
+                                <span>管理员强行帮代发货</span>
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
