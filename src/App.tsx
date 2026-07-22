@@ -1295,49 +1295,6 @@ export default function App() {
     }
   }, [userAccountName, merchantsDb]);
 
-  // Synchronize active states back into the central database slot reactively
-  useEffect(() => {
-    if (!hasFetchedRef.current) return;
-    if (!userAccountName || !loadedUserAccount) return;
-    if (userAccountName.toLowerCase() !== loadedUserAccount.toLowerCase()) {
-      // Stale state: user switches or registers but local states (userBalance, shop, etc) have not updated in React yet. Block writing!
-      return;
-    }
-    
-    // CRITICAL: Only synchronize local states back to merchantsDb if we have an active, user-initiated local modification.
-    // If isLocalChangeRef.current is false, any difference is due to the central database being updated from the cloud (e.g. from admin dispatching orders),
-    // and we must let our first useEffect run to update our local state hooks. Doing a write-back here would corrupt/overwrite cloud updates!
-    if (!isLocalChangeRef.current) {
-      return;
-    }
-
-    const key = userAccountName.toLowerCase();
-    if (!merchantsDb[key]) return;
-
-    const slot = merchantsDb[key];
-    if (
-      slot.balance !== userBalance ||
-      JSON.stringify(slot.shop) !== JSON.stringify(shop) ||
-      JSON.stringify(slot.orders) !== JSON.stringify(orders) ||
-      JSON.stringify(slot.financialLogs) !== JSON.stringify(financialLogs) ||
-      JSON.stringify(slot.withdrawHistory) !== JSON.stringify(withdrawHistory) ||
-      slot.password !== userPassword
-    ) {
-      setMerchantsDb(prev => ({
-        ...prev,
-        [key]: {
-          ...prev[key],
-          balance: userBalance,
-          shop: shop,
-          orders: orders,
-          financialLogs: financialLogs,
-          withdrawHistory: withdrawHistory,
-          password: userPassword
-        }
-      }));
-    }
-  }, [userBalance, shop, orders, financialLogs, withdrawHistory, userPassword, userAccountName, loadedUserAccount]);
-
   // Master update action used by Admin console to override any account
   const updateMerchantDataInDb = (targetAccount: string, updatedFields: Partial<any>) => {
     const key = targetAccount.toLowerCase();
