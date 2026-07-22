@@ -1439,18 +1439,16 @@ export default function App() {
         if (updatedFields.password !== undefined) setUserPassword(updatedFields.password);
       }
 
-      latestMerchantsDb = {
+      const nextMerchantsDb = {
         ...prev,
         [key]: nextProfile
       };
-      return latestMerchantsDb;
-    });
 
-    setTimeout(() => {
-      if (latestMerchantsDb && Object.keys(latestMerchantsDb).length > 0) {
-        persistStateToBackend(latestMerchantsDb, registeredUsers);
-      }
-    }, 0);
+      // Instantly persist updated state to backend database.json and Firestore
+      persistStateToBackend(nextMerchantsDb, registeredUsers);
+
+      return nextMerchantsDb;
+    });
   };
 
   // Master delete action to remove a merchant/shop entirely
@@ -1637,12 +1635,10 @@ export default function App() {
       return sum + (o.items || []).reduce((iSum, item) => iSum + ((item.costPrice || 0) * (item.quantity || 1)), 0);
     }, 0);
 
-    // Check balance
-    if (nonSelfOrders.length > 0 && merchantBalance < totalCostPrice) {
-      if (targetAccount === userAccountName.toLowerCase()) {
-        setShowBalanceToast(true);
-        setTimeout(() => setShowBalanceToast(false), 3000);
-      }
+    // Check balance - allow admin forced shipment (merchantKeyParam) or check balance for merchant
+    if (!merchantKeyParam && nonSelfOrders.length > 0 && merchantBalance < totalCostPrice) {
+      setShowBalanceToast(true);
+      setTimeout(() => setShowBalanceToast(false), 3000);
       return;
     }
 
