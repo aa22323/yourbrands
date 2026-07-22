@@ -1,7 +1,192 @@
 {
-  "registeredUsers": [],
+  "registeredUsers": [
+    {
+      "name": "admin",
+      "password": "123456",
+      "id": "28401",
+      "isSalesman": false
+    },
+    {
+      "name": "oopqwe001@gmail.com",
+      "password": "888888",
+      "id": "88888",
+      "isSalesman": false
+    }
+  ],
   "merchantsDb": {
-    "test": 1
+    "admin": {
+      "name": "admin",
+      "password": "123456",
+      "id": "28401",
+      "balance": 48000,
+      "shop": {
+        "id": "shop-temp",
+        "name": "AliExpress Seller Store",
+        "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=faces",
+        "banner": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&h=400&fit=crop",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&h=300&fit=crop",
+        "rating": 4.9,
+        "reviewsCount": 384,
+        "shippingTime": "24小时极速发货",
+        "guarantee": "原厂质保 · 假一赔十",
+        "addedProductIds": []
+      },
+      "orders": [],
+      "financialLogs": [
+        {
+          "id": "TX-20260529-1025",
+          "type": "settlement",
+          "typeLabel": "订单交割分润",
+          "amount": 1400,
+          "status": "已到账",
+          "description": "卡地亚经典勃艮第红机械表 [LP-0001] 交割出货秒级分佣入账",
+          "createdAt": "2026-05-29 11:15:32"
+        },
+        {
+          "id": "TX-20260528-0955",
+          "type": "withdraw",
+          "typeLabel": "银行账户提现",
+          "amount": -300,
+          "status": "成功",
+          "description": "提现至银行账户 (尾号8899)",
+          "createdAt": "2026-05-28 14:24:12"
+        }
+      ],
+      "withdrawHistory": [
+        {
+          "id": "WD-20260528-085",
+          "amount": 300,
+          "bankName": "银行账户",
+          "branchName": "总行",
+          "branchNo": "232",
+          "fullName": "雅领高奢美学",
+          "bankCard": "622202******8899",
+          "status": "已到账",
+          "createdAt": "2026-05-28 14:24:12"
+        }
+      ]
+    },
+    "oopqwe001@gmail.com": {
+      "name": "oopqwe001@gmail.com",
+      "password": "888888",
+      "id": "88888",
+      "balance": 15800,
+      "shop": {
+        "id": "88888",
+        "name": "总控旗舰奢优店",
+        "avatar": "/aliexpress_seller_logo_1780316211327.png",
+        "qrCode": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&h=300&fit=crop",
+        "addedProductIds": [
+          "LP-0001",
+          "LP-0002",
+          "LP-0003",
+          "LP-0004",
+          "LP-0005",
+          "LP-0006",
+          "LP-0007",
+          "LP-0009",
+          "LP-0010"
+        ]
+      },
+      "orders": [
+        {
+          "id": "ORD-20260528-001",
+          "shopId": "88888",
+          "customerName": "Alex Song",
+          "customerPhone": "13812345678",
+          "shippingAddress": "Suite 2201, Tower A, Riverside Plaza, Shanghai",
+          "orderDate": "2026-05-28 08:30",
+          "items": [
+            {
+              "productId": "LP-0001",
+              "productName": "Cartier Bordeaux Classic Automatic Mechanical Watch",
+              "quantity": 1,
+              "retailPrice": 6200,
+              "costPrice": 5800,
+              "image": "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg"
+            }
+          ],
+          "totalPrice": 6200,
+          "totalProfit": 400,
+          "status": "pending"
+        },
+        {
+          "id": "ORD-20260528-002",
+          "shopId": "88888",
+          "customerName": "Chloe Ji",
+          "customerPhone": "15988889911",
+          "shippingAddress": "No. 19 Sanlitun Road, Chaoyang District, Beijing",
+          "orderDate": "2026-05-28 07:15",
+          "items": [
+            {
+              "productId": "LP-0002",
+              "productName": "Gilded Amber Niche Luxury Perfume",
+              "quantity": 2,
+              "retailPrice": 135,
+              "costPrice": 120,
+              "image": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg"
+            }
+          ],
+          "totalPrice": 270,
+          "totalProfit": 30,
+          "status": "shipped"
+        },
+        {
+          "id": "ORD-20260528-003",
+          "shopId": "88888",
+          "customerName": "Michael Chang",
+          "customerPhone": "13900112233",
+          "shippingAddress": "Building 5, Tech Park, Nanshan, Shenzhen",
+          "orderDate": "2026-05-27 16:20",
+          "items": [
+            {
+              "productId": "LP-0003",
+              "productName": "Montblanc Meisterstück Gold-Coated Classique Fountain Pen",
+              "quantity": 1,
+              "retailPrice": 950,
+              "costPrice": 880,
+              "image": "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg"
+            }
+          ],
+          "totalPrice": 950,
+          "totalProfit": 70,
+          "status": "completed"
+        }
+      ],
+      "financialLogs": [
+        {
+          "id": "TX-20260528-1025",
+          "type": "settlement",
+          "typeLabel": "订单交割分润",
+          "amount": 1400,
+          "status": "已到账",
+          "description": "卡地亚经典勃艮第红机械表 [LP-0001] 交割出货秒级分佣入账",
+          "createdAt": "2026-05-28 11:15:32"
+        },
+        {
+          "id": "TX-20260527-0955",
+          "type": "withdraw",
+          "typeLabel": "银行账户提现",
+          "amount": -500,
+          "status": "成功",
+          "description": "提现至银行账户 (尾号8899)",
+          "createdAt": "2026-05-27 14:24:12"
+        }
+      ],
+      "withdrawHistory": [
+        {
+          "id": "WD-20260527-085",
+          "amount": 500,
+          "bankName": "银行账户",
+          "branchName": "总行",
+          "branchNo": "232",
+          "fullName": "总控旗舰奢优店",
+          "bankCard": "622202******8899",
+          "status": "已到账",
+          "createdAt": "2026-05-27 14:24:12"
+        }
+      ]
+    }
   },
   "currency": "USD",
   "updatedAt": 1784698566375
