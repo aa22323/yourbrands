@@ -237,38 +237,46 @@ async function getDbFromFirebase() {
   }
   try {
     if (adminDb) {
-      // Use Firebase Admin SDK
-      const docSnap = await adminDb.collection("system_data").doc("aliexpress_database").get();
-      if (docSnap.exists) {
-        const data = docSnap.data() || {};
-        if (data && data.registeredUsers && data.merchantsDb) {
-          const remoteUpdatedAt = data.updatedAt || 0;
-          let loadedDb = {
-            registeredUsers: data.registeredUsers,
-            merchantsDb: data.merchantsDb,
-            currency: data.currency,
-            updatedAt: remoteUpdatedAt
-          };
-          const needsRemoteSave = loadedDb.currency !== "USD";
-          cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
-          // Async backup to local json
-          fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
-            if (err) console.error("Error backing up file-system cache:", err);
-          });
-          if (needsRemoteSave) {
-            console.log("Saving migrated USD database back to Admin Firebase...");
-            await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+      try {
+        // Use Firebase Admin SDK
+        const docSnap = await adminDb.collection("system_data").doc("aliexpress_database").get();
+        if (docSnap.exists) {
+          const data = docSnap.data() || {};
+          if (data && data.registeredUsers && data.merchantsDb) {
+            const remoteUpdatedAt = data.updatedAt || 0;
+            let loadedDb = {
+              registeredUsers: data.registeredUsers,
+              merchantsDb: data.merchantsDb,
+              currency: data.currency,
+              updatedAt: remoteUpdatedAt
+            };
+            const needsRemoteSave = loadedDb.currency !== "USD";
+            cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
+            // Async backup to local json
+            fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
+              if (err) console.error("Error backing up file-system cache:", err);
+            });
+            if (needsRemoteSave) {
+              console.log("Saving migrated USD database back to Admin Firebase...");
+              await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+            }
           }
+          return { ...cachedDb, _isFallback: false };
+        } else {
+          console.log("No database document found in Admin Firestore. Seeding database state...");
+          cachedDb.updatedAt = Date.now();
+          cachedDb = pruneDatabase(cachedDb);
+          await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+          return { ...cachedDb, _isFallback: false };
         }
-        return { ...cachedDb, _isFallback: false };
-      } else {
-        console.log("No database document found in Admin Firestore. Seeding database state...");
-        cachedDb.updatedAt = Date.now();
-        cachedDb = pruneDatabase(cachedDb);
-        await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
-        return { ...cachedDb, _isFallback: false };
+      } catch (adminErr: any) {
+        console.warn("Firebase Admin SDK failed to fetch. Dynamically falling back to Client Web SDK...", adminErr.message || adminErr);
+        adminDb = null; // Disable Admin SDK for subsequent calls
+        // Fall through to the Client SDK logic below
       }
-    } else {
+    }
+
+    if (db) {
       // Use Client SDK fallback
       const docRef = doc(db, "system_data", "aliexpress_database");
       const docSnap = await getDoc(docRef);
@@ -301,6 +309,8 @@ async function getDbFromFirebase() {
         return { ...cachedDb, _isFallback: false };
       }
     }
+
+    return { ...cachedDb, _isFallback: true };
   } catch (e) {
     console.error("Failed to fetch from Firebase, using current cache:", e);
     return { ...cachedDb, _isFallback: true };
@@ -323,9 +333,18 @@ async function saveDbToFirebase(incomingUsers: any, incomingMerchants: any) {
 
   try {
     if (adminDb) {
-      await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
-      console.log("Successfully synchronized state to cloud Firestore using Admin SDK.");
-    } else {
+      try {
+        await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
+        console.log("Successfully synchronized state to cloud Firestore using Admin SDK.");
+        return;
+      } catch (adminErr: any) {
+        console.warn("Firebase Admin SDK failed to save. Dynamically falling back to Client Web SDK...", adminErr.message || adminErr);
+        adminDb = null; // Disable Admin SDK for subsequent calls
+        // Fall through to Client SDK saving below
+      }
+    }
+
+    if (db) {
       const docRef = doc(db, "system_data", "aliexpress_database");
       await setDoc(docRef, cachedDb);
       console.log("Successfully synchronized state to cloud Firestore using Client SDK fallback.");

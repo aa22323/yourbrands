@@ -39,6 +39,7 @@ export default function App() {
   const hasFetchedRef = useRef<boolean>(false);
   const dbUpdatedAtRef = useRef<number>(0);
   const prevCustomImagesRef = useRef<Record<string, string>>({});
+  const isLoadedFromServerRef = useRef<boolean>(false);
 
   const [customProductImages, setCustomProductImages] = useState<Record<string, string>>(() => {
     try {
@@ -464,6 +465,7 @@ export default function App() {
                 
                 // Set loadedFromServer to true so we do not attempt direct Firestore query or overwrite
                 loadedFromServer = true;
+                isLoadedFromServerRef.current = true;
                 console.log("Successfully loaded in-memory database from Express proxy. Timestamp:", apiUpdatedAt);
               }
             }
@@ -498,26 +500,31 @@ export default function App() {
           isInitial = false;
         }
 
-        // Register the Firestore onSnapshot real-time listener for zero-latency live synchronization
-        const docRef = doc(db, 'system_data', 'aliexpress_database');
-        unsubscribeSnap = onSnapshot(docRef, async (docSnap) => {
-          if (!active) return;
-          if (docSnap.exists()) {
-            const d = docSnap.data();
-            const cloudUpdatedAt = d.updatedAt || 0;
-            if (cloudUpdatedAt > dbUpdatedAtRef.current) {
-              const usersList = d.registeredUsers || [];
-              const merchantsData = d.merchantsDb || {};
-              dbUpdatedAtRef.current = cloudUpdatedAt;
-              await processDatabaseUpdate(usersList, merchantsData);
-              console.log("Successfully applied live onSnapshot cloud update with newer timestamp:", cloudUpdatedAt);
-            } else {
-              console.log("Ignored stale onSnapshot update. Cloud:", cloudUpdatedAt, "Local:", dbUpdatedAtRef.current);
+        // Only register client-side Firestore synchronization if Express server proxy is offline
+        if (!isLoadedFromServerRef.current) {
+          // Register the Firestore onSnapshot real-time listener for zero-latency live synchronization
+          const docRef = doc(db, 'system_data', 'aliexpress_database');
+          unsubscribeSnap = onSnapshot(docRef, async (docSnap) => {
+            if (!active) return;
+            if (docSnap.exists()) {
+              const d = docSnap.data();
+              const cloudUpdatedAt = d.updatedAt || 0;
+              if (cloudUpdatedAt > dbUpdatedAtRef.current) {
+                const usersList = d.registeredUsers || [];
+                const merchantsData = d.merchantsDb || {};
+                dbUpdatedAtRef.current = cloudUpdatedAt;
+                await processDatabaseUpdate(usersList, merchantsData);
+                console.log("Successfully applied live onSnapshot cloud update with newer timestamp:", cloudUpdatedAt);
+              } else {
+                console.log("Ignored stale onSnapshot update. Cloud:", cloudUpdatedAt, "Local:", dbUpdatedAtRef.current);
+              }
             }
-          }
-        }, (err) => {
-          console.warn("Firestore database listener disconnected (or quota limit exceeded). Fallback system remains active.", err);
-        });
+          }, (err) => {
+            console.warn("Firestore database listener disconnected (or quota limit exceeded). Fallback system remains active.", err);
+          });
+        } else {
+          console.log("Skipping direct client-side Firestore listener because Express server proxy is active and authoritative.");
+        }
 
       } catch (err) {
         console.warn('Firebase document load offline. Using local cache/localStorage fallback.', err);
@@ -776,6 +783,11 @@ export default function App() {
         .catch(err => console.error("Express proxy save fallback failed:", err));
 
       // 2. Direct Firestore update write (zero-latency socket notification)
+      if (isLoadedFromServerRef.current) {
+        console.log("Skipping direct client-side Firestore write because Express server proxy is active and authoritative.");
+        return;
+      }
+
       const [firstField, firstVal, ...restArgs] = updateArgs;
       updateDoc(docRef, firstField, firstVal, ...restArgs)
         .then(() => {
@@ -1556,17 +1568,34 @@ export default function App() {
   const handleAddOrder = (newOrder: Order) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
-    setOrders(prev => [newOrder, ...prev]);
+    const nextOrders = [newOrder, ...orders];
+    let nextBalance = userBalance;
+    let nextLogs = financialLogs;
+
     if (newOrder.isSelfOrder) {
       const itemsListStr = newOrder.items.map(it => `${it.productName} * ${it.quantity}`).join(', ');
-      addFinancialLog(
-        'withdraw',
-        '自购商品扣款',
-        -newOrder.totalPrice,
-        '已扣除',
-        `商铺账户自购精品，清单: ${itemsListStr}，系统已提报海外代发仓提现结算 [订单号: ${newOrder.id}]`
-      );
+      const pad = (num: number) => String(num).padStart(2, '0');
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      nextBalance = Math.max(0, userBalance - newOrder.totalPrice);
+      const newTx: FinancialTransaction = {
+        id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
+        type: 'withdraw',
+        typeLabel: '自购商品扣款',
+        amount: -newOrder.totalPrice,
+        status: '已扣除',
+        description: `商铺账户自购精品，清单: ${itemsListStr}，系统已提报海外代发仓提现结算 [订单号: ${newOrder.id}]`,
+        createdAt: `${dateStr} ${timeStr}`
+      };
+      nextLogs = [newTx, ...financialLogs];
     }
+
+    updateMerchantDataInDb(userAccountName, {
+      balance: nextBalance,
+      financialLogs: nextLogs,
+      orders: nextOrders
+    });
   };
 
   const handleShipOrder = (orderId: string) => {
@@ -1582,6 +1611,9 @@ export default function App() {
     if (!order) return;
     if (order.status !== 'pending') return;
 
+    let nextBalance = userBalance;
+    let nextLogs = financialLogs;
+
     if (!order.isSelfOrder) {
       const costPriceSum = order.items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0);
       
@@ -1595,21 +1627,31 @@ export default function App() {
       }
 
       // Deduct the cost
-      addFinancialLog(
-        'withdraw',
-        '代发成本扣除',
-        -costPriceSum,
-        '已扣除',
-        `店家发货垫付境外高奢一件代发货源采购成本，包囊运单 [订单号: ${order.id}]`
-      );
+      nextBalance = Math.max(0, userBalance - costPriceSum);
+      const newTx: FinancialTransaction = {
+        id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
+        type: 'withdraw',
+        typeLabel: '代发成本扣除',
+        amount: -costPriceSum,
+        status: '已扣除',
+        description: `店家发货垫付境外高奢一件代发货源采购成本，包囊运单 [订单号: ${order.id}]`,
+        createdAt: `${dateStr} ${timeStr}`
+      };
+      nextLogs = [newTx, ...financialLogs];
     }
 
-    setOrders(prev => prev.map(o => {
+    const nextOrders = orders.map(o => {
       if (o.id === orderId) {
         return { ...o, status: 'shipped' as const, shippedAt: `${dateStr} ${timeStr}` };
       }
       return o;
-    }));
+    });
+
+    updateMerchantDataInDb(userAccountName, {
+      balance: nextBalance,
+      financialLogs: nextLogs,
+      orders: nextOrders
+    });
   };
 
   const handleConfirmReceiveOrder = (orderId: string) => {
@@ -1619,49 +1661,73 @@ export default function App() {
     if (!order) return;
     if (order.status !== 'shipped') return;
 
-    setOrders(prev => prev.map(o => {
+    const pad = (num: number) => String(num).padStart(2, '0');
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    const nextOrders = orders.map(o => {
       if (o.id === orderId) {
         return { ...o, status: 'completed' as const };
       }
       return o;
-    }));
+    });
+
+    let nextBalance = userBalance;
+    let nextLogs = financialLogs;
 
     if (order.isSelfOrder) {
-      addFinancialLog(
-        'settlement',
-        '自购确认收货',
-        0,
-        '已到账',
-        `自购精品宝贝已成功到货签收！订单号: ${order.id}。名贵奢件已交付验收入库，完满结单。`
-      );
+      const newTx: FinancialTransaction = {
+        id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
+        type: 'settlement',
+        typeLabel: '自购确认收货',
+        amount: 0,
+        status: '已到账',
+        description: `自购精品宝贝已成功到货签收！订单号: ${order.id}。名贵奢件已交付验收入库，完满结单。`,
+        createdAt: `${dateStr} ${timeStr}`
+      };
+      nextLogs = [newTx, ...financialLogs];
     } else {
       // Add full retail price back to user's real balance (since we already deducted costPrice upfront upon shipping)
-      addFinancialLog(
-        'settlement',
-        '订单分帐到账',
-        order.totalPrice,
-        '已到账',
-        `奢选商铺完成交割，订单序列号: ${order.id}，含回笼采购采购垫付本金 ($${(order.totalPrice - order.totalProfit).toLocaleString()}) 与出货利润 ($${order.totalProfit.toLocaleString()}) 全额到账`
-      );
+      nextBalance = userBalance + order.totalPrice;
+      const newTx: FinancialTransaction = {
+        id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
+        type: 'settlement',
+        typeLabel: '订单分帐到账',
+        amount: order.totalPrice,
+        status: '已到账',
+        description: `奢选商铺完成交割，订单序列号: ${order.id}，含回笼采购采购垫付本金 ($${(order.totalPrice - order.totalProfit).toLocaleString()}) 与出货利润 ($${order.totalProfit.toLocaleString()}) 全额到账`,
+        createdAt: `${dateStr} ${timeStr}`
+      };
+      nextLogs = [newTx, ...financialLogs];
     }
+
+    updateMerchantDataInDb(userAccountName, {
+      balance: nextBalance,
+      financialLogs: nextLogs,
+      orders: nextOrders
+    });
   };
 
   const handleDeleteOrder = (orderId: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
-    setOrders(prev => prev.filter(o => o.id !== orderId));
+    const nextOrders = orders.filter(o => o.id !== orderId);
+    updateMerchantDataInDb(userAccountName, { orders: nextOrders });
   };
 
   const handleUpdateBalance = (newBalance: number | ((prev: number) => number)) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
-    setUserBalance(newBalance);
+    const computedBalance = typeof newBalance === 'function' ? newBalance(userBalance) : newBalance;
+    updateMerchantDataInDb(userAccountName, { balance: computedBalance });
   };
 
   const handleUpdateWithdrawHistory = (newHistory: any[] | ((prev: any[]) => any[])) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
-    setWithdrawHistory(newHistory);
+    const computedHistory = typeof newHistory === 'function' ? newHistory(withdrawHistory) : newHistory;
+    updateMerchantDataInDb(userAccountName, { withdrawHistory: computedHistory });
   };
 
   // Real-time Clock Simulator for the Mobile notch status bar
