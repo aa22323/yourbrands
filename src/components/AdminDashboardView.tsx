@@ -2978,11 +2978,9 @@ export default function AdminDashboardView({
                     };
 
                     const handleResetProductImage = () => {
-                      const currentOverrides = { ...(customProductImages || {}) };
-                      delete currentOverrides[selectedManageProductId];
-                      
                       onUpdateMerchantData('system_config', {
-                        customProductImages: currentOverrides
+                        customProductImages: {},
+                        _resetProductId: selectedManageProductId
                       });
                       
                       setActionSuccessMessage('🎉 已成功清除自定义图，恢复出厂默认首图！');

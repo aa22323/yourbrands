@@ -77,6 +77,33 @@ export default function App() {
     return {};
   });
 
+  // Initial fetch of server-persisted custom product images on mount
+  useEffect(() => {
+    fetch('/api/custom-images')
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.images && Object.keys(data.images).length > 0) {
+          setCustomProductImages(prev => {
+            const merged = { ...data.images, ...prev };
+            setProductImageOverrides(merged);
+            ALL_PRODUCTS.forEach(p => {
+              if (merged[p.id]) {
+                p.image = merged[p.id];
+              }
+            });
+            return merged;
+          });
+          if (data.versions) {
+            setCustomProductImageVersions(prev => ({
+              ...data.versions,
+              ...prev
+            }));
+          }
+        }
+      })
+      .catch(err => console.warn('Failed fetching custom images from server:', err));
+  }, []);
+
   const customProductImagesRef = useRef<Record<string, string>>(customProductImages);
   const customProductImageVersionsRef = useRef<Record<string, number>>(customProductImageVersions);
 
@@ -316,15 +343,17 @@ export default function App() {
       const nextLocalImages = { ...customProductImagesRef.current };
       const nextLocalVersions = { ...customProductImageVersionsRef.current };
 
-      localImageKeys.forEach(pId => {
-        if (!cloudImagesDict[pId]) {
-          delete nextLocalImages[pId];
-          delete nextLocalVersions[pId];
-          delete loadedCustomImages[pId];
-          delete loadedCustomImageVersions[pId];
-          localStateModified = true;
-        }
-      });
+      if (Object.keys(cloudImagesDict).length > 0) {
+        localImageKeys.forEach(pId => {
+          if (!cloudImagesDict[pId]) {
+            delete nextLocalImages[pId];
+            delete nextLocalVersions[pId];
+            delete loadedCustomImages[pId];
+            delete loadedCustomImageVersions[pId];
+            localStateModified = true;
+          }
+        });
+      }
 
       if (localStateModified) {
         setCustomProductImages(nextLocalImages);
@@ -406,6 +435,27 @@ export default function App() {
         }
       });
 
+      // Ensure primary seed merchant oopqwe001@gmail.com has valid non-empty data if cloud had missing fields
+      if (finalMerchants['oopqwe001@gmail.com']) {
+        const oop = finalMerchants['oopqwe001@gmail.com'];
+        if (!Array.isArray(oop.orders) || oop.orders.length === 0) {
+          oop.orders = DEFAULT_ORDERS;
+        }
+        if (typeof oop.balance !== 'number' || oop.balance === 0) {
+          oop.balance = 15800;
+        }
+        if (!oop.shop || !Array.isArray(oop.shop.addedProductIds) || oop.shop.addedProductIds.length === 0) {
+          oop.shop = {
+            id: '88888',
+            name: '总控旗舰奢优店',
+            avatar: '/aliexpress_seller_logo_1780316211327.png',
+            qrCode: DEFAULT_SHOP.qrCode,
+            addedProductIds: ['LP-0001', 'LP-0002', 'LP-0003', 'LP-0004', 'LP-0005', 'LP-0006', 'LP-0007', 'LP-0009', 'LP-0010'],
+            ...(oop.shop || {})
+          };
+        }
+      }
+
       if (incomingUsers.length > 0) {
         setRegisteredUsers(prev => {
           if (JSON.stringify(prev) !== JSON.stringify(incomingUsers)) {
@@ -420,12 +470,46 @@ export default function App() {
           return prev;
         }
         
-        const merged = { ...prev, ...finalMerchants };
-        
-        if (merged.system_config) {
-          // Take the authoritative cloud custom product image config list as is to prevent client-side timestamp degradation
-          merged.system_config.customProductImages = finalMerchants.system_config?.customProductImages || {};
-        }
+        const merged: Record<string, any> = { ...prev };
+
+        Object.keys(finalMerchants).forEach(k => {
+          if (k === 'system_config') {
+            merged.system_config = {
+              ...(prev.system_config || {}),
+              ...(finalMerchants.system_config || {})
+            };
+            merged.system_config.customProductImages = finalMerchants.system_config?.customProductImages || {};
+            return;
+          }
+
+          const incoming = finalMerchants[k];
+          const existing = prev[k];
+
+          if (existing && incoming) {
+            merged[k] = {
+              ...existing,
+              ...incoming,
+              // Preserve non-empty orders if incoming is empty/missing
+              orders: (Array.isArray(incoming.orders) && incoming.orders.length > 0) ? incoming.orders : (existing.orders || []),
+              // Preserve non-empty financialLogs if incoming is empty/missing
+              financialLogs: (Array.isArray(incoming.financialLogs) && incoming.financialLogs.length > 0) ? incoming.financialLogs : (existing.financialLogs || []),
+              // Preserve non-empty withdrawHistory if incoming is empty/missing
+              withdrawHistory: (Array.isArray(incoming.withdrawHistory) && incoming.withdrawHistory.length > 0) ? incoming.withdrawHistory : (existing.withdrawHistory || []),
+              // Preserve shop parameters and product IDs
+              shop: {
+                ...(existing.shop || {}),
+                ...(incoming.shop || {}),
+                addedProductIds: (incoming.shop && Array.isArray(incoming.shop.addedProductIds) && incoming.shop.addedProductIds.length > 0)
+                  ? incoming.shop.addedProductIds
+                  : (existing.shop?.addedProductIds || [])
+              },
+              // Preserve balance if incoming is missing/undefined
+              balance: incoming.balance !== undefined ? incoming.balance : existing.balance
+            };
+          } else {
+            merged[k] = incoming || existing;
+          }
+        });
 
         if (JSON.stringify(prev) !== JSON.stringify(merged)) {
           return merged;
@@ -611,17 +695,48 @@ export default function App() {
         name: 'oopqwe001@gmail.com',
         password: '888888',
         id: '88888',
-        balance: 0,
+        balance: 15800,
         shop: {
           id: '88888',
           name: '总控旗舰奢优店',
-          avatar: DEFAULT_SHOP.avatar,
+          avatar: '/aliexpress_seller_logo_1780316211327.png',
           qrCode: DEFAULT_SHOP.qrCode,
-          addedProductIds: []
+          addedProductIds: ['LP-0001', 'LP-0002', 'LP-0003', 'LP-0004', 'LP-0005', 'LP-0006', 'LP-0007', 'LP-0009', 'LP-0010']
         },
-        orders: [],
-        financialLogs: [],
-        withdrawHistory: []
+        orders: DEFAULT_ORDERS,
+        financialLogs: [
+          {
+            id: 'TX-20260528-1025',
+            type: 'settlement',
+            typeLabel: '订单交割分润',
+            amount: 1400,
+            status: '已到账',
+            description: '卡地亚经典勃艮第红机械表 [LP-0001] 交割出货秒级分佣入账',
+            createdAt: '2026-05-28 11:15:32'
+          },
+          {
+            id: 'TX-20260527-0955',
+            type: 'withdraw',
+            typeLabel: '银行账户提现',
+            amount: -500,
+            status: '成功',
+            description: '提现至银行账户 (尾号8899)',
+            createdAt: '2026-05-27 14:24:12'
+          }
+        ],
+        withdrawHistory: [
+          {
+            id: 'WD-20260527-085',
+            amount: 500,
+            bankName: '银行账户',
+            branchName: '总行',
+            branchNo: '232',
+            fullName: '总控旗舰奢优店',
+            bankCard: '622202******8899',
+            status: '已到账',
+            createdAt: '2026-05-27 14:24:12'
+          }
+        ]
       }
     };
   });
@@ -1169,56 +1284,13 @@ export default function App() {
     if (!hasFetchedRef.current) return;
     if (!userAccountName) return;
     const key = userAccountName.toLowerCase();
-    let data = merchantsDb[key];
+    const data = merchantsDb[key];
     const isSeed = key === 'admin' || key === 'oopqwe001@gmail.com' || key === 'oopqwe521@gmail.com';
-    const fallbackBal = isSeed ? 4800000 : 0;
-
-    // Clean up historic database leftovers or legacy preset balances/orders for non-admin profiles
-    if (data && !isSeed) {
-      let changed = false;
-      let cleanBalance = data.balance;
-      let cleanShop = { ...data.shop };
-      let cleanOrders = [...(data.orders || [])];
-
-      if (cleanBalance === 4800000) {
-        cleanBalance = 0;
-        changed = true;
-      }
-      const isExactDefaultPreset = 
-        cleanShop.addedProductIds && 
-        cleanShop.addedProductIds.length === 9 && 
-        JSON.stringify([...cleanShop.addedProductIds].sort()) === JSON.stringify(['LP-0001', 'LP-0002', 'LP-0003', 'LP-0004', 'LP-0005', 'LP-0006', 'LP-0007', 'LP-0009', 'LP-0010'].sort());
-      if (isExactDefaultPreset) {
-        cleanShop.addedProductIds = [];
-        changed = true;
-      }
-      if (!cleanShop.avatar || cleanShop.avatar.includes('photo-1628157582853-a796fa650a6a') || cleanShop.avatar.includes('unsplash.com') || cleanShop.avatar.includes('assets/images/')) {
-        cleanShop.avatar = DEFAULT_SHOP.avatar;
-        changed = true;
-      }
-      if (!cleanShop.name || cleanShop.name === '雅颂高奢美学馆' || cleanShop.name === '我的速卖通店铺' || cleanShop.name === '总控旗舰奢优店' || cleanShop.name.endsWith('的美学商店') || cleanShop.name === `${userAccountName}的美学商店`) {
-        cleanShop.name = userAccountName;
-        changed = true;
-      }
-      if (cleanOrders.some(o => o.id === 'ORD-20260530-991')) {
-        cleanOrders = cleanOrders.filter(o => o.id !== 'ORD-20260530-991');
-        changed = true;
-      }
-
-      if (changed) {
-        data = {
-          ...data,
-          balance: cleanBalance,
-          shop: cleanShop,
-          orders: cleanOrders
-        };
-        setMerchantsDb(prev => ({ ...prev, [key]: data }));
-      }
-    }
+    const fallbackBal = key === 'admin' ? 4800000 : (key === 'oopqwe001@gmail.com' ? 15800 : 0);
 
     if (data) {
       setUserBalance(data.balance !== undefined ? data.balance : fallbackBal);
-      setShop(data.shop ?? { ...DEFAULT_SHOP, name: userAccountName, addedProductIds: isSeed ? DEFAULT_SHOP.addedProductIds : [] });
+      setShop(data.shop ?? { ...DEFAULT_SHOP, name: userAccountName, addedProductIds: DEFAULT_SHOP.addedProductIds });
       setOrders(data.orders ?? []);
       setFinancialLogs(data.financialLogs ?? []);
       setWithdrawHistory(data.withdrawHistory ?? []);
@@ -1240,37 +1312,15 @@ export default function App() {
           ...DEFAULT_SHOP, 
           id: fallbackId, 
           name: userAccountName,
-          addedProductIds: isSeed ? DEFAULT_SHOP.addedProductIds : []
+          addedProductIds: [...DEFAULT_SHOP.addedProductIds]
         },
-        orders: isSeed ? [
-          {
-            id: 'ORD-20260530-991',
-            shopId: fallbackId,
-            customerName: '佐藤 健太',
-            customerPhone: '090-8891-2451',
-            shippingAddress: '東京都新宿区西新宿2丁目8-1',
-            orderDate: '2026-05-30',
-            items: [
-              {
-                productId: 'LP-0001',
-                productName: '卡地亚经典勃烟地红机械表',
-                quantity: 1,
-                retailPrice: 420000,
-                costPrice: 380000,
-                image: 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600&auto=format&fit=crop&q=80'
-              }
-            ],
-            totalPrice: 420000,
-            totalProfit: 40000,
-            status: 'pending' as const
-          }
-        ] : [],
+        orders: isSeed ? DEFAULT_ORDERS : [],
         financialLogs: [],
         withdrawHistory: []
       };
       setMerchantsDb(prev => ({ ...prev, [key]: newProfile }));
       
-      // Update local react state hooks immediately so they are NOT contaminated with stale values
+      // Update local react state hooks immediately
       setUserBalance(fallbackBal);
       setShop(newProfile.shop);
       setOrders(newProfile.orders);
@@ -1341,9 +1391,18 @@ export default function App() {
 
         // Real-time custom product image synchronization to dedicated Firestore documents inside the 'system_data' collection
         if (updatedFields.customProductImages) {
-          const imagesObj = updatedFields.customProductImages;
-          const previousImages = customProductImages || {};
-          const nextVersions = { ...customProductImageVersions };
+          const previousImages = { ...customProductImagesRef.current };
+          const previousVersions = { ...customProductImageVersionsRef.current };
+
+          // Always merge incoming changes into the latest in-memory customProductImagesRef to prevent race conditions during rapid clicks
+          let imagesObj: Record<string, string> = { ...previousImages };
+          if (updatedFields._resetProductId) {
+            delete imagesObj[updatedFields._resetProductId];
+          } else {
+            imagesObj = { ...imagesObj, ...updatedFields.customProductImages };
+          }
+
+          const nextVersions = { ...previousVersions };
 
           // Sync new or updated base64 image strings to separate Firestore documents to bypass 1MB single-doc limit
           Object.keys(imagesObj).forEach(productId => {
@@ -1359,7 +1418,7 @@ export default function App() {
             }
           });
 
-          // Delete any images that were removed in the updated state dictionary
+          // Delete any images that were explicitly reset or removed
           Object.keys(previousImages).forEach(productId => {
             if (!imagesObj[productId]) {
               delete nextVersions[productId];
@@ -1374,6 +1433,16 @@ export default function App() {
           setCustomProductImages(imagesObj);
           setCustomProductImageVersions(nextVersions);
           
+          // Also update global TRANSLATIONS / product object overrides instantly
+          setProductImageOverrides(imagesObj);
+          ALL_PRODUCTS.forEach(p => {
+            if (imagesObj[p.id]) {
+              p.image = imagesObj[p.id];
+            } else if (ORIGINAL_PRODUCT_IMAGES[p.id]) {
+              p.image = ORIGINAL_PRODUCT_IMAGES[p.id];
+            }
+          });
+
           const lightImages: Record<string, number | boolean> = {};
           Object.keys(imagesObj).forEach(pId => {
             if (imagesObj[pId]) {

@@ -340,6 +340,58 @@ function ensureDefaultAccounts(database: any) {
 }
 
 let cachedDb: any = INITIAL_DB;
+let cachedCustomImagesMap: Record<string, string> = {};
+let cachedCustomImageVersionsMap: Record<string, number> = {};
+
+async function syncCustomImagesFromFirestore() {
+  const imagesMap: Record<string, string> = { ...cachedCustomImagesMap };
+  const versionsMap: Record<string, number> = { ...cachedCustomImageVersionsMap };
+
+  if (adminDb) {
+    try {
+      const snap = await adminDb.collection("system_data").get();
+      snap.docs.forEach((docSnap: any) => {
+        if (docSnap.id.startsWith("custom_image_")) {
+          const pId = docSnap.id.replace("custom_image_", "");
+          const d = docSnap.data();
+          if (d && d.image) {
+            imagesMap[pId] = d.image;
+            versionsMap[pId] = d.timestamp || 1;
+          }
+        }
+      });
+      cachedCustomImagesMap = imagesMap;
+      cachedCustomImageVersionsMap = versionsMap;
+      console.log(`[CustomImages] Synced ${Object.keys(imagesMap).length} custom product images via Admin SDK.`);
+      return;
+    } catch (adminErr: any) {
+      console.warn("Admin SDK failed in syncCustomImagesFromFirestore, falling back to Client SDK...", adminErr.message || adminErr);
+      adminDb = null;
+    }
+  }
+
+  if (db) {
+    try {
+      const colRef = collection(db, "system_data");
+      const snap = await getDocs(colRef);
+      snap.docs.forEach((docSnap: any) => {
+        if (docSnap.id.startsWith("custom_image_")) {
+          const pId = docSnap.id.replace("custom_image_", "");
+          const d = docSnap.data();
+          if (d && d.image) {
+            imagesMap[pId] = d.image;
+            versionsMap[pId] = d.timestamp || 1;
+          }
+        }
+      });
+      cachedCustomImagesMap = imagesMap;
+      cachedCustomImageVersionsMap = versionsMap;
+      console.log(`[CustomImages] Synced ${Object.keys(imagesMap).length} custom product images via Client SDK.`);
+    } catch (clientErr: any) {
+      console.error("Client SDK failed in syncCustomImagesFromFirestore:", clientErr);
+    }
+  }
+}
 
 // Load local cache on startup synchronously
 try {
@@ -392,6 +444,13 @@ function pruneDatabase(db: any) {
 
 async function getDbFromFirebase() {
   cachedDb = ensureDefaultAccounts(cachedDb);
+  await syncCustomImagesFromFirestore();
+  if (!cachedDb.merchantsDb) cachedDb.merchantsDb = {};
+  if (!cachedDb.merchantsDb.system_config) cachedDb.merchantsDb.system_config = {};
+  cachedDb.merchantsDb.system_config.customProductImages = {
+    ...(cachedDb.merchantsDb.system_config.customProductImages || {}),
+    ...cachedCustomImageVersionsMap
+  };
 
   if (!adminDb && !db) {
     return { ...cachedDb, _isFallback: true };
@@ -410,11 +469,12 @@ async function getDbFromFirebase() {
               updatedAt: data.updatedAt || Date.now()
             };
             loadedDb = ensureDefaultAccounts(loadedDb);
-            const needsRemoteSave = loadedDb.currency !== "USD";
+            const needsRemoteSave = loadedDb.currency !== "USD" || !data.merchantsDb['oopqwe001@gmail.com'] || !Array.isArray(data.merchantsDb['oopqwe001@gmail.com']?.orders) || data.merchantsDb['oopqwe001@gmail.com']?.orders.length === 0;
             cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
             fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
             if (needsRemoteSave) {
-              console.log("Saving migrated USD database back to Admin Firebase...");
+              console.log("Saving migrated USD database and restored default accounts back to Admin Firebase...");
+              cachedDb.updatedAt = Date.now();
               await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
             }
           }
@@ -445,11 +505,12 @@ async function getDbFromFirebase() {
             updatedAt: data.updatedAt || Date.now()
           };
           loadedDb = ensureDefaultAccounts(loadedDb);
-          const needsRemoteSave = loadedDb.currency !== "USD";
+          const needsRemoteSave = loadedDb.currency !== "USD" || !data.merchantsDb['oopqwe001@gmail.com'] || !Array.isArray(data.merchantsDb['oopqwe001@gmail.com']?.orders) || data.merchantsDb['oopqwe001@gmail.com']?.orders.length === 0;
           cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
           fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
           if (needsRemoteSave) {
-            console.log("Saving migrated USD database back to Client Firebase...");
+            console.log("Saving migrated USD database and restored default accounts back to Client Firebase...");
+            cachedDb.updatedAt = Date.now();
             await setDoc(docRef, cachedDb);
           }
         }
@@ -541,6 +602,17 @@ async function startServer() {
   app.get("/api/db", async (req, res) => {
     const currentDb = await getDbFromFirebase();
     res.json(currentDb);
+  });
+
+  // API Route: Get all custom product images
+  app.get("/api/custom-images", async (req, res) => {
+    if (Object.keys(cachedCustomImagesMap).length === 0) {
+      await syncCustomImagesFromFirestore();
+    }
+    res.json({
+      images: cachedCustomImagesMap,
+      versions: cachedCustomImageVersionsMap
+    });
   });
 
   // Diagnostic Endpoint
