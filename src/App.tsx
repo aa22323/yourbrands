@@ -789,11 +789,6 @@ export default function App() {
         .catch(err => console.error("Express proxy save fallback failed:", err));
 
       // 2. Direct Firestore update write (zero-latency socket notification)
-      if (isLoadedFromServerRef.current) {
-        console.log("Skipping direct client-side Firestore write because Express server proxy is active and authoritative.");
-        return;
-      }
-
       const [firstField, firstVal, ...restArgs] = updateArgs;
       updateDoc(docRef, firstField, firstVal, ...restArgs)
         .then(() => {

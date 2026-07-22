@@ -232,6 +232,12 @@ function pruneDatabase(db: any) {
 }
 
 async function getDbFromFirebase() {
+  // If we already have a valid memory/file database loaded, return it immediately
+  // to avoid overwriting recent local updates with stale reads from Firestore.
+  if (cachedDb && cachedDb.merchantsDb && Object.keys(cachedDb.merchantsDb).length > 0) {
+    return { ...cachedDb, _isFallback: false };
+  }
+
   if (!adminDb && !db) {
     return { ...cachedDb, _isFallback: true };
   }
@@ -243,27 +249,19 @@ async function getDbFromFirebase() {
         if (docSnap.exists) {
           const data = docSnap.data() || {};
           if (data && data.registeredUsers && data.merchantsDb) {
-            const remoteUpdatedAt = data.updatedAt || 0;
-            const currentLocalUpdatedAt = cachedDb.updatedAt || 0;
-            if (remoteUpdatedAt > currentLocalUpdatedAt) {
-              let loadedDb = {
-                registeredUsers: data.registeredUsers,
-                merchantsDb: data.merchantsDb,
-                currency: data.currency,
-                updatedAt: remoteUpdatedAt
-              };
-              const needsRemoteSave = loadedDb.currency !== "USD";
-              cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
-              // Async backup to local json
-              fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
-                if (err) console.error("Error backing up file-system cache:", err);
-              });
-              if (needsRemoteSave) {
-                console.log("Saving migrated USD database back to Admin Firebase...");
-                await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
-              }
-            } else {
-              console.log(`Local memory DB timestamp (${currentLocalUpdatedAt}) is newer than or equal to remote Firestore timestamp (${remoteUpdatedAt}). Keeping local DB.`);
+            let loadedDb = {
+              registeredUsers: data.registeredUsers,
+              merchantsDb: data.merchantsDb,
+              currency: data.currency,
+              updatedAt: data.updatedAt || Date.now()
+            };
+            const needsRemoteSave = loadedDb.currency !== "USD";
+            cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
+            // Backup to local json
+            fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
+            if (needsRemoteSave) {
+              console.log("Saving migrated USD database back to Admin Firebase...");
+              await adminDb.collection("system_data").doc("aliexpress_database").set(cachedDb);
             }
           }
           return { ...cachedDb, _isFallback: false };
@@ -277,7 +275,6 @@ async function getDbFromFirebase() {
       } catch (adminErr: any) {
         console.warn("Firebase Admin SDK failed to fetch. Dynamically falling back to Client Web SDK...", adminErr.message || adminErr);
         adminDb = null; // Disable Admin SDK for subsequent calls
-        // Fall through to the Client SDK logic below
       }
     }
 
@@ -288,26 +285,18 @@ async function getDbFromFirebase() {
       if (docSnap.exists()) {
         const data = docSnap.data() || {};
         if (data && data.registeredUsers && data.merchantsDb) {
-          const remoteUpdatedAt = data.updatedAt || 0;
-          const currentLocalUpdatedAt = cachedDb.updatedAt || 0;
-          if (remoteUpdatedAt > currentLocalUpdatedAt) {
-            let loadedDb = {
-              registeredUsers: data.registeredUsers,
-              merchantsDb: data.merchantsDb,
-              currency: data.currency,
-              updatedAt: remoteUpdatedAt
-            };
-            const needsRemoteSave = loadedDb.currency !== "USD";
-            cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
-            fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
-              if (err) console.error("Error backing up file-system cache:", err);
-            });
-            if (needsRemoteSave) {
-              console.log("Saving migrated USD database back to Client Firebase...");
-              await setDoc(docRef, cachedDb);
-            }
-          } else {
-            console.log(`Local memory DB timestamp (${currentLocalUpdatedAt}) is newer than or equal to remote Firestore timestamp (${remoteUpdatedAt}). Keeping local DB.`);
+          let loadedDb = {
+            registeredUsers: data.registeredUsers,
+            merchantsDb: data.merchantsDb,
+            currency: data.currency,
+            updatedAt: data.updatedAt || Date.now()
+          };
+          const needsRemoteSave = loadedDb.currency !== "USD";
+          cachedDb = pruneDatabase(migrateDatabaseToUsd(loadedDb));
+          fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
+          if (needsRemoteSave) {
+            console.log("Saving migrated USD database back to Client Firebase...");
+            await setDoc(docRef, cachedDb);
           }
         }
         return { ...cachedDb, _isFallback: false };
