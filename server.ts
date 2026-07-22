@@ -315,7 +315,7 @@ function ensureDefaultAccounts(database: any) {
     if (!Array.isArray(m.orders) || m.orders.length === 0) {
       m.orders = DEFAULT_ORDERS_FOR_STORE;
     }
-    if (typeof m.balance !== 'number' || m.balance === 0) {
+    if (typeof m.balance !== 'number') {
       m.balance = 15800;
     }
     if (!m.shop || !Array.isArray(m.shop.addedProductIds) || m.shop.addedProductIds.length === 0) {

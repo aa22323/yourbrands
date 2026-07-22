@@ -441,7 +441,7 @@ export default function App() {
         if (!Array.isArray(oop.orders) || oop.orders.length === 0) {
           oop.orders = DEFAULT_ORDERS;
         }
-        if (typeof oop.balance !== 'number' || oop.balance === 0) {
+        if (typeof oop.balance !== 'number') {
           oop.balance = 15800;
         }
         if (!oop.shop || !Array.isArray(oop.shop.addedProductIds) || oop.shop.addedProductIds.length === 0) {
@@ -1598,6 +1598,7 @@ export default function App() {
   };
 
   const handleShipOrder = (orderIdParam: string | string[], merchantKeyParam?: string) => {
+    hasFetchedRef.current = true;
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
     const targetIds = Array.isArray(orderIdParam) ? orderIdParam : [orderIdParam];
@@ -1617,7 +1618,7 @@ export default function App() {
     }
 
     const targetMerchant = merchantsDb[targetAccount] || {};
-    const merchantOrders: Order[] = targetMerchant.orders || (targetAccount === userAccountName.toLowerCase() ? orders : []);
+    const merchantOrders: Order[] = (targetAccount === userAccountName.toLowerCase() && orders && orders.length > 0) ? orders : (targetMerchant.orders || []);
     const merchantBalance: number = targetAccount === userAccountName.toLowerCase() ? userBalance : (targetMerchant.balance ?? 0);
     const merchantLogs: FinancialTransaction[] = targetAccount === userAccountName.toLowerCase() ? financialLogs : (targetMerchant.financialLogs ?? []);
 
@@ -1630,16 +1631,15 @@ export default function App() {
     const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
     // Calculate total cost for non-self orders
-    const nonSelfOrders = pendingToShip.filter(o => !o.isSelfOrder);
+    const nonSelfOrders = pendingToShip.filter(o => !o.isSelfOrder && !(o as any).isSelfCreated && !(o.items && o.items.some((i: any) => i.isSelfCreated)));
     const totalCostPrice = nonSelfOrders.reduce((sum, o) => {
       return sum + (o.items || []).reduce((iSum, item) => iSum + ((item.costPrice || 0) * (item.quantity || 1)), 0);
     }, 0);
 
-    // Check balance - allow admin forced shipment (merchantKeyParam) or check balance for merchant
+    // If balance is low, show informative toast but still process the shipment
     if (!merchantKeyParam && nonSelfOrders.length > 0 && merchantBalance < totalCostPrice) {
       setShowBalanceToast(true);
       setTimeout(() => setShowBalanceToast(false), 3000);
-      return;
     }
 
     const nextBalance = Math.max(0, merchantBalance - totalCostPrice);
