@@ -324,9 +324,12 @@ async function saveDbToFirebase(incomingUsers: any, incomingMerchants: any) {
   // Perform auto-pruning to trim old historical entries so we stay well below Firestore's 1MB single-document quota limit!
   cachedDb = pruneDatabase(cachedDb);
 
-  fs.writeFile(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8", (err) => {
-    if (err) console.error("Error backing up file-system cache during save:", err);
-  });
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(cachedDb, null, 2), "utf-8");
+    console.log("[server] Wrote updated state to database.json cleanly.");
+  } catch (err) {
+    console.error("Error backing up file-system cache during save:", err);
+  }
 
   if (!adminDb && !db) return;
 

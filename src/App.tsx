@@ -1545,25 +1545,27 @@ export default function App() {
   const handleToggleProductInStore = (productId: string) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
-    setShop(prev => {
-      const isAdded = prev.addedProductIds.includes(productId);
-      const nextAddedIds = isAdded
-        ? prev.addedProductIds.filter(id => id !== productId)
-        : [...prev.addedProductIds, productId];
-      return {
-        ...prev,
-        addedProductIds: nextAddedIds
-      };
-    });
+    const isAdded = shop.addedProductIds.includes(productId);
+    const nextAddedIds = isAdded
+      ? shop.addedProductIds.filter(id => id !== productId)
+      : [...shop.addedProductIds, productId];
+    const nextShop = {
+      ...shop,
+      addedProductIds: nextAddedIds
+    };
+    setShop(nextShop);
+    updateMerchantDataInDb(userAccountName, { shop: nextShop });
   };
 
   const handleUpdateShop = (updatedFields: Partial<Shop>) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
-    setShop(prev => ({
-      ...prev,
+    const nextShop = {
+      ...shop,
       ...updatedFields
-    }));
+    };
+    setShop(nextShop);
+    updateMerchantDataInDb(userAccountName, { shop: nextShop });
   };
 
   const handleAddOrder = (newOrder: Order) => {
@@ -1599,50 +1601,55 @@ export default function App() {
     });
   };
 
-  const handleShipOrder = (orderId: string) => {
+  const handleShipOrder = (orderIdParam: string | string[]) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
+    const targetIds = Array.isArray(orderIdParam) ? orderIdParam : [orderIdParam];
+    if (targetIds.length === 0) return;
+
     const pad = (num: number) => String(num).padStart(2, '0');
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-    // Find the order being shipped
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    if (order.status !== 'pending') return;
+    // Filter target pending orders
+    const pendingToShip = orders.filter(o => targetIds.includes(o.id) && o.status === 'pending');
+    if (pendingToShip.length === 0) return;
 
-    let nextBalance = userBalance;
-    let nextLogs = financialLogs;
+    // Calculate total cost for non-self orders
+    const nonSelfOrders = pendingToShip.filter(o => !o.isSelfOrder);
+    const totalCostPrice = nonSelfOrders.reduce((sum, o) => {
+      return sum + o.items.reduce((iSum, item) => iSum + (item.costPrice * item.quantity), 0);
+    }, 0);
 
-    if (!order.isSelfOrder) {
-      const costPriceSum = order.items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0);
-      
-      // Check if user has enough balance (blocking shipment, but show a central toast)
-      if (userBalance < costPriceSum) {
-        setShowBalanceToast(true);
-        setTimeout(() => {
-          setShowBalanceToast(false);
-        }, 3000);
-        return;
-      }
+    // Check balance
+    if (nonSelfOrders.length > 0 && userBalance < totalCostPrice) {
+      setShowBalanceToast(true);
+      setTimeout(() => setShowBalanceToast(false), 3000);
+      return;
+    }
 
-      // Deduct the cost
-      nextBalance = Math.max(0, userBalance - costPriceSum);
+    const nextBalance = Math.max(0, userBalance - totalCostPrice);
+    let nextLogs = [...financialLogs];
+
+    // Generate logs for non-self orders
+    nonSelfOrders.forEach(o => {
+      const costPriceSum = o.items.reduce((sum, item) => sum + (item.costPrice * item.quantity), 0);
       const newTx: FinancialTransaction = {
         id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
         type: 'withdraw',
         typeLabel: '代发成本扣除',
         amount: -costPriceSum,
         status: '已扣除',
-        description: `店家发货垫付境外高奢一件代发货源采购成本，包囊运单 [订单号: ${order.id}]`,
+        description: `店家发货垫付境外高奢一件代发货源采购成本，包囊运单 [订单号: ${o.id}]`,
         createdAt: `${dateStr} ${timeStr}`
       };
-      nextLogs = [newTx, ...financialLogs];
-    }
+      nextLogs = [newTx, ...nextLogs];
+    });
 
+    const pendingToShipSet = new Set(pendingToShip.map(o => o.id));
     const nextOrders = orders.map(o => {
-      if (o.id === orderId) {
+      if (pendingToShipSet.has(o.id)) {
         return { ...o, status: 'shipped' as const, shippedAt: `${dateStr} ${timeStr}` };
       }
       return o;
@@ -1655,53 +1662,57 @@ export default function App() {
     });
   };
 
-  const handleConfirmReceiveOrder = (orderId: string) => {
+  const handleConfirmReceiveOrder = (orderIdParam: string | string[]) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
-    const order = orders.find(o => o.id === orderId);
-    if (!order) return;
-    if (order.status !== 'shipped') return;
+    const targetIds = Array.isArray(orderIdParam) ? orderIdParam : [orderIdParam];
+    if (targetIds.length === 0) return;
 
     const pad = (num: number) => String(num).padStart(2, '0');
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
+    const shippedToConfirm = orders.filter(o => targetIds.includes(o.id) && o.status === 'shipped');
+    if (shippedToConfirm.length === 0) return;
+
+    let nextBalance = userBalance;
+    let nextLogs = [...financialLogs];
+
+    shippedToConfirm.forEach(o => {
+      if (o.isSelfOrder) {
+        const newTx: FinancialTransaction = {
+          id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
+          type: 'settlement',
+          typeLabel: '自购确认收货',
+          amount: 0,
+          status: '已到账',
+          description: `自购精品宝贝已成功到货签收！订单号: ${o.id}。名贵奢件已交付验收入库，完满结单。`,
+          createdAt: `${dateStr} ${timeStr}`
+        };
+        nextLogs = [newTx, ...nextLogs];
+      } else {
+        nextBalance += o.totalPrice;
+        const newTx: FinancialTransaction = {
+          id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
+          type: 'settlement',
+          typeLabel: '订单分帐到账',
+          amount: o.totalPrice,
+          status: '已到账',
+          description: `奢选商铺完成交割，订单序列号: ${o.id}，含回笼采购采购垫付本金 ($${(o.totalPrice - o.totalProfit).toLocaleString()}) 与出货利润 ($${o.totalProfit.toLocaleString()}) 全额到账`,
+          createdAt: `${dateStr} ${timeStr}`
+        };
+        nextLogs = [newTx, ...nextLogs];
+      }
+    });
+
+    const shippedToConfirmSet = new Set(shippedToConfirm.map(o => o.id));
     const nextOrders = orders.map(o => {
-      if (o.id === orderId) {
+      if (shippedToConfirmSet.has(o.id)) {
         return { ...o, status: 'completed' as const };
       }
       return o;
     });
-
-    let nextBalance = userBalance;
-    let nextLogs = financialLogs;
-
-    if (order.isSelfOrder) {
-      const newTx: FinancialTransaction = {
-        id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
-        type: 'settlement',
-        typeLabel: '自购确认收货',
-        amount: 0,
-        status: '已到账',
-        description: `自购精品宝贝已成功到货签收！订单号: ${order.id}。名贵奢件已交付验收入库，完满结单。`,
-        createdAt: `${dateStr} ${timeStr}`
-      };
-      nextLogs = [newTx, ...financialLogs];
-    } else {
-      // Add full retail price back to user's real balance (since we already deducted costPrice upfront upon shipping)
-      nextBalance = userBalance + order.totalPrice;
-      const newTx: FinancialTransaction = {
-        id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
-        type: 'settlement',
-        typeLabel: '订单分帐到账',
-        amount: order.totalPrice,
-        status: '已到账',
-        description: `奢选商铺完成交割，订单序列号: ${order.id}，含回笼采购采购垫付本金 ($${(order.totalPrice - order.totalProfit).toLocaleString()}) 与出货利润 ($${order.totalProfit.toLocaleString()}) 全额到账`,
-        createdAt: `${dateStr} ${timeStr}`
-      };
-      nextLogs = [newTx, ...financialLogs];
-    }
 
     updateMerchantDataInDb(userAccountName, {
       balance: nextBalance,
@@ -1710,10 +1721,12 @@ export default function App() {
     });
   };
 
-  const handleDeleteOrder = (orderId: string) => {
+  const handleDeleteOrder = (orderIdParam: string | string[]) => {
     lastMutationTimeRef.current = Date.now(); // LOCK POLLING!
     isLocalChangeRef.current = true;
-    const nextOrders = orders.filter(o => o.id !== orderId);
+    const targetIds = Array.isArray(orderIdParam) ? orderIdParam : [orderIdParam];
+    const targetSet = new Set(targetIds);
+    const nextOrders = orders.filter(o => !targetSet.has(o.id));
     updateMerchantDataInDb(userAccountName, { orders: nextOrders });
   };
 
