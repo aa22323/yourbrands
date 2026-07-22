@@ -779,7 +779,13 @@ export default function App() {
         body: JSON.stringify({ registeredUsers, merchantsDb: sanitizedMerchantsDb })
       })
         .then(res => res.json())
-        .then(() => console.log("State synchronized securely via Express backend proxy."))
+        .then(() => {
+          console.log("State synchronized securely via Express backend proxy.");
+          lastFetchedDataRef.current = {
+            registeredUsers: JSON.parse(JSON.stringify(registeredUsers)),
+            merchantsDb: JSON.parse(JSON.stringify(sanitizedMerchantsDb))
+          };
+        })
         .catch(err => console.error("Express proxy save fallback failed:", err));
 
       // 2. Direct Firestore update write (zero-latency socket notification)
