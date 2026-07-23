@@ -37,6 +37,7 @@ interface ProfileViewProps {
   onUpdateWithdrawHistory?: (history: any[]) => void;
   onOpenAdminConsole?: () => void;
   isSalesman?: boolean;
+  historicalOrdersCount?: number;
   onUpdateMerchantData?: (targetAccount: string, updatedFields: Partial<any>) => void;
 }
 
@@ -136,6 +137,7 @@ export default function ProfileView({
   onUpdateWithdrawHistory,
   onOpenAdminConsole,
   isSalesman = false,
+  historicalOrdersCount = 0,
   onUpdateMerchantData
 }: ProfileViewProps) {
   const matchedUserObj = registeredUsers?.find(u => u.name.toLowerCase() === userAccountName?.toLowerCase());
@@ -558,6 +560,11 @@ export default function ProfileView({
                 {t('ownerBadge')}
               </span>
               <span className="text-[10px] font-mono text-zinc-400 font-bold">ID: {displayId}</span>
+              {historicalOrdersCount > 0 && (
+                <span className="text-[10px] font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 font-black">
+                  历史订单量: {historicalOrdersCount.toLocaleString()} 笔
+                </span>
+              )}
             </div>
             
             <div className="flex items-center gap-2">
@@ -1337,7 +1344,14 @@ export default function ProfileView({
                   : 'text-zinc-450 hover:text-zinc-805'
               }`}
             >
-              <span>{t('tabCompletedCount')} ({completedOrders.length})</span>
+              <span>
+                {t('tabCompletedCount')} ({completedOrders.length + historicalOrdersCount})
+                {historicalOrdersCount > 0 && (
+                  <span className="text-[10px] text-amber-600 font-normal font-mono ml-1">
+                    (含历史: +{historicalOrdersCount})
+                  </span>
+                )}
+              </span>
               {activeOrderTab === 'completed' && (
                 <motion.div layoutId="orderTabLine" className="absolute bottom-0 inset-x-0 h-0.5 bg-[#e51923] mt-1" />
               )}

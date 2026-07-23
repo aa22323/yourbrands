@@ -22,8 +22,8 @@ const CORE_PRODUCTS = [
     name: 'Cartier Bordeaux Classic Automatic Mechanical Watch',
     category: '臻选腕表',
     costPrice: 5800,
-    retailPrice: 6200,
-    profit: 400,
+    retailPrice: 7540,
+    profit: 1740,
     description: 'Inheriting French romance, the deep burgundy dial is paired with a vintage alligator strap and a Swiss automatic self-winding movement, exuding absolute prestige.',
     sku: 'WT-CART-8892',
     image: 'https://images.unsplash.com/photo-1522337360788-5b1a1b1b11b1?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -33,8 +33,8 @@ const CORE_PRODUCTS = [
     name: 'Gilded Amber Niche Luxury Perfume',
     category: '化妆品',
     costPrice: 120,
-    retailPrice: 135,
-    profit: 15,
+    retailPrice: 156,
+    profit: 36,
     description: 'Top notes of oud and Damask rose, base notes of gilded amber and cedarwood. The woody scent is mysterious and long-wearing, creating a high-profile presence.',
     sku: 'PF-AMB-4029',
     image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -44,8 +44,8 @@ const CORE_PRODUCTS = [
     name: 'Pure Gold Handcrafted Ring - 18K Champagne Gold',
     category: '高级珠宝',
     costPrice: 1500,
-    retailPrice: 1750,
-    profit: 250,
+    retailPrice: 1950,
+    profit: 450,
     description: 'Exquisitely polished 18K champagne gold with handcrafted filigree texture, reflecting ultimate craftsmanship and timeless aesthetics.',
     sku: 'JW-RING-9951',
     image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -55,8 +55,8 @@ const CORE_PRODUCTS = [
     name: 'Vintage Italian Saddle Leather Tote Bag',
     category: '匠心皮具',
     costPrice: 2100,
-    retailPrice: 2400,
-    profit: 300,
+    retailPrice: 2730,
+    profit: 630,
     description: 'Tuscan premium vegetable-tanned leather with hand-painted edge stitching, becoming more beautiful over time. Spacious luxury design.',
     sku: 'BG-TOTE-1102',
     image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -66,8 +66,8 @@ const CORE_PRODUCTS = [
     name: 'Obsidian Noir Vintage Acetate Sunglasses',
     category: '大师器物',
     costPrice: 320,
-    retailPrice: 360,
-    profit: 40,
+    retailPrice: 416,
+    profit: 96,
     description: 'Made of high-density acetate fiber with pristine obsidian texture, offering complete UV protection and a bold, avant-garde design statement.',
     sku: 'EY-OBS-5531',
     image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0084?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -77,8 +77,8 @@ const CORE_PRODUCTS = [
     name: 'Celadon Glazed Ceramic Vase - Master Crafted',
     category: '大师器物',
     costPrice: 450,
-    retailPrice: 500,
-    profit: 50,
+    retailPrice: 585,
+    profit: 135,
     description: 'Handcrafted by legendary kiln masters, featuring a high-temperature transmutation glaze that looks warm and exquisite under light.',
     sku: 'VA-CEL-9022',
     image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -88,8 +88,8 @@ const CORE_PRODUCTS = [
     name: 'Imperial Jadeite Diamond Pendant in 18K Gold',
     category: '高级珠宝',
     costPrice: 19000,
-    retailPrice: 21000,
-    profit: 2000,
+    retailPrice: 24700,
+    profit: 5700,
     description: 'Sourced translucent Imperial Jadeite accented with a heavyweight brilliant-cut diamond pave setting in 18K white gold. Highly collectible.',
     sku: 'JW-JAD-0283',
     image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -99,8 +99,8 @@ const CORE_PRODUCTS = [
     name: 'Imperial Sandalwood Scented Soy Candle',
     category: '化妆品',
     costPrice: 40,
-    retailPrice: 45,
-    profit: 5,
+    retailPrice: 52,
+    profit: 12,
     description: 'Hand-poured natural soy wax candle offering a rich blend of sandalwood, tobacco, and leather notes to bring warmth and tranquility to your space.',
     sku: 'AC-CAN-3382',
     image: 'https://images.unsplash.com/photo-1603006905503-be475563bc59?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -110,8 +110,8 @@ const CORE_PRODUCTS = [
     name: 'Chanel No.5 Paris Classic Scent Perfume',
     category: '香水',
     costPrice: 155,
-    retailPrice: 180,
-    profit: 25,
+    retailPrice: 202,
+    profit: 47,
     description: 'The ultimate timeless floral scent featuring a perfect encounter of aldehydes and delicate roses, expressing independence, elegance, and modernism.',
     sku: 'PF-CHN-5501',
     image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -121,8 +121,8 @@ const CORE_PRODUCTS = [
     name: 'Dyson Supersonic Ionic Intelligent Hair Dryer',
     category: '家用电器',
     costPrice: 290,
-    retailPrice: 325,
-    profit: 35,
+    retailPrice: 377,
+    profit: 87,
     description: 'Intelligent heat control to protect hair shine combined with powerful digital motor air multiply technology for swift styling in iconic retro colors.',
     sku: 'AP-DYS-8012',
     image: 'https://images.unsplash.com/photo-1522337360788-5b1a1b1b11b1?auto=format&fit=crop&w=500&q=80&fm=jpg&ext=.jpg',
@@ -826,30 +826,23 @@ function generate1000Products(): Product[] {
     
     // Determine plausible price ranges based on luxury categories in US Dollars (USD)
     let costPrice = 150;
-    let markup = 1.12;
     
     if (category === '臻选腕表') {
       costPrice = 5500 + (idCounter * 120) % 60000; // Realistic range: $5,500 to $65,500 USD
-      markup = 1.08 + ((idCounter % 5) * 0.01); // 8% to 12% commission
     } else if (category === '高级珠宝') {
       costPrice = 1200 + (idCounter * 75) % 24000; // Realistic range: $1,200 to $25,200 USD
-      markup = 1.10 + ((idCounter % 3) * 0.015); // 10% to 14.5% commission
     } else if (category === '匠心皮具') {
       costPrice = 1500 + (idCounter * 50) % 16500; // Realistic range: $1,500 to $18,000 USD
-      markup = 1.09 + ((idCounter % 4) * 0.01); // 9% to 12% commission
     } else if (category === '化妆品' || category === '香水') {
       costPrice = 110 + (idCounter * 2) % 300; // Realistic range: $110 to $410 USD
-      markup = 1.11; // 11% flat
     } else if (category === '家用电器') {
       costPrice = 250 + (idCounter * 15) % 3000; // Realistic range: $250 to $3,250 USD
-      markup = 1.10 + ((idCounter % 4) * 0.01); // 10% to 13% commission
     } else { // 大师器物
       costPrice = 120 + (idCounter * 5) % 1000; // Realistic range: $120 to $1,120 USD
-      markup = 1.12; // 12% flat
     }
 
-    const retailPrice = Math.max(costPrice + 1, Math.round(costPrice * markup));
-    const profit = retailPrice - costPrice;
+    const profit = Math.round(costPrice * 0.30);
+    const retailPrice = costPrice + profit;
     
     let itemName = '';
     let itemDescription = '';
@@ -1117,9 +1110,8 @@ function generate1000Products(): Product[] {
     const material = materials[id % materials.length];
     itemName = `${itemName} (${material}) · No.${id}`;
     
-    const markup = 1.10 + ((id % 4) * 0.015);
-    const retailPrice = Math.max(costPrice + 5, Math.round(costPrice * markup));
-    const profit = retailPrice - costPrice;
+    const profit = Math.round(costPrice * 0.30);
+    const retailPrice = costPrice + profit;
 
     const image = getUniqueImageForProduct('情趣用品', id, itemName);
 

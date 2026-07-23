@@ -56,6 +56,7 @@ export default function AdminDashboardView({
   const [deletingMerchantKey, setDeletingMerchantKey] = useState<string | null>(null);
   const [editPasswordInput, setEditPasswordInput] = useState('');
   const [editBalanceInput, setEditBalanceInput] = useState('');
+  const [editHistoricalOrdersInput, setEditHistoricalOrdersInput] = useState('');
   const [editPromotedBy, setEditPromotedBy] = useState('');
   const [manualBindInput, setManualBindInput] = useState('');
   const [editRole, setEditRole] = useState<'merchant' | 'salesman' | 'admin'>('merchant');
@@ -523,6 +524,15 @@ export default function AdminDashboardView({
       updates.balance = parsedBalance;
     }
 
+    if (editHistoricalOrdersInput.trim()) {
+      const parsedHistorical = parseInt(editHistoricalOrdersInput.trim(), 10);
+      if (!isNaN(parsedHistorical) && parsedHistorical >= 0) {
+        updates.historicalOrdersCount = parsedHistorical;
+      }
+    } else {
+      updates.historicalOrdersCount = 0;
+    }
+
     if (!isSalesman) {
       updates.isSalesman = editRole === 'salesman';
       updates.isAdmin = editRole === 'admin';
@@ -533,6 +543,7 @@ export default function AdminDashboardView({
     setEditingMerchantKey(null);
     setEditPasswordInput('');
     setEditBalanceInput('');
+    setEditHistoricalOrdersInput('');
     setEditPromotedBy('');
     triggerSuccess(`🛠️ 店家【${merchant.shop?.name || merchant.name}】的信息、密码密码与相关关联已更新成功！`);
   };
@@ -1339,9 +1350,14 @@ export default function AdminDashboardView({
                         </div>
                         <div className="w-px h-7 bg-zinc-200 mx-1.5 self-center"></div>
                         <div className="flex flex-col">
-                           <span className="text-[9px] text-zinc-500 font-bold tracking-wider">订单统计 (待/发/完)</span>
-                           <span className="text-xs font-extrabold text-zinc-900 font-mono mt-0.5">
+                           <span className="text-[9px] text-zinc-500 font-bold tracking-wider">订单统计 (待/发/完{merchant.historicalOrdersCount > 0 ? '|历史' : ''})</span>
+                           <span className="text-xs font-extrabold text-zinc-900 font-mono mt-0.5 flex items-center gap-1">
                              {(merchant.orders || []).filter((o: any) => o.status === 'pending' && !o.isSelfOrder).length} / {(merchant.orders || []).filter((o: any) => o.status === 'shipped' && !o.isSelfOrder).length} / {completedOrders.length}
+                             {merchant.historicalOrdersCount > 0 && (
+                               <span className="text-amber-600 font-black text-[10.5px]">
+                                 [历史: +{merchant.historicalOrdersCount}]
+                               </span>
+                             )}
                            </span>
                         </div>
                       </div>
@@ -1394,13 +1410,14 @@ export default function AdminDashboardView({
                                 setEditingMerchantKey(key);
                                 setEditPasswordInput(merchant.password || '');
                                 setEditBalanceInput(String(merchant.balance || 0));
+                                setEditHistoricalOrdersInput(String(merchant.historicalOrdersCount || 0));
                                 setEditPromotedBy(merchant.promotedBy || '');
                                 setEditRole(merchant.isAdmin ? 'admin' : (merchant.isSalesman ? 'salesman' : 'merchant'));
                               }}
                               className="px-3 py-1 bg-zinc-100 hover:bg-zinc-200 hover:text-zinc-950 rounded-lg text-[10.5px] font-black text-zinc-750 border border-zinc-250 transition-all flex items-center gap-1 cursor-pointer"
                             >
                               <Edit2 className="w-3 h-3" />
-                              <span>{isSalesman ? '修改账密与关联' : '修改账密与余额'}</span>
+                              <span>{isSalesman ? '修改账密与关联' : '修改账密与数据'}</span>
                             </button>
 
                             {key.toLowerCase() !== 'oopqwe001@gmail.com' && key.toLowerCase() !== 'oopqwe521@gmail.com' && key.toLowerCase() !== 'admin' && (
@@ -1423,7 +1440,7 @@ export default function AdminDashboardView({
                     {/* Modify state expanded block */}
                     {isEditing && (
                       <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-300 flex flex-col gap-3 mt-1 text-left">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="flex flex-col gap-1">
                             <label className="text-[10px] text-[#e51923] font-bold uppercase">重置登录密码 Password Change</label>
                             <input
@@ -1455,6 +1472,20 @@ export default function AdminDashboardView({
                                   ? 'bg-zinc-100 border-zinc-200 text-zinc-400 cursor-not-allowed select-none' 
                                   : 'bg-white border-zinc-300 text-zinc-800 focus:border-red-500'
                               }`}
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] text-[#e51923] font-bold uppercase flex items-center justify-between">
+                              <span>填写历史订单量 Historical Orders</span>
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={editHistoricalOrdersInput}
+                              onChange={(e) => setEditHistoricalOrdersInput(e.target.value)}
+                              placeholder="填入历史订单数 (如: 500)"
+                              className="w-full text-xs bg-white border border-zinc-300 rounded-lg p-2.5 text-zinc-800 font-mono focus:outline-none focus:border-red-500"
                             />
                           </div>
 

@@ -531,7 +531,7 @@ export default function MyShopModal({
                                 <div className="bg-white p-2 rounded-xl border border-zinc-150 flex flex-col justify-center items-center shadow-3xs">
                                   <span className="text-[9px] text-zinc-400 font-black mb-0.5 font-sans">{t('profitMargin')}</span>
                                   <span className="font-mono text-[10.5px] text-amber-600 font-black">
-                                    {((p.profit / p.retailPrice) * 100).toFixed(0)}%
+                                    {((p.profit / (p.costPrice || 1)) * 100).toFixed(0)}%
                                   </span>
                                 </div>
                               </div>

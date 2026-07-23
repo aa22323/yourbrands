@@ -854,10 +854,19 @@ export default function App() {
       merchantsDb: JSON.parse(JSON.stringify(sanitizedMerchantsDb))
     };
 
-    // 1. Post to Express backend endpoint immediately (updates database.json & Firestore)
+    // Synchronously write to local storage cache to guarantee instant persistence even if page is reloaded immediately
+    try {
+      localStorage.setItem('aliexpress_merchants_database_v2', JSON.stringify(sanitizedMerchantsDb));
+      localStorage.setItem('aliexpress_registered_users', JSON.stringify(nextUsers));
+    } catch (e) {
+      console.warn('LocalStorage save warn:', e);
+    }
+
+    // 1. Post to Express backend endpoint immediately with keepalive flag (survives immediate page reload)
     fetch('/api/db', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
       body: JSON.stringify({ registeredUsers: nextUsers, merchantsDb: sanitizedMerchantsDb })
     })
       .then(res => res.json())
@@ -2329,6 +2338,7 @@ export default function App() {
                   userAccountName={userAccountName}
                   registeredUsers={registeredUsers}
                   isSalesman={isCurrentUserSalesman}
+                  historicalOrdersCount={merchantsDb[userAccountName.toLowerCase()]?.historicalOrdersCount || 0}
                   withdrawHistory={withdrawHistory}
                   onUpdateWithdrawHistory={handleUpdateWithdrawHistory}
                   onOpenAdminConsole={() => setIsAdminConsoleOpen(true)}

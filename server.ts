@@ -414,9 +414,9 @@ function pruneDatabase(db: any) {
     const m = db.merchantsDb[key];
     if (m) {
       if (Array.isArray(m.orders)) {
-        if (m.orders.length > 50) {
-          console.log(`[Database Pruner] Truncating orders for ${key} from ${m.orders.length} to 50.`);
-          m.orders = m.orders.slice(0, 50);
+        if (m.orders.length > 500) {
+          console.log(`[Database Pruner] Truncating orders for ${key} from ${m.orders.length} to 500.`);
+          m.orders = m.orders.slice(0, 500);
         }
         // Strip giant base64 images from order items to prevent Firestore document size overflow!
         m.orders.forEach((o: any) => {
@@ -429,13 +429,13 @@ function pruneDatabase(db: any) {
           }
         });
       }
-      if (Array.isArray(m.financialLogs) && m.financialLogs.length > 50) {
-        console.log(`[Database Pruner] Truncating financialLogs for ${key} from ${m.financialLogs.length} to 50.`);
-        m.financialLogs = m.financialLogs.slice(0, 50);
+      if (Array.isArray(m.financialLogs) && m.financialLogs.length > 300) {
+        console.log(`[Database Pruner] Truncating financialLogs for ${key} from ${m.financialLogs.length} to 300.`);
+        m.financialLogs = m.financialLogs.slice(0, 300);
       }
-      if (Array.isArray(m.withdrawHistory) && m.withdrawHistory.length > 50) {
-        console.log(`[Database Pruner] Truncating withdrawHistory for ${key} from ${m.withdrawHistory.length} to 50.`);
-        m.withdrawHistory = m.withdrawHistory.slice(0, 50);
+      if (Array.isArray(m.withdrawHistory) && m.withdrawHistory.length > 300) {
+        console.log(`[Database Pruner] Truncating withdrawHistory for ${key} from ${m.withdrawHistory.length} to 300.`);
+        m.withdrawHistory = m.withdrawHistory.slice(0, 300);
       }
     }
   }
