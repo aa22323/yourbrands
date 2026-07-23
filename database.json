@@ -11167,7 +11167,7 @@
               "productId": "LP-0014",
               "quantity": 10,
               "productName": "大马士革大师联名系列",
-              "costPrice": 290000,
+              "costPrice": 2900,
               "retailPrice": 321900,
               "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&auto=format&fit=crop&q=80&crop=focalpoint&fp-z=1.18&fp-x=0.48&fp-y=0.52&p_id=luxury-product-80-14"
             }
@@ -11868,21 +11868,21 @@
       "balance": 4839600,
       "orders": [
         {
-          "totalPrice": 920000,
+          "totalPrice": 6200,
           "status": "pending",
-          "shippingAddress": "上海市徐汇区龙腾大道 2555号 滨江艺术大厦 A座 22楼",
-          "customerName": "宋晓阳",
-          "totalProfit": 70000,
+          "shippingAddress": "Suite 2201, Tower A, Riverside Plaza, Shanghai",
+          "customerName": "Alex Song",
+          "totalProfit": 400,
           "shopId": "master-shop-888",
           "id": "ORD-20260528-001",
           "customerPhone": "13812345678",
           "orderDate": "2026-05-28 08:30",
           "items": [
             {
-              "costPrice": 850000,
-              "retailPrice": 920000,
+              "costPrice": 5800,
+              "retailPrice": 6200,
               "image": "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=600&auto=format&fit=crop&q=80",
-              "productName": "Cartier Bordeaux Classic 卡地亚经典勃艮第红机械表",
+              "productName": "Cartier Bordeaux Classic Automatic Mechanical Watch",
               "quantity": 1,
               "productId": "LP-0001"
             }

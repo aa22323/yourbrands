@@ -1640,16 +1640,27 @@ export default function App() {
     const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
+    const getItemSanitizedCost = (o: Order, item: any) => {
+      let cost = item.costPrice || 0;
+      const retail = item.retailPrice || o.totalPrice || 0;
+      if (cost >= retail || cost > 20000) {
+        const itemProfit = Math.round((o.totalProfit || 0) / Math.max(1, o.items?.length || 1));
+        cost = Math.max(1, retail - (itemProfit > 0 ? itemProfit : Math.round(retail * 0.1)));
+      }
+      return cost;
+    };
+
     // Calculate total cost for non-self orders
     const nonSelfOrders = pendingToShip.filter(o => !o.isSelfOrder && !(o as any).isSelfCreated && !(o.items && o.items.some((i: any) => i.isSelfCreated)));
     const totalCostPrice = nonSelfOrders.reduce((sum, o) => {
-      return sum + (o.items || []).reduce((iSum, item) => iSum + ((item.costPrice || 0) * (item.quantity || 1)), 0);
+      return sum + (o.items || []).reduce((iSum, item) => iSum + (getItemSanitizedCost(o, item) * (item.quantity || 1)), 0);
     }, 0);
 
-    // If balance is low, show informative toast but still process the shipment
+    // If balance is insufficient, show warning toast and block shipment
     if (!merchantKeyParam && nonSelfOrders.length > 0 && merchantBalance < totalCostPrice) {
       setShowBalanceToast(true);
       setTimeout(() => setShowBalanceToast(false), 3000);
+      return;
     }
 
     const nextBalance = Math.max(0, merchantBalance - totalCostPrice);
@@ -1657,7 +1668,7 @@ export default function App() {
 
     // Generate logs for non-self orders
     nonSelfOrders.forEach(o => {
-      const costPriceSum = (o.items || []).reduce((sum, item) => sum + ((item.costPrice || 0) * (item.quantity || 1)), 0);
+      const costPriceSum = (o.items || []).reduce((sum, item) => sum + (getItemSanitizedCost(o, item) * (item.quantity || 1)), 0);
       const newTx: FinancialTransaction = {
         id: `TX-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${Math.floor(Math.random() * 9000) + 1000}`,
         type: 'withdraw',
